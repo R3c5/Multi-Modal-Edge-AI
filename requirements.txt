@@ -1,1 +1,2 @@
 # these are the packages for production
+pandas==2.0.1
