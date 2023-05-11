@@ -4,6 +4,7 @@ stages:
   - build
   - test
   - checkstyle
+  - typecheck
 
 build:
     stage: build
@@ -13,11 +14,12 @@ build:
 
 test:
     stage: test
+    before_script:
+      - pip install -r requirements-dev.txt
     script:
       - echo "Running tests"
         #    runs all tests in the tests directory that end with _test.py
-      - pip install pytest
-      - pytest -v
+      - pytest -v tests/
       - echo "Tests completed"
 
 checkstyle:
@@ -27,3 +29,13 @@ checkstyle:
       - pip install pycodestyle
       - pycodestyle --max-line-length=120 --ignore=E501,E731 .
       - echo "Checkstyle completed"
+
+typecheck:
+    stage: typecheck
+    before_script:
+      - pip install -r requirements-dev.txt
+    script:
+      - echo "Running type checker"
+      - mypy --ignore-missing-imports --strict ./multi_modal_edge_ai/
+      - echo "Type checkin completed"
+
