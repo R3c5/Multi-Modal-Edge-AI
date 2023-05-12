@@ -1,2 +1,5 @@
 # these are the packages for production
+pymongo==3.12.0
+matplotlib==3.7.1
 pandas==2.0.1
+
