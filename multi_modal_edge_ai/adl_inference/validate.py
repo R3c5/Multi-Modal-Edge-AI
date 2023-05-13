@@ -1,46 +1,39 @@
-from typing import Any
-
 import pandas as pd
+from typing import Any
+from typing import Callable
 
-from multi_modal_edge_ai.commons.model import Model
 
-
-# create_model: Any, predict_model: Callable[[pd.Series, Any], pd.Series]
-def validate(train: pd.DataFrame, test: pd.DataFrame, ground_truth: pd.DataFrame, model: Model,
-             **hyperparams: Any) -> None:
+def validate(train: pd.DataFrame, test: pd.DataFrame, ground_truth: pd.DataFrame, create_model: Any,
+             predict_model: Callable[[pd.Series, Any], pd.Series]) -> None:
     """
     Validates a model using a train set and a test set
     prints each prediction and respective overlap with ground truth, as well as average
     :param train: pd.DataFrame with 'Start_time', 'End_time', 'Location', 'Type', 'Place' columns
     :param test: pd.DataFrame with 'Start_time', 'End_time', 'Location', 'Type', 'Place' columns
     :param ground_truth: pd.DataFrame with 'Start_time', 'End_time', and 'Activity' columns
-    :param model: some implementation of commons.Model abstract class
-    :return: prints predictions and scores
+    :param create_model: model creation function that returns a model
+    :param predict_model: model prediction function that given a model,
+    :return:
     """
-    # train the model on training data
-
-    model.train(train, **hyperparams)
+    # Create model using train data
+    model = create_model(train)
 
     # Predict activities for test data using model
     predictions = []
     for instance in test.iterrows():
-        predictions.append(model.predict(instance[1]))
+        prediction = predict_model(instance[1], model)
+        predictions.append(prediction)
 
     # Compare predictions to ground truth
-    scores = []
+    ious = []
     for prediction in predictions:
-        truth_instances = ground_truth.query("@prediction['Activity'] == `Activity`")
-        score = compare(prediction, truth_instances)
-        scores.append(score)
-        print("Activity: " + str(prediction['Activity']))
-        print("From: " + str(prediction['Start_Time']))
-        print("To: " + str(prediction['End_Time']))
-        print("IOU: " + str(score))
-        print("------------------------")
-    print("Final Average:", sum(scores) / len(scores))
-
-
-def compare(instance: 'pd.Series[Any]', ground_truth: pd.DataFrame) -> float:
+        truth_instances = ground_truth.query("@prediction[2] == `Activity`")
+        iou = compare(prediction, truth_instances)
+        ious.append(iou)
+        print("Activity: " + str(prediction[2]) + "\nFrom:"
+              + str(prediction[0]) + "\nTo:" + str(prediction[1]) + "\nIOU: " + str(iou) + "\n------------------------")
+    print("Average:", sum(ious)/len(ious))
+def compare(instance: pd.Series, ground_truth: pd.DataFrame) -> float:
     """
     Finds the maximum IOU in the ground_truth
     :param instance: df.Series: 'Start_time', 'End_time', 'Activity'
@@ -55,8 +48,7 @@ def compare(instance: 'pd.Series[Any]', ground_truth: pd.DataFrame) -> float:
 
     return max_iou
 
-
-def intersection_over_union(instance: 'pd.Series[Any]', truth_instance: 'pd.Series[Any]') -> float:
+def intersection_over_union(instance: pd.Series, truth_instance: pd.Series) -> float:
     """
     Given two three-tuples of start_time, end_time, and activity, compute the overlapping time divided by the total time
     """
@@ -69,4 +61,4 @@ def intersection_over_union(instance: 'pd.Series[Any]', truth_instance: 'pd.Seri
     intersection = max(0.0, (min(end_1, end_2) - max(start_1, start_2)).total_seconds())
     union = (end_1 - start_1 + end_2 - start_1).total_seconds() - intersection
 
-    return float(intersection / union)
+    return intersection / union
