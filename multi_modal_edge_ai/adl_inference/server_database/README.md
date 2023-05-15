@@ -19,25 +19,30 @@ This class is initialised with the database name you want to connect to. Current
 After initialising an instance of this class you have access to the following methods:
 
 - ```get_all_documents_all_fields()``` - returns all sensor entries in the database
-- ```get_all_documents``` - returns all sensor entries in the database, but only the relevant fields for each type of sensor(described bellow)
-- ```get_data_from_cursor``` - a cursor is an object that contains the results of a database query. This method transform the last_seen field which holds the number of milliseconds from 1st of January 1970 to 2 fields: date and time and returns a list of dictionaries, where each dictionary is a sensor entry. Method is meant as an auxiliary method for the methods.
+- ```get_all_documents``` - returns all sensor entries in the database(except buttons as they do not provide any actual data. They can be queried separately.), but only the relevant fields for each type of sensor(described bellow)
+- ```(static)get_data_from_cursor``` - a cursor is an object that contains the results of a database query. This method transform the last_seen field which holds the number of milliseconds from 1st of January 1970 to 2 fields: date and time and returns a list of dictionaries, where each dictionary is a sensor entry. It also adds the sensor type that it receives in the call to each entry(default is undefined). Method is meant as an auxiliary method for the methods.
 - ```get_contact_sensors``` - returns all contact sensors entries in the database with their relevant fields(described bellow)
 - ```get_pir_sensors``` - returns all pir sensors entries in the database with their relevant fields(described bellow)
 - ```get_button_sensors``` - returns all button sensors entries in the database with their relevant fields(described bellow)
 - ```get_power_sensors``` - returns all power sensors entries in the database with their relevant fields(described bellow)
 - ```plot_distribution_week_days``` - plots the distribution of the sensor entries on each day of the week
 - ```plot_distribution_hourly``` - plots the distribution of the sensor entries on each hour of the day
-- ```plot_distributions_for_all_entries``` - plots the two distributions for all sensor entries
+- ```plot_distributions_for_all_entries``` - plots the two distributions for all sensor entries(except buttons because they do not provide any actual data. They can be queried separately.)
 - ```plot_distributions_for_power_sensor_entires``` - plots the two distributions for all power sensor entries
 - ```plot_distributions_for_contact_sensor_entires``` - plots the two distributions for all contact sensor entries
 - ```plot_distributions_for_pir_sensor_entires``` - plots the two distributions for all pir sensor entries
 - ```plot_distributions_for_button_sensor_entires``` - plots the two distributions for all button sensor entries
 
+In the same file, the following preprocessing methods are also available:
+- ```preprocess_data_to_start_and_end_times``` takes data from a list of dictionaries and returns a list of dictionaries, where identical signals are aggregated to form a new signal with a start and end time.
+- ```preprocess_contact_sensor_data_to_start_and_end_times``` same as the above, but only groups on instances of the same contact sensor
+
 ### Relevant fields for each type of sensor:
-- Contact sensor: ```{`contact`, `last_seen`, `device.friendlyName`}```
-- PIR sensor: ```{`occupancy`, `illuminance`, `motion_sensitivity`, `last_seen`, `device.friendlyName`}```
-- Button sensor: ```{`last_seen`, `device.friendlyName`}```
+- PIR sensor: ```{`occupancy`, `last_seen`, `device.friendlyName`}```
 - Power sensor: ```{`state`, `last_seen`, `device.friendlyName`}```
+- Contact sensor: ```{`contact`, `last_seen`, `device.friendlyName`}```
+- For the sensors mentioned above, the query functions methods explained above will also apply a preprocessing function.
+- Button sensor: ```{`last_seen`, `device.friendlyName`}```
 
 ## database-calls
 

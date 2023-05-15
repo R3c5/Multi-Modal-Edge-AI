@@ -6,6 +6,73 @@ import matplotlib.pyplot as plt
 import datetime
 
 
+def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]]) -> list[dict[Any, Any]]:
+    """
+    A method that preprocesses the data to get the start and end time of each sensor entry
+    :param data: a list of dictionaries
+    :return: a list of dictionaries
+    """
+    new_data = []
+    prev = data[0]
+    start_time = prev['time']
+    start_date = prev['date']
+    end_time = prev['time']
+    del prev['time']
+    del prev['date']
+    for d in data[1:]:
+        current_time = d['time']
+        current_date = d['date']
+        del d['time']
+        del d['date']
+        if d == prev:
+            end_time = current_time
+        else:
+            prev['date'] = start_date
+            prev['start_time'] = start_time
+            prev['end_time'] = current_time
+            if (prev['type'] == 'Power' and prev['state'] == 'ON') or \
+                    ('occupancy' in prev and prev['occupancy'] is True) or \
+                    ('contact' in prev and prev['contact'] is False):
+                new_data.append(prev)
+            start_time = current_time
+            start_date = current_date
+            end_time = current_time
+            prev = d
+    prev['date'] = start_date
+    prev['start_time'] = start_time
+    prev['end_time'] = end_time
+    if (prev['type'] == 'Power' and prev['state'] == 'ON') or \
+            ('occupancy' in prev and prev['occupancy'] is True) or \
+            ('contact' in prev and prev['contact'] is False):
+        new_data.append(prev)
+    return new_data
+
+
+def preprocess_contact_sensor_data_to_start_and_end_time(data: list[dict[Any, Any]]) -> list[dict[Any, Any]]:
+    """
+    A method that preprocesses the contact sensors entries to get the start and end time of each sensor entry
+    :param data: a list of dictionaries
+    :return: a list of dictionaries
+    """
+    result = []
+    friendly_names = set()
+
+    for entry in data:
+        friendly_name = entry['device']['friendlyName']
+        if friendly_name not in friendly_names:
+            friendly_names.add(friendly_name)
+            result.append([entry])
+        else:
+            for group in result:
+                if group[0]['device']['friendlyName'] == friendly_name:
+                    group.append(entry)
+                    break
+    new_data = []
+    for group in result:
+        new_data.extend(preprocess_data_to_start_and_end_time(group))
+    return new_data
+
+
 class DatabaseTunnel:
 
     # Before running this script, make sure that the SSH tunnel is running:
@@ -43,20 +110,23 @@ class DatabaseTunnel:
         power = self.get_power_sensors()
         pir = self.get_pir_sensors()
         contact = self.get_contact_sensors()
-        button = self.get_button_sensors()
-        return power + pir + contact + button
+        # button = self.get_button_sensors()
+        # return power + pir + contact + button
+        return power + pir + contact
 
     @staticmethod
-    def get_data_from_cursor(cursor: pymongo.cursor.Cursor) -> list[dict[Any, Any]]:
+    def get_data_from_cursor(cursor: pymongo.cursor.Cursor, sensors_type: str = 'Undefined') -> list[dict[Any, Any]]:
         """
         A method that extracts the data from a cursor object, converts the timestamp to a date and time and returns a
         list of dictionaries
+        :param sensors_type: the type of sensor that shall be added to each entry
         :param cursor: the cursor object
         :return: a list of dictionaries
         """
         data = []
         for document in cursor:
             last_seen = document.get('last_seen')
+            document['type'] = sensors_type
             if last_seen:
                 last_seen_dt = datetime.datetime.fromtimestamp(last_seen / 1000)
                 document['date'] = last_seen_dt.strftime("%Y-%m-%d")
@@ -74,8 +144,8 @@ class DatabaseTunnel:
         cursor = collection.find({'contact': {'$exists': True}}, {'_id': 0,
                                                                   'contact': 1,
                                                                   'last_seen': 1,
-                                                                  'device.friendlyName': 1})
-        return self.get_data_from_cursor(cursor)
+                                                                  'device.friendlyName': 1}).sort('last_seen', 1)
+        return preprocess_contact_sensor_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'Contact'))
 
     def get_pir_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -84,12 +154,12 @@ class DatabaseTunnel:
         """
         collection = self.collection
         cursor = collection.find({'motion_sensitivity': {'$exists': True}}, {'_id': 0,
-                                                                             'motion_sensitivity': 1,
+                                                                             # 'motion_sensitivity': 1,
                                                                              'last_seen': 1,
                                                                              'device.friendlyName': 1,
-                                                                             'illuminance': 1,
-                                                                             'occupancy': 1})
-        return self.get_data_from_cursor(cursor)
+                                                                             # 'illuminance': 0,
+                                                                             'occupancy': 1}).sort('last_seen', 1)
+        return preprocess_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'PIR'))
 
     def get_button_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -102,8 +172,8 @@ class DatabaseTunnel:
                                   'state': {'$exists': False}},
                                  {'_id': 0,
                                   'last_seen': 1,
-                                  'device.friendlyName': 1})
-        return self.get_data_from_cursor(cursor)
+                                  'device.friendlyName': 1}).sort('last_seen', 1)
+        return self.get_data_from_cursor(cursor, 'Button')
 
     def get_power_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -114,8 +184,8 @@ class DatabaseTunnel:
         cursor = collection.find({'state': {'$exists': True}}, {'_id': 0,
                                                                 'state': 1,
                                                                 'last_seen': 1,
-                                                                'device.friendlyName': 1})
-        return self.get_data_from_cursor(cursor)
+                                                                'device.friendlyName': 1}).sort('last_seen', 1)
+        return preprocess_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'Power'))
 
     @staticmethod
     def plot_distribution_week_days(data: list[dict[Any, Any]]) -> None:
