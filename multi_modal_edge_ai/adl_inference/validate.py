@@ -67,4 +67,4 @@ def intersection_over_union(instance: pd.Series, truth_instance: pd.Series) -> f
     intersection = max(0.0, (min(end_1, end_2) - max(start_1, start_2)).total_seconds())
     union = (end_1 - start_1 + end_2 - start_1).total_seconds() - intersection
 
-    return intersection / union
+    return float(intersection / union)
