@@ -30,9 +30,14 @@ def validate(train: pd.DataFrame, test: pd.DataFrame, ground_truth: pd.DataFrame
         truth_instances = ground_truth.query("@prediction[2] == `Activity`")
         iou = compare(prediction, truth_instances)
         ious.append(iou)
-        print("Activity: " + str(prediction[2]) + "\nFrom:"
-              + str(prediction[0]) + "\nTo:" + str(prediction[1]) + "\nIOU: " + str(iou) + "\n------------------------")
-    print("Average:", sum(ious)/len(ious))
+        print("Activity: " + str(prediction[2]))
+        print("From: " + str(prediction[0]))
+        print("To: " + str(prediction[1]))
+        print("IOU: " + str(iou))
+        print("------------------------")
+    print("Average:", sum(ious) / len(ious))
+
+
 def compare(instance: pd.Series, ground_truth: pd.DataFrame) -> float:
     """
     Finds the maximum IOU in the ground_truth
@@ -47,6 +52,7 @@ def compare(instance: pd.Series, ground_truth: pd.DataFrame) -> float:
             max_iou = iou
 
     return max_iou
+
 
 def intersection_over_union(instance: pd.Series, truth_instance: pd.Series) -> float:
     """
