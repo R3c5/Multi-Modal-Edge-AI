@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 import pandas as pd
 
+
 class ArubaDAO(Dataset):
     def __init__(self, csv_path: str, transform=None):
         self.data = pd.read_csv(csv_path)
