@@ -1,10 +1,9 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.anomaly_detection.parser import parse_file
+from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle
 
 def test_parser():
-    adf = parse_file("tests/anomaly_detection_tests/test_dataset/dummy_adl.csv")
-
+    adf = parse_file_without_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl.csv")
 
     # Check activity dataframe is correctly parsed
     activity_data = {
@@ -22,5 +21,5 @@ def test_parser():
 
 def test_Aruba():
 
-    adf = parse_file("multi_modal_edge_ai/public_datasets/Aruba.csv")
+    adf = parse_file_without_idle("multi_modal_edge_ai/public_datasets/Aruba.csv")
     assert len(adf) == 10294

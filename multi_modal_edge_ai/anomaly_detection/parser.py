@@ -2,13 +2,13 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 
-def parse_file(path_to_adl_file: str) -> pd.DataFrame:
+def parse_file_without_idle(path_to_adl_file: str) -> pd.DataFrame:
     """
     Parse a csv file with adl data with the following format:
     Start_Time,End_Time,Activity
     2012-11-12 00:22:57,2012-11-12 00:22:59,Meal_Preparation
 
-    :param path_to_adl_file: path to the ADL input file
+    :param path_to_adl_file: path to the ADL input file but there aren't any Idle activities
     :return: a dataframe with the adl data
     """
     # read adl data
@@ -21,6 +21,26 @@ def parse_file(path_to_adl_file: str) -> pd.DataFrame:
     modifief_adl_df = insert_idle_activity(adl_df)
 
     return modifief_adl_df
+
+
+def parse_file_with_idle(path_to_adl_file: str) -> pd.DataFrame:
+    """
+        Parse a csv file with adl data with the following format:
+        Start_Time,End_Time,Activity
+        2012-11-12 00:22:57,2012-11-12 00:22:59,Meal_Preparation
+
+        :param path_to_adl_file: path to the ADL input file but there are Idle activities
+        :return: a dataframe with the adl data
+        """
+    # read adl data
+    adl_df = pd.read_csv(path_to_adl_file, delimiter=',')
+
+    # convert the time columns to datetime format
+    adl_df['Start_Time'] = pd.to_datetime(adl_df['Start_Time'])
+    adl_df['End_Time'] = pd.to_datetime(adl_df['End_Time'])
+    adl_df['Activity'] = adl_df['Activity'].astype(str)
+
+    return adl_df
 
 
 def insert_idle_activity(adl_df: pd.DataFrame) -> pd.DataFrame:
@@ -43,6 +63,6 @@ def insert_idle_activity(adl_df: pd.DataFrame) -> pd.DataFrame:
             modified_adl_df.loc[i + index_idle] = [idlerow['Start_Time'], idlerow['End_Time'], idlerow['Activity']]
             index_idle += 1
 
-    modified_adl_df.loc[len(modified_adl_df)] = [adl_df.iloc[-1]['Start_Time'], adl_df.iloc[-1]['End_Time'], adl_df.iloc[-1]['Activity']]
+    modified_adl_df.loc[len(modified_adl_df)] = \
+        [adl_df.iloc[-1]['Start_Time'], adl_df.iloc[-1]['End_Time'], adl_df.iloc[-1]['Activity']]
     return modified_adl_df
-
