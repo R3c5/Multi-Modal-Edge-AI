@@ -1,7 +1,8 @@
 import pandas as pd
 import os
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle, parse_file_with_idle
+from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle,\
+    parse_file_with_idle, combine_equal_consecutive_activities
 
 
 def test_parser_without_idle():
@@ -38,19 +39,55 @@ def test_parser_with_idle():
     assert_frame_equal(checker_adf, adf)
 
 
-def test_Aruba():
+def test_combine():
+    adf = parse_file_with_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl_check_squashed.csv")
+    adf = combine_equal_consecutive_activities(adf)
+    # Check activity dataframe is correctly parsed
+    activity_data = {
+        'Start_Time': ['2010-11-04 00:03:50', '2010-11-04 08:11:09', '2010-11-04 08:28:05', '2010-11-04 08:28:30'],
+        'End_Time': ['2010-11-04 08:01:12', '2010-11-04 08:27:58', '2010-11-04 08:28:22', '2010-11-04 08:58:00'],
+        'Activity': ['Sleeping', 'Meal_Preparation', 'Relax', 'Sleeping']}
 
-    adf = parse_file_without_idle("multi_modal_edge_ai/public_datasets/Aruba.csv")
-    # Check if the file exists
-    file_path = "multi_modal_edge_ai/public_datasets/Aruba_Idle.csv"
-    if not os.path.exists(file_path):
-        # Create DataFrame with your data
-        df = pd.DataFrame(adf)
+    checker_adf = pd.DataFrame(activity_data)
+    checker_adf['Start_Time'] = pd.to_datetime(checker_adf['Start_Time'])
+    checker_adf['End_Time'] = pd.to_datetime(checker_adf['End_Time'])
 
-        # Write DataFrame to CSV file
-        df.to_csv(file_path, index=False)
-        print(f"CSV file '{file_path}' created at '{file_path}'")
-    else:
-        print(f"CSV file '{file_path}' already exists at '{file_path}'")
+    assert_frame_equal(checker_adf, adf)
 
-    assert len(adf) == 10294
+# ATTENTION: The following tests are for the Aruba dataset and
+# they create datasets with Idle Activity or Squashed Activities respectively.
+# def test_Aruba_makeit_idle():
+#
+#     adf = parse_file_without_idle("multi_modal_edge_ai/public_datasets/Aruba.csv")
+#     # Check if the file exists
+#     file_path = "multi_modal_edge_ai/public_datasets/Aruba_Idle.csv"
+#     if not os.path.exists(file_path):
+#         # Create DataFrame with your data
+#         df = pd.DataFrame(adf)
+#
+#         # Write DataFrame to CSV file
+#         df.to_csv(file_path, index=False)
+#         print(f"CSV file '{file_path}' created at '{file_path}'")
+#     else:
+#         print(f"CSV file '{file_path}' already exists at '{file_path}'")
+#
+#     assert len(adf) == 10294
+#
+#
+# def test_Aruba_makeit_idle_with_combine():
+#
+#     adf = parse_file_without_idle("multi_modal_edge_ai/public_datasets/Aruba.csv")
+#     adf = combine_equal_consecutive_activities(adf)
+#     # Check if the file exists
+#     file_path = "multi_modal_edge_ai/public_datasets/Aruba_Idle_Squashed.csv"
+#     if not os.path.exists(file_path):
+#         # Create DataFrame with your data
+#         df = pd.DataFrame(adf)
+#
+#         # Write DataFrame to CSV file
+#         df.to_csv(file_path, index=False)
+#         print(f"CSV file '{file_path}' created at '{file_path}'")
+#     else:
+#         print(f"CSV file '{file_path}' already exists at '{file_path}'")
+#
+#     assert len(adf) == 9626

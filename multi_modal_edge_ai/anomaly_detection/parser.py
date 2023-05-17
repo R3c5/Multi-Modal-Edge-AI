@@ -66,3 +66,30 @@ def insert_idle_activity(adl_df: pd.DataFrame) -> pd.DataFrame:
     modified_adl_df.loc[len(modified_adl_df)] = \
         [adl_df.iloc[-1]['Start_Time'], adl_df.iloc[-1]['End_Time'], adl_df.iloc[-1]['Activity']]
     return modified_adl_df
+
+
+def combine_equal_consecutive_activities(adl_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Combine equal consecutive activities in the adl dataframe. For example, if the adl dataframe has the following
+    activities: [Meal_Preparation, Meal_Preparation, Idle, Meal_Preparation, Meal_Preparation], then the
+    function will combine the equal consecutive activities and will return the following activities:
+    [Meal_Preparation, Idle, Meal_Preparation]
+    :param adl_df:  the adl dataframe
+    :return:
+    """
+    modified_adl_df = pd.DataFrame(columns=['Start_Time', 'End_Time', 'Activity'])
+    index = 0
+    start_time = adl_df.iloc[0]['Start_Time']
+
+    for i in range(1, len(adl_df)):
+        row1 = adl_df.iloc[i - 1]
+        row2 = adl_df.iloc[i]
+
+        if row2['Activity'] != row1['Activity']:
+            modified_adl_df.loc[index] = [start_time, row1['End_Time'], row1['Activity']]
+            index += 1
+            start_time = adl_df.iloc[i]['Start_Time']
+
+    modified_adl_df.loc[index] = \
+        [start_time, adl_df.iloc[-1]['End_Time'], adl_df.iloc[-1]['Activity']]
+    return modified_adl_df
