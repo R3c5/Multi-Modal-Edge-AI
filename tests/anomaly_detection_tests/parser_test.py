@@ -1,12 +1,11 @@
 import pandas as pd
-import os
 from pandas.testing import assert_frame_equal
 from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle,\
     parse_file_with_idle, combine_equal_consecutive_activities
 
 
 def test_parser_without_idle():
-    adf = parse_file_without_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl.csv")
+    adl = parse_file_without_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl.csv")
 
     # Check activity dataframe is correctly parsed
     activity_data = {
@@ -16,15 +15,15 @@ def test_parser_without_idle():
                      '2010-11-04 08:11:09', '2010-11-04 08:27:02'],
         'Activity': ['Sleeping', 'Toilet', 'Sleeping', 'Idle', 'Meal_Preparation']}
 
-    checker_adf = pd.DataFrame(activity_data)
-    checker_adf['Start_Time'] = pd.to_datetime(checker_adf['Start_Time'])
-    checker_adf['End_Time'] = pd.to_datetime(checker_adf['End_Time'])
+    checker_adl = pd.DataFrame(activity_data)
+    checker_adl['Start_Time'] = pd.to_datetime(checker_adl['Start_Time'])
+    checker_adl['End_Time'] = pd.to_datetime(checker_adl['End_Time'])
 
-    assert_frame_equal(checker_adf, adf)
+    assert_frame_equal(checker_adl, adl)
 
 
 def test_parser_with_idle():
-    adf = parse_file_with_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl.csv")
+    adl = parse_file_with_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl.csv")
 
     # Check activity dataframe is correctly parsed
     activity_data = {
@@ -32,27 +31,27 @@ def test_parser_with_idle():
         'End_Time': ['2010-11-04 05:40:43', '2010-11-04 05:43:30', '2010-11-04 08:01:12', '2010-11-04 08:27:02'],
         'Activity': ['Sleeping', 'Toilet', 'Sleeping', 'Meal_Preparation']}
 
-    checker_adf = pd.DataFrame(activity_data)
-    checker_adf['Start_Time'] = pd.to_datetime(checker_adf['Start_Time'])
-    checker_adf['End_Time'] = pd.to_datetime(checker_adf['End_Time'])
+    checker_adl = pd.DataFrame(activity_data)
+    checker_adl['Start_Time'] = pd.to_datetime(checker_adl['Start_Time'])
+    checker_adl['End_Time'] = pd.to_datetime(checker_adl['End_Time'])
 
-    assert_frame_equal(checker_adf, adf)
+    assert_frame_equal(checker_adl, adl)
 
 
 def test_combine():
-    adf = parse_file_with_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl_check_squashed.csv")
-    adf = combine_equal_consecutive_activities(adf)
+    adl = parse_file_with_idle("tests/anomaly_detection_tests/test_dataset/dummy_adl_check_squashed.csv")
+    adl = combine_equal_consecutive_activities(adl)
     # Check activity dataframe is correctly parsed
     activity_data = {
         'Start_Time': ['2010-11-04 00:03:50', '2010-11-04 08:11:09', '2010-11-04 08:28:05', '2010-11-04 08:28:30'],
         'End_Time': ['2010-11-04 08:01:12', '2010-11-04 08:27:58', '2010-11-04 08:28:22', '2010-11-04 08:58:00'],
         'Activity': ['Sleeping', 'Meal_Preparation', 'Relax', 'Sleeping']}
 
-    checker_adf = pd.DataFrame(activity_data)
-    checker_adf['Start_Time'] = pd.to_datetime(checker_adf['Start_Time'])
-    checker_adf['End_Time'] = pd.to_datetime(checker_adf['End_Time'])
+    checker_adl = pd.DataFrame(activity_data)
+    checker_adl['Start_Time'] = pd.to_datetime(checker_adl['Start_Time'])
+    checker_adl['End_Time'] = pd.to_datetime(checker_adl['End_Time'])
 
-    assert_frame_equal(checker_adf, adf)
+    assert_frame_equal(checker_adl, adl)
 
 # ATTENTION: The following tests are for the Aruba dataset and
 # they create datasets with Idle Activity or Squashed Activities respectively.

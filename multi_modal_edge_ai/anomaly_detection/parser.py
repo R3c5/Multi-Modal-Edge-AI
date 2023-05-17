@@ -8,7 +8,7 @@ def parse_file_without_idle(path_to_adl_file: str) -> pd.DataFrame:
     Start_Time,End_Time,Activity
     2012-11-12 00:22:57,2012-11-12 00:22:59,Meal_Preparation
 
-    :param path_to_adl_file: path to the ADL input file but there aren't any Idle activities
+    :param path_to_adl_file: path to the ADl input file without any Idle activities
     :return: a dataframe with the adl data
     """
     # read adl data
@@ -18,20 +18,20 @@ def parse_file_without_idle(path_to_adl_file: str) -> pd.DataFrame:
     adl_df['Start_Time'] = pd.to_datetime(adl_df['Start_Time'])
     adl_df['End_Time'] = pd.to_datetime(adl_df['End_Time'])
 
-    modifief_adl_df = insert_idle_activity(adl_df)
+    modified_adl_df = insert_idle_activity(adl_df)
 
-    return modifief_adl_df
+    return modified_adl_df
 
 
 def parse_file_with_idle(path_to_adl_file: str) -> pd.DataFrame:
     """
-        Parse a csv file with adl data with the following format:
-        Start_Time,End_Time,Activity
-        2012-11-12 00:22:57,2012-11-12 00:22:59,Meal_Preparation
+    Parse a csv file with adl data with the following format:
+    Start_Time,End_Time,Activity
+    2012-11-12 00:22:57,2012-11-12 00:22:59,Meal_Preparation
 
-        :param path_to_adl_file: path to the ADL input file but there are Idle activities
-        :return: a dataframe with the adl data
-        """
+    :param path_to_adl_file: path to the ADL input file but there are Idle activities
+    :return: a dataframe with the adl data
+    """
     # read adl data
     adl_df = pd.read_csv(path_to_adl_file, delimiter=',')
 
@@ -74,8 +74,9 @@ def combine_equal_consecutive_activities(adl_df: pd.DataFrame) -> pd.DataFrame:
     activities: [Meal_Preparation, Meal_Preparation, Idle, Meal_Preparation, Meal_Preparation], then the
     function will combine the equal consecutive activities and will return the following activities:
     [Meal_Preparation, Idle, Meal_Preparation]
+
     :param adl_df:  the adl dataframe
-    :return:
+    :return: the modified adl dataframe that contains the combined activities
     """
     modified_adl_df = pd.DataFrame(columns=['Start_Time', 'End_Time', 'Activity'])
     index = 0
