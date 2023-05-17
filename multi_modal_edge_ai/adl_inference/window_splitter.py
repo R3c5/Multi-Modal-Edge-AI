@@ -14,12 +14,15 @@ def filter_data_inside_window(data, window_start_time, window_end_time):
     inside_window_mask = (data['Start_Time'] < window_end_time) & (window_start_time < data['End_Time'])
     activities_in_window = data[inside_window_mask]
 
+    if len(activities_in_window) == 0:
+        return activities_in_window
+
     # Change activity times to be between the window bounds
     activities_in_window['Start_Time'] = activities_in_window.apply(lambda row:
                                                                     max(row['Start_Time'], window_start_time), axis=1)
     activities_in_window['End_Time'] = activities_in_window.apply(lambda row:
                                                                   min(row['End_Time'], window_end_time), axis=1)
-    return activities_in_window
+    return activities_in_window.reset_index(drop=True)
 
 
 def find_activity(data, window_start_time, window_end_time):
