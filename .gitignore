@@ -110,11 +110,11 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
+# Spyder multi_modal_edge_ai settings
 .spyderproject
 .spyproject
 
-# Rope project settings
+# Rope multi_modal_edge_ai settings
 .ropeproject
 
 # mkdocs documentation
@@ -130,3 +130,4 @@ dmypy.json
 
 #JetBrains
 .idea/
+
