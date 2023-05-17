@@ -1,13 +1,14 @@
+from typing import List, Tuple
+
 import pandas as pd
 from datetime import timedelta
-
 
 # Define the default activity
 # This is here so that it can be modified easily in the future
 DEFAULT_ACTIVITY = "IDLE"
 
 
-def filter_data_inside_window(data, window_start_time, window_end_time):
+def filter_data_inside_window(data: pd.DataFrame, window_start_time, window_end_time):
     """
         Given window time bounds, return all the data that happens during that window time
         :param data: dataframe that contain the following columns: 'Start_Time', 'End_Time'
@@ -29,7 +30,7 @@ def filter_data_inside_window(data, window_start_time, window_end_time):
     return activities_in_window.reset_index(drop=True)
 
 
-def find_activity(data, window_start_time, window_end_time):
+def find_activity(data: pd.DataFrame, window_start_time: pd.Timestamp, window_end_time: pd.Timestamp) -> str:
     """
     Given window time bounds, return the dominant, i.e. longest, activity in that window
     :param data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Activity'
@@ -51,7 +52,8 @@ def find_activity(data, window_start_time, window_end_time):
     return dominant_activity
 
 
-def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame, window_length_seconds: int):
+def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame,
+                       window_length_seconds: int) -> List[Tuple[pd.DataFrame, str, pd.Timestamp, pd.Timestamp]]:
     """
     Split 2 dataframes into multiple windows, where multiple rows in sensors will be mapped to exactly one adl.
     :param sensor_data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Sensor_Name'
