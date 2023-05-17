@@ -2,6 +2,11 @@ import pandas as pd
 from datetime import timedelta
 
 
+# Define the default activity
+# This is here so that it can be modified easily in the future
+DEFAULT_ACTIVITY = "IDLE"
+
+
 def filter_data_inside_window(data, window_start_time, window_end_time):
     """
         Given window time bounds, return all the data that happens during that window time
@@ -37,19 +42,22 @@ def find_activity(data, window_start_time, window_end_time):
     # Get activities that are in the window
     activities_in_window = filter_data_inside_window(data, window_start_time, window_end_time)
 
+    if len(activities_in_window) == 0:
+        return DEFAULT_ACTIVITY
+
     # calculate duration of each activity and take the one with the longest duration
     activities_in_window['Duration'] = activities_in_window['End_Time'] - activities_in_window['Start_Time']
-    dominant_activity = activities_in_window.iloc[activities_in_window['Duration'].idmax()]['Activity']
+    dominant_activity = activities_in_window.iloc[activities_in_window['Duration'].idxmax()]['Activity']
 
     return dominant_activity
 
 
-def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame, window_length: int):
+def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame, window_length_seconds: int):
     """
     Split 2 dataframes into multiple windows, where multiple rows in sensors will be mapped to exactly one adl.
     :param sensor_data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Sensor_Name'
     :param adl_data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Activity'
-    :param window_length: integer that represents the length of the window in seconds.
+    :param window_length_seconds: integer that represents the length of the window in seconds.
     :return: a list of tuples, where a tuple has:
             * dataframe containing the sensor data
             * corresponding activity
@@ -59,17 +67,17 @@ def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame, window
     window_list = []
 
     window_start_time = adl_data.iloc[0]['Start_Time']
-    window_end_time = window_start_time + timedelta(seconds=window_length)
+    window_end_time = window_start_time + timedelta(seconds=window_length_seconds)
 
-    stop_time = window_start_time = adl_data.iloc[-1]['Start_Time']
+    stop_time = adl_data.iloc[-1]['Start_Time']
 
-    while window_end_time <= stop_time:
-        activity = find_activity(adl_data, window_start_time, window_end_time)
+    while window_start_time <= stop_time:
         sensor_window = filter_data_inside_window(sensor_data, window_start_time, window_end_time)
+        activity = find_activity(adl_data, window_start_time, window_end_time)
 
         window_list.append((sensor_window, activity, window_start_time, window_end_time))
 
         window_start_time = window_end_time
-        window_end_time = window_start_time + timedelta(seconds=window_length)
+        window_end_time = window_start_time + timedelta(seconds=window_length_seconds)
 
     return window_list
