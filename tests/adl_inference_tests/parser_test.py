@@ -26,7 +26,7 @@ def test_parser():
     activity_data = {
         'Start_Time': ['2023-01-01 01:00:05', '2023-01-01 01:03:30', '2023-01-01 01:10:00', '2023-01-01 01:11:00'],
         'End_Time': ['2023-01-01 01:03:00', '2023-01-01 01:09:30', '2023-01-01 01:11:00', '2023-01-01 01:13:00'],
-        'Activity': ['Sleeping', 'Meal_Preparation', 'Bathroom', 'IDLE']
+        'Activity': ['Sleeping', 'Meal_Preparation', 'Bathroom', 'Idle']
     }
     checker_adf = pd.DataFrame(activity_data)
     checker_adf['Start_Time'] = pd.to_datetime(checker_adf['Start_Time'])

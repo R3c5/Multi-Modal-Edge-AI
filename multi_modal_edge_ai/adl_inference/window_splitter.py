@@ -68,7 +68,7 @@ def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame, window
     window_start_time = adl_data.iloc[0]['Start_Time']
     window_end_time = window_start_time + timedelta(seconds=window_length_seconds)
 
-    stop_time = adl_data.iloc[-1]['Start_Time']
+    stop_time = adl_data.iloc[-1]['End_Time']
 
     while window_start_time <= stop_time:
         sensor_window = filter_data_inside_window(sensor_data, window_start_time, window_end_time)

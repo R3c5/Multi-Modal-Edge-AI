@@ -52,7 +52,7 @@ def test_multiple_max_length_activities():
     (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
                             "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
 
-    # There are 2 activities of max length: Bathroom and IDLE
+    # There are 2 activities of max length: Bathroom and Idle
     # It should take the first one
     start_time = pd.Timestamp("2023-01-01 01:09:00")
     end_time = pd.Timestamp("2023-01-01 01:12:00")
@@ -90,7 +90,7 @@ def test_splitter_multiple_windows():
         'End_Time': [pd.Timestamp('2023-01-01 01:11:00'), pd.Timestamp('2023-01-01 01:12:00'),
                      pd.Timestamp('2023-01-01 01:13:00')],
         'Sensor': ['PIR_bathroom', 'PIR_bedroom', 'PIR_kitchen']}),
-               'IDLE', pd.Timestamp('2023-01-01 01:10:05'), pd.Timestamp('2023-01-01 01:13:25'))
+               'Idle', pd.Timestamp('2023-01-01 01:10:05'), pd.Timestamp('2023-01-01 01:13:25'))
 
     expected_result = [window1, window2, window3, window4]
     result = split_into_windows(sdf, adf, 200)
@@ -118,12 +118,21 @@ def test_splitter_empty_window():
         'Start_Time': [pd.Timestamp('2023-01-01 01:10:00'), pd.Timestamp('2023-01-01 01:10:30')],
         'End_Time': [pd.Timestamp('2023-01-01 01:11:00'), pd.Timestamp('2023-01-01 01:12:00')],
         'Sensor': ['PIR_bathroom', 'PIR_bedroom']}),
-               'IDLE', pd.Timestamp('2023-01-01 01:08:25'), pd.Timestamp('2023-01-01 01:12:35')
+               'Idle', pd.Timestamp('2023-01-01 01:08:25'), pd.Timestamp('2023-01-01 01:12:35')
     )
 
-    expected_result = [window1, window2, window3]
+    window4 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:12:50')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:13:00')],
+        'Sensor': ['PIR_kitchen']}),
+               'Idle', pd.Timestamp('2023-01-01 01:12:35'), pd.Timestamp('2023-01-01 01:16:45')
+    )
+    expected_result = [window1, window2, window3, window4]
 
     result = split_into_windows(sdf, adf, 250)
+
+    print('\n')
+    print(result)
 
     assert_window_list(result, expected_result)
 
