@@ -23,10 +23,9 @@ def filter_data_inside_window(data, window_start_time, window_end_time):
         return activities_in_window
 
     # Change activity times to be between the window bounds
-    activities_in_window['Start_Time'] = activities_in_window.apply(lambda row:
-                                                                    max(row['Start_Time'], window_start_time), axis=1)
-    activities_in_window['End_Time'] = activities_in_window.apply(lambda row:
-                                                                  min(row['End_Time'], window_end_time), axis=1)
+    activities_in_window.loc[:, 'Start_Time'] = activities_in_window.loc[:, 'Start_Time'].clip(lower=window_start_time)
+    activities_in_window.loc[:, 'End_Time'] = activities_in_window.loc[:, 'End_Time'].clip(upper=window_end_time)
+
     return activities_in_window.reset_index(drop=True)
 
 
