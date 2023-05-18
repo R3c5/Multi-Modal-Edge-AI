@@ -2,8 +2,8 @@ from pandas.testing import assert_frame_equal
 from multi_modal_edge_ai.adl_inference.parser import parse_file
 from multi_modal_edge_ai.adl_inference.window_splitter import *
 
-(sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                        "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
+(sdf, adf) = parse_file("tests/adl_inference/test_dataset/dummy_sensor.csv",
+                        "tests/adl_inference/test_dataset/dummy_adl.csv")
 def test_filter():
     start_time = pd.Timestamp("2023-01-01 01:02:30")
     end_time = pd.Timestamp("2023-01-01 01:11:30")
