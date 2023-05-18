@@ -26,11 +26,11 @@ def split_into_time_windows(data: pd.DataFrame, window_size: float, window_slide
     :param window_slide: The slide of the window, in the number of hours
     :return: A dataframe that will have as rows the windows and as columns the size of the largest window
     """
-    window_delta = timedelta(hours=window_size)
-    window_delta = timedelta(hours=window_slide)
+    size_delta = timedelta(hours=window_size)
+    slide_delta = timedelta(hours=window_slide)
 
     window_start = data["Start_Time"].min()
-    window_end = window_start + window_delta
+    window_end = window_start + size_delta
     df_lists = []
 
     while window_end <= data["End_Time"].max():
@@ -38,8 +38,8 @@ def split_into_time_windows(data: pd.DataFrame, window_size: float, window_slide
         if window.any():
             df_lists.append(window.flatten().tolist())
 
-        window_start += window_delta
-        window_end += window_delta
+        window_start += slide_delta
+        window_end += slide_delta
 
     return pd.DataFrame(df_lists)
 
