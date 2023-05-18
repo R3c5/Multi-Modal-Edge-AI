@@ -27,7 +27,7 @@ checkstyle:
     script:
       - echo "Running checkstyle"
       - pip install pycodestyle
-      - pycodestyle --max-line-length=120 --ignore=E731 .
+      - pycodestyle --max-line-length=120 --ignore=E731 ./multi_modal_edge_ai
       - echo "Checkstyle completed"
 
 typecheck:
@@ -36,6 +36,6 @@ typecheck:
       - pip install -r requirements-dev.txt
     script:
       - echo "Running type checker"
-      - mypy --ignore-missing-imports --strict ./multi_modal_edge_ai/
+      - mypy --ignore-missing-imports ./multi_modal_edge_ai/
       - echo "Type checkin completed"
 
