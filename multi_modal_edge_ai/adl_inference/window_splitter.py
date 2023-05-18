@@ -5,7 +5,7 @@ from datetime import timedelta
 
 # Define the default activity
 # This is here so that it can be modified easily in the future
-DEFAULT_ACTIVITY = "IDLE"
+DEFAULT_ACTIVITY = "Idle"
 
 
 def filter_data_inside_window(data: pd.DataFrame, window_start_time, window_end_time):
