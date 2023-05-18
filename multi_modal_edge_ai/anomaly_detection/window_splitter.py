@@ -3,8 +3,6 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 
-from parser import parse_file_with_idle, combine_equal_consecutive_activities
-
 
 def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: float, event_based=True) -> pd.DataFrame:
     """
@@ -18,6 +16,7 @@ def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: flo
     return split_into_event_windows(data, int(window_size), int(window_slide)) if (event_based) else \
         split_into_time_windows(data, window_size, window_slide)
 
+
 def split_into_time_windows(data: pd.DataFrame, window_size: float, window_slide: float) -> pd.DataFrame:
     """
     This function will perform a conversion of the dataframe into a time-based sliding window dataframe.
@@ -27,24 +26,25 @@ def split_into_time_windows(data: pd.DataFrame, window_size: float, window_slide
     :param window_slide: The slide of the window, in the number of hours
     :return: A dataframe that will have as rows the windows and as columns the size of the largest window
     """
-    window_size = timedelta(hours=window_size)
-    window_slide = timedelta(hours=window_slide)
+    window_delta = timedelta(hours=window_size)
+    window_delta = timedelta(hours=window_slide)
 
     window_start = data["Start_Time"].min()
-    window_end = window_start + window_size
+    window_end = window_start + window_delta
     df_lists = []
 
     while window_end <= data["End_Time"].max():
         window = activity_mask(data, window_start, window_end)
-        if window.size != 0:
+        if window.any():
             df_lists.append(window.flatten().tolist())
 
-        window_start += window_slide
-        window_end += window_slide
+        window_start += window_delta
+        window_end += window_delta
 
     return pd.DataFrame(df_lists)
 
-def activity_mask(data, window_start, window_end):
+
+def activity_mask(data: pd.DataFrame, window_start: pd.Timestamp, window_end: pd.Timestamp) -> np.ndarray:
     """
     This function will retrieve the activities from the dataframe that exist within the interval [window_start,
     window_end]
