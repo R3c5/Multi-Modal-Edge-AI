@@ -1,6 +1,10 @@
-import numpy.version
-import pandas as pd
+from datetime import timedelta
+
 import numpy as np
+import pandas as pd
+
+from parser import parse_file_with_idle, combine_equal_consecutive_activities
+
 
 def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: float, event_based=True) -> pd.DataFrame:
     """
@@ -15,7 +19,52 @@ def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: flo
         split_into_time_windows(data, window_size, window_slide)
 
 def split_into_time_windows(data: pd.DataFrame, window_size: float, window_slide: float) -> pd.DataFrame:
-    pass
+    """
+    This function will perform a conversion of the dataframe into a time-based sliding window dataframe.
+    :param data: The dataframe on which to perform the sliding window
+    :param window_size: The size of the window, in the number of hours. Size 5 will mean that each window contains 5
+    hours worth of ADLs
+    :param window_slide: The slide of the window, in the number of hours
+    :return: A dataframe that will have as rows the windows and as columns the size of the largest window
+    """
+    window_size = timedelta(hours=window_size)
+    window_slide = timedelta(hours=window_slide)
+
+    window_start = data["Start_Time"].min()
+    window_end = window_start + window_size
+    df_lists = []
+
+    while window_end <= data["End_Time"].max():
+        window = activity_mask(data, window_start, window_end)
+        if window.size != 0:
+            df_lists.append(window.flatten().tolist())
+
+        window_start += window_slide
+        window_end += window_slide
+
+    return pd.DataFrame(df_lists)
+
+def activity_mask(data, window_start, window_end):
+    """
+    This function will retrieve the activities from the dataframe that exist within the interval [window_start,
+    window_end]
+    :param data: the dataframe to perform the retrieval from
+    :param window_start: the start of the window in timestamp
+    :param window_end:  the end of the window in timestamp
+    :return: A dataframe with rows as the windows and colums the many activities of the windows. Keep in mind that this
+    dataframe will have as many columns as the largest window. For all other windows that contain less activities, the
+    dataframe will fill the values with NaNs
+    """
+    mask = ((data['Start_Time'] >= window_start) & (data['Start_Time'] <= window_end)) | \
+           ((data['End_Time'] >= window_start) & (data['End_Time'] <= window_end)) | \
+           ((data['Start_Time'] <= window_start) & (data['End_Time'] >= window_end))
+    filtered_data = data.loc[mask].copy()
+
+    # Adjust start and end times of activities to not exceed the window start and end times
+    filtered_data['Start_Time'] = filtered_data['Start_Time'].apply(lambda x: max(x, window_start))
+    filtered_data['End_Time'] = filtered_data['End_Time'].apply(lambda x: min(x, window_end))
+
+    return filtered_data.to_numpy()
 
 
 def split_into_event_windows(data: pd.DataFrame, window_size: int, window_slide: int) -> pd.DataFrame:
@@ -25,13 +74,9 @@ def split_into_event_windows(data: pd.DataFrame, window_size: int, window_slide:
     :param window_size: The size of the window, in the number of events. Size 5 will mean that each window contains 5
     ADLs
     :param window_slide: The slide of the window, in the number of events
-    :return: A dataframe that will have as rows the windows and #window_size columns
+    :return: A dataframe that will have as rows the windows and #window_size * size_of_entry (which is 3) columns
     """
     numpy_df = data.to_numpy()
     numpy_rolling_windows = np.array([numpy_df[i:i + window_size]
                                       for i in range(0, len(numpy_df) - window_size + 1, window_slide)])
-    return pd.DataFrame(numpy_rolling_windows)
-
-if __name__ == "__main__":
-    df = pd.DataFrame({'numbers': [1, 2, 3, 4, 5]})
-    print(split_into_event_windows(df['numbers'], 2, 2))
+    return pd.DataFrame(map(lambda x: x.flatten(), numpy_rolling_windows))
