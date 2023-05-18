@@ -131,3 +131,5 @@ dmypy.json
 #JetBrains
 .idea/
 
+
+multi_modal_edge_ai/adl_inference/server_database/output.txt
