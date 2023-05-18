@@ -89,7 +89,7 @@ def combine_equal_consecutive_activities(adl_df: pd.DataFrame) -> pd.DataFrame:
         if row2['Activity'] != row1['Activity']:
             modified_adl_df.loc[index] = [start_time, row1['End_Time'], row1['Activity']]
             index += 1
-            start_time = adl_df.iloc[i]['Start_Time']
+            start_time = row2['Start_Time']
 
     modified_adl_df.loc[index] = \
         [start_time, adl_df.iloc[-1]['End_Time'], adl_df.iloc[-1]['Activity']]
