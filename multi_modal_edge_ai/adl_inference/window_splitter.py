@@ -10,11 +10,11 @@ DEFAULT_ACTIVITY = "IDLE"
 
 def filter_data_inside_window(data: pd.DataFrame, window_start_time, window_end_time):
     """
-        Given window time bounds, return all the data that happens during that window time
-        :param data: dataframe that contain the following columns: 'Start_Time', 'End_Time'
-        :param window_start_time: datetime object that represents the start time of the window
-        :param window_end_time: datetime object that represents the end time of the window
-        :return: a dataframe containing all the data that happened in the window, truncated to the window times
+    Given window time bounds, return all the data that happens during that window time
+    :param data: dataframe that contain the following columns: 'Start_Time', 'End_Time'
+    :param window_start_time: datetime (pd.Timestamp can also be used) that represents the start time of the window
+    :param window_end_time: datetime (pd.Timestamp can also be used) that represents the end time of the window
+    :return: a dataframe containing all the data that happened in the window, truncated to the window times
     """
 
     inside_window_mask = (data['Start_Time'] < window_end_time) & (window_start_time < data['End_Time'])
