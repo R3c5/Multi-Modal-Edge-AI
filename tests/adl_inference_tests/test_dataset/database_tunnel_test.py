@@ -1,4 +1,4 @@
-from multi_modal_edge_ai.adl_inference.server_database.DatabaseTunnel import *
+from multi_modal_edge_ai.adl_inference.server_database.database_tunnel import *
 import pytest
 
 
@@ -19,7 +19,7 @@ def test_is_time_difference_smaller_than_x_seconds(start_time, end_time, seconds
     f"Assertion failed for start_time='{start_time}', end_time='{end_time}', seconds='{seconds}'"
 
 
-def test_preprocess_data_to_start_and_end_time_with_motion_sensors():
+def test_aggregate_similar_entries_with_motion_sensors():
     # Test motion data
     entries = [dict(device={'friendlyName': 'motion_livingroom'}, occupancy=False, type='PIR', date='2023-04-26',
                     time='16:06:57'),
@@ -36,7 +36,7 @@ def test_preprocess_data_to_start_and_end_time_with_motion_sensors():
                dict(device={'friendlyName': 'motion_livingroom'}, occupancy=True, type='PIR', date='2023-04-26',
                     time='16:10:27')]
 
-    assert preprocess_data_to_start_and_end_time(entries, 30) == [
+    assert aggregate_similar_entries(entries, 30) == [
         dict(device={'friendlyName': 'motion_livingroom'}, occupancy=True, type='PIR', date='2023-04-26',
              start_time='16:07:30', end_time='16:07:30'),
         dict(device={'friendlyName': 'motion_bedroom'}, occupancy=True, type='PIR', date='2023-04-26',
@@ -47,7 +47,7 @@ def test_preprocess_data_to_start_and_end_time_with_motion_sensors():
              start_time='16:10:27', end_time='16:10:27')]
 
 
-def test_preprocess_data_to_start_and_end_time_with_power_sensors():
+def test_aggregate_similar_entries_with_power_sensors():
     # Test power data
     entries = [
         dict(device={'friendlyName': '0xa4c1384a67658fcc'}, state='OFF', type='Power', date='2023-04-26',
@@ -69,7 +69,7 @@ def test_preprocess_data_to_start_and_end_time_with_power_sensors():
         dict(device={'friendlyName': 'power_tv'}, state='ON', type='Power', date='2023-04-26',
              time='18:08:05')
     ]
-    assert preprocess_data_to_start_and_end_time(entries, 30) == [
+    assert aggregate_similar_entries(entries, 30) == [
         dict(device={'friendlyName': 'power_microwave'}, state='ON', type='Power', date='2023-04-26',
              start_time='18:05:27', end_time='18:05:42'),
         dict(device={'friendlyName': 'power_tv'}, state='ON', type='Power', date='2023-04-26',
@@ -78,7 +78,7 @@ def test_preprocess_data_to_start_and_end_time_with_power_sensors():
              start_time='18:08:05', end_time='18:08:05')]
 
 
-def test_preprocess_data_to_start_and_end_time_with_contact_sensors():
+def test_aggregate_similar_entries_with_contact_sensors():
     # Test contact data
     entries = [
         dict(device={'friendlyName': 'contact_bathroom'}, contact=False, type='Contact', date='2023-05-08',
@@ -95,7 +95,7 @@ def test_preprocess_data_to_start_and_end_time_with_contact_sensors():
              time='16:58:12'),
         dict(device={'friendlyName': 'contact_fridge'}, contact=True, type='Contact', date='2023-05-08',
              time='16:58:59')]
-    assert preprocess_data_to_start_and_end_time(entries, -1) == [
+    assert aggregate_similar_entries(entries, -1) == [
         dict(device={'friendlyName': 'contact_bathroom'}, contact=False, type='Contact', date='2023-05-08',
              start_time='16:58:07', end_time='16:58:08'),
         dict(device={'friendlyName': 'contact_bathroom'}, contact=False, type='Contact', date='2023-05-08',
@@ -121,7 +121,7 @@ def test_group_sensors_on_friendly_names_with_contact_sensors():
              time='16:58:16'),
         dict(device={'friendlyName': 'contact_bathroom'}, contact=True, type='Contact', date='2023-05-09',
              time='10:48:14')]
-    assert group_sensors_on_friendly_names_and_preprocess(entries, -1) == [
+    assert group_sensors_on_friendly_names_and_aggregate_entries(entries, -1) == [
         dict(device={'friendlyName': 'contact_bathroom'}, contact=False, type='Contact', date='2023-05-08',
              start_time='16:58:07', end_time='16:58:09'),
         dict(device={'friendlyName': 'contact_bathroom'}, contact=False, type='Contact', date='2023-05-08',
@@ -152,7 +152,7 @@ def test_group_sensors_on_friendly_names_with_power_sensors():
         dict(device={'friendlyName': 'power_tv'}, state='ON', type='Power', date='2023-04-26',
              time='18:08:05')
     ]
-    assert group_sensors_on_friendly_names_and_preprocess(entries, 30) == [
+    assert group_sensors_on_friendly_names_and_aggregate_entries(entries, 30) == [
         dict(device={'friendlyName': 'power_microwave'}, state='ON', type='Power', date='2023-04-26',
              start_time='18:05:27', end_time='18:05:42'),
         dict(device={'friendlyName': 'power_tv'}, state='ON', type='Power', date='2023-04-26',

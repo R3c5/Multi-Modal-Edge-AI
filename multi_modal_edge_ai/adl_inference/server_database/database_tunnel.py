@@ -26,34 +26,47 @@ def is_time_difference_smaller_than_x_seconds(time1: str, time2: str, x_seconds:
     return time_difference_seconds <= x_seconds
 
 
-def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]], seconds_difference: int) -> list[dict[Any, Any]]:
+def aggregate_similar_entries(data: list[dict[Any, Any]], seconds_difference: int) -> list[dict[Any, Any]]:
     """
-    A method that preprocesses the data to get the start and end time of each sensor entry
+    A method that takes data from a list of dictionaries and returns a list of dictionaries,
+    where identical signals are aggregated to form a new signal with a start and end time.
     :param seconds_difference: the amount of seconds that are maximally allowed to be between two sensor entries that
     will be aggregated
     :param data: a list of dictionaries
     :return: a list of dictionaries
     """
+    # Initialize the new data list
     new_data = []
+    # Take the first dictionary from the list and store the time and date in variables
     prev = data[0]
     start_time = prev['time']
     start_date = prev['date']
     end_time = prev['time']
+    # Delete the time and date from the dictionary, since it will be modified to reflect the start and end time
     del prev['time']
     del prev['date']
-    for d in data[1:]:
-        current_time = d['time']
-        current_date = d['date']
-        del d['time']
-        del d['date']
-        if d == prev and is_time_difference_smaller_than_x_seconds(end_time, current_time, seconds_difference):
+    # Iterate over the remaining dictionaries in the list, remove the field 'time' and 'date' from the dictionary,
+    # and check if the current dictionary is equal to the previous dictionary. If it is, update the end time to that
+    # of the current dictionary. If it is not, append to the previous dictionary the start_date, start_time and end_time
+    # and add it to the new data list.
+    for dictionary in data[1:]:
+        current_time = dictionary['time']
+        current_date = dictionary['date']
+        del dictionary['time']
+        del dictionary['date']
+        if dictionary == prev and is_time_difference_smaller_than_x_seconds(end_time, current_time, seconds_difference):
             end_time = current_time
         else:
             prev['date'] = start_date
             prev['start_time'] = start_time
             if end_time == start_time and is_time_difference_smaller_than_x_seconds(end_time, current_time, 120):
+                # If an entry is not part of a sequence of similar entries with the same start and end time, it is not
+                # beneficial for adl inference. To address this, if another sensor entry occurs within a 2-minute
+                # interval of the initial entry, the start time of the subsequent entry will replace the end time of
+                # the initial entry.
                 end_time = current_time
             prev['end_time'] = end_time
+            # Filter out entries that are not relevant for the adl inference
             if ('state' in prev and prev['state'] == 'ON') or \
                     ('occupancy' in prev and prev['occupancy'] is True) or \
                     ('contact' in prev and prev['contact'] is False):
@@ -61,7 +74,8 @@ def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]], seconds_di
             start_time = current_time
             start_date = current_date
             end_time = current_time
-            prev = d
+            prev = dictionary
+    # Make sure not to lose the last entry
     prev['date'] = start_date
     prev['start_time'] = start_time
     prev['end_time'] = end_time
@@ -72,10 +86,11 @@ def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]], seconds_di
     return new_data
 
 
-def group_sensors_on_friendly_names_and_preprocess(data: list[dict[Any, Any]], seconds_difference: int) \
+def group_sensors_on_friendly_names_and_aggregate_entries(data: list[dict[Any, Any]], seconds_difference: int) \
         -> list[dict[Any, Any]]:
     """
-    A method that preprocesses the contact sensors entries to get the start and end time of each sensor entry
+    This method groups sensors based on their friendly names, performs the 'aggregate_similar_entries' function on each
+    group and returns a flattened list of the results
     :param seconds_difference: the amount of seconds that are maximally allowed to be between two sensor entries that
     will be aggregated
     :param data: a list of dictionaries
@@ -97,7 +112,7 @@ def group_sensors_on_friendly_names_and_preprocess(data: list[dict[Any, Any]], s
     new_data = []
     for group in result:
         # new_data.extend(group)
-        new_data.extend(preprocess_data_to_start_and_end_time(group, seconds_difference))
+        new_data.extend(aggregate_similar_entries(group, seconds_difference))
     return new_data
 
 
@@ -182,7 +197,7 @@ class DatabaseTunnel:
                                                                   'contact': 1,
                                                                   'last_seen': 1,
                                                                   'device.friendlyName': 1}).sort('last_seen', 1)
-        return group_sensors_on_friendly_names_and_preprocess(self.get_data_from_cursor(cursor, 'Contact'), -1)
+        return group_sensors_on_friendly_names_and_aggregate_entries(self.get_data_from_cursor(cursor, 'Contact'), -1)
 
     def get_pir_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -196,7 +211,7 @@ class DatabaseTunnel:
                                                        'device.friendlyName': 1,
                                                        'occupancy': 1}).sort(
             'last_seen', 1)
-        return preprocess_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'PIR'), 60)
+        return aggregate_similar_entries(self.get_data_from_cursor(cursor, 'PIR'), 60)
 
     def get_button_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -224,7 +239,7 @@ class DatabaseTunnel:
                                                                 'power': 1,
                                                                 'device.friendlyName': 1}).sort(
             'last_seen', 1)
-        return group_sensors_on_friendly_names_and_preprocess(self.get_data_from_cursor(cursor, 'Power'), 60)
+        return group_sensors_on_friendly_names_and_aggregate_entries(self.get_data_from_cursor(cursor, 'Power'), 60)
 
     @staticmethod
     def plot_distribution_week_days(data: list[dict[Any, Any]]) -> None:

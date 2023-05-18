@@ -35,8 +35,8 @@ After initialising an instance of this class you have access to the following me
 
 In the same file, the following preprocessing methods are also available:
 - ```is_time_difference_smaller_than_x_seconds``` - checks if the time difference between two entries is smaller or **equal** than a given number of seconds. If the number of seconds is negative it will return True. 
-- ```preprocess_data_to_start_and_end_times``` takes data from a list of dictionaries and returns a list of dictionaries, where identical signals are aggregated to form a new signal with a start and end time.
-- ```group_sensors_on_friendly_names_and_preprocess```groups on instances of the same sensor(only use on power and contact sensors) and applies the preprocessing function on each group.
+- ```aggregate_similar_entries``` takes data from a list of dictionaries and returns a list of dictionaries, where identical signals are aggregated to form a new signal with a start and end time.
+- ```group_sensors_on_friendly_names_and_aggregate_entries```groups on instances of the same sensor(only use on power and contact sensors) and applies the ```aggregate_similar_entries``` function on each group. Returns a flattened list with the results.
 
 ### Relevant fields for each type of sensor:
 - PIR sensor: ```{`occupancy`, `last_seen`, `device.friendlyName`}```
