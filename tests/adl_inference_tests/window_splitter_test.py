@@ -2,11 +2,9 @@ from pandas.testing import assert_frame_equal
 from multi_modal_edge_ai.adl_inference.parser import parse_file
 from multi_modal_edge_ai.adl_inference.window_splitter import *
 
-
+(sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
+                        "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
 def test_filter():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     start_time = pd.Timestamp("2023-01-01 01:02:30")
     end_time = pd.Timestamp("2023-01-01 01:11:30")
 
@@ -25,9 +23,6 @@ def test_filter():
 
 
 def test_filter_none():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     start_time = pd.Timestamp("2023-01-01 01:05:00")
     end_time = pd.Timestamp("2023-01-01 01:06:00")
 
@@ -37,9 +32,6 @@ def test_filter_none():
 
 
 def test_activity_takes_whole_window():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     start_time = pd.Timestamp("2023-01-01 01:05:00")
     end_time = pd.Timestamp("2023-01-01 01:06:00")
 
@@ -49,9 +41,6 @@ def test_activity_takes_whole_window():
 
 
 def test_multiple_max_length_activities():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     # There are 2 activities of max length: Bathroom and Idle
     # It should take the first one
     start_time = pd.Timestamp("2023-01-01 01:09:00")
@@ -63,9 +52,6 @@ def test_multiple_max_length_activities():
 
 
 def test_splitter_multiple_windows():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     window1 = (pd.DataFrame({
         'Start_Time': [pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:01:00')],
         'End_Time': [pd.Timestamp('2023-01-01 01:00:50'), pd.Timestamp('2023-01-01 01:03:25')],
@@ -99,9 +85,6 @@ def test_splitter_multiple_windows():
 
 
 def test_splitter_empty_window():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     window1 = (pd.DataFrame({
         'Start_Time': [pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:01:00')],
         'End_Time': [pd.Timestamp('2023-01-01 01:00:50'), pd.Timestamp('2023-01-01 01:03:30')],
@@ -131,16 +114,10 @@ def test_splitter_empty_window():
 
     result = split_into_windows(sdf, adf, 250)
 
-    print('\n')
-    print(result)
-
     assert_window_list(result, expected_result)
 
 
 def test_splitter_one_window():
-    (sdf, adf) = parse_file("tests/adl_inference_tests/test_dataset/dummy_sensor.csv",
-                            "tests/adl_inference_tests/test_dataset/dummy_adl.csv")
-
     window = (pd.DataFrame({
         'Start_Time': [pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:01:00'),
                        pd.Timestamp('2023-01-01 01:10:00'), pd.Timestamp('2023-01-01 01:10:30'),
@@ -154,8 +131,64 @@ def test_splitter_one_window():
     expected_result = [window]
 
     result = split_into_windows(sdf, adf, 5000)
-    print('\n')
-    print(result)
+
+    assert_window_list(result, expected_result)
+
+
+def test_splitter_overlapping_windows():
+    window1 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:01:00')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:00:50'), pd.Timestamp('2023-01-01 01:03:25')],
+        'Sensor': ['PIR_bedroom', 'PIR_kitchen']}),
+               'Sleeping', pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:03:25'))
+
+    window2 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:01:45')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:03:30')],
+        'Sensor': ['PIR_kitchen']}),
+               'Meal_Preparation', pd.Timestamp('2023-01-01 01:01:45'), pd.Timestamp('2023-01-01 01:05:05'))
+
+    window3 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:03:25')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:03:30')],
+        'Sensor': ['PIR_kitchen']}),
+               'Meal_Preparation', pd.Timestamp('2023-01-01 01:03:25'), pd.Timestamp('2023-01-01 01:06:45'))
+
+    window4 = (pd.DataFrame({
+        'Start_Time': pd.to_datetime([]),
+        'End_Time': pd.to_datetime([]),
+        'Sensor': str}),
+               'Meal_Preparation', pd.Timestamp('2023-01-01 01:05:05'), pd.Timestamp('2023-01-01 01:08:25'))
+
+    window5 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:10:00')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:10:05')],
+        'Sensor': ['PIR_bathroom']}),
+               'Meal_Preparation', pd.Timestamp('2023-01-01 01:06:45'), pd.Timestamp('2023-01-01 01:10:05'))
+
+    window6 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:10:00'), pd.Timestamp('2023-01-01 01:10:30')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:11:00'), pd.Timestamp('2023-01-01 01:11:45')],
+        'Sensor': ['PIR_bathroom', 'PIR_bedroom']}),
+               'Meal_Preparation', pd.Timestamp('2023-01-01 01:08:25'), pd.Timestamp('2023-01-01 01:11:45'))
+
+    window7 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:10:05'), pd.Timestamp('2023-01-01 01:10:30'),
+                       pd.Timestamp('2023-01-01 01:12:50')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:11:00'), pd.Timestamp('2023-01-01 01:12:00'),
+                     pd.Timestamp('2023-01-01 01:13:00')],
+        'Sensor': ['PIR_bathroom', 'PIR_bedroom', 'PIR_kitchen']}),
+               'Idle', pd.Timestamp('2023-01-01 01:10:05'), pd.Timestamp('2023-01-01 01:13:25'))
+
+    window8 = (pd.DataFrame({
+        'Start_Time': [pd.Timestamp('2023-01-01 01:11:45'), pd.Timestamp('2023-01-01 01:12:50')],
+        'End_Time': [pd.Timestamp('2023-01-01 01:12:00'), pd.Timestamp('2023-01-01 01:13:00')],
+        'Sensor': ['PIR_bedroom', 'PIR_kitchen']}),
+               'Idle', pd.Timestamp('2023-01-01 01:11:45'), pd.Timestamp('2023-01-01 01:15:05'))
+
+    expected_result = [window1, window2, window3, window4, window5, window6, window7, window8]
+    result = split_into_windows(sdf, adf, 200, 100)
+
     assert_window_list(result, expected_result)
 
 
