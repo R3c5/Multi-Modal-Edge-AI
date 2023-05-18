@@ -9,11 +9,12 @@ def test_parser():
 
     # Check sensor dataframe is correctly parsed
     sensor_data = {
-        'Start_Time': ['2011-11-28 02:27:59', '2011-11-28 10:21:24', '2011-11-28 10:21:44', '2011-11-28 10:23:02'],
-        'End_Time': ['2011-11-28 10:18:11', '2011-11-28 10:21:31', '2011-11-28 10:23:31', '2011-11-28 10:23:36'],
-        'Location': ['Bed', 'Cabinet', 'Basin', 'Toilet'],
-        'Type': ['Pressure', 'Magnetic', 'PIR', 'Flush'],
-        'Place': ['Bedroom', 'Bathroom', 'Bathroom', 'Bathroom']}
+        'Start_Time': ['2023-01-01 01:00:00', '2023-01-01 01:01:00', '2023-01-01 01:10:00', '2023-01-01 01:10:30',
+                       '2023-01-01 01:12:50'],
+        'End_Time': ['2023-01-01 01:00:50', '2023-01-01 01:03:30', '2023-01-01 01:11:00', '2023-01-01 01:12:00',
+                     '2023-01-01 01:13:00'],
+        'Sensor': ['PIR_bedroom', 'PIR_kitchen', 'PIR_bathroom', 'PIR_bedroom', 'PIR_kitchen']
+    }
 
     checker_sdf = pd.DataFrame(sensor_data)
     checker_sdf['Start_Time'] = pd.to_datetime(checker_sdf['Start_Time'])
@@ -23,10 +24,10 @@ def test_parser():
 
     # Check activity dataframe is correctly parsed
     activity_data = {
-        'Start_Time': ['2011-11-28 02:27:59', '2011-11-28 10:21:24', '2011-11-28 10:25:44', '2011-11-28 10:34:23'],
-        'End_Time': ['2011-11-28 10:18:11', '2011-11-28 10:23:36', '2011-11-28 10:33:00', '2011-11-28 10:43:00'],
-        'Activity': ['Sleeping', 'Toileting', 'Showering', 'Breakfast']}
-
+        'Start_Time': ['2023-01-01 01:00:05', '2023-01-01 01:03:30', '2023-01-01 01:10:00', '2023-01-01 01:11:00'],
+        'End_Time': ['2023-01-01 01:03:00', '2023-01-01 01:09:30', '2023-01-01 01:11:00', '2023-01-01 01:13:00'],
+        'Activity': ['Sleeping', 'Meal_Preparation', 'Bathroom', 'Idle']
+    }
     checker_adf = pd.DataFrame(activity_data)
     checker_adf['Start_Time'] = pd.to_datetime(checker_adf['Start_Time'])
     checker_adf['End_Time'] = pd.to_datetime(checker_adf['End_Time'])
