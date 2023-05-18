@@ -14,7 +14,7 @@ This class is initialised with the database name you want to connect to. Current
  - sensor_data_AB123456789C
  - sensor_data_AB123456789D
  - sensor_data_00B31ECE4385
- - sensor_data_BC123456789A
+ - sensor_data_1234567ABC89
 
 After initialising an instance of this class you have access to the following methods:
 
@@ -34,8 +34,9 @@ After initialising an instance of this class you have access to the following me
 - ```plot_distributions_for_button_sensor_entires``` - plots the two distributions for all button sensor entries
 
 In the same file, the following preprocessing methods are also available:
+- ```is_time_difference_smaller_than_x_seconds``` - checks if the time difference between two entries is smaller or **equal** than a given number of seconds. If the number of seconds is negative it will return True. 
 - ```preprocess_data_to_start_and_end_times``` takes data from a list of dictionaries and returns a list of dictionaries, where identical signals are aggregated to form a new signal with a start and end time.
-- ```preprocess_contact_sensor_data_to_start_and_end_times``` same as the above, but only groups on instances of the same contact sensor
+- ```group_sensors_on_friendly_names_and_preprocess```groups on instances of the same sensor(only use on power and contact sensors) and applies the preprocessing function on each group.
 
 ### Relevant fields for each type of sensor:
 - PIR sensor: ```{`occupancy`, `last_seen`, `device.friendlyName`}```

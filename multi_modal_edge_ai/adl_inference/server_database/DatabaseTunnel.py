@@ -6,9 +6,31 @@ import matplotlib.pyplot as plt
 import datetime
 
 
-def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]]) -> list[dict[Any, Any]]:
+def is_time_difference_smaller_than_x_seconds(time1: str, time2: str, x_seconds: int) -> bool:
+    """
+    A method that checks if the time difference between two times is smaller or equal than x seconds
+    :param time1: the first time
+    :param time2: the second time
+    :param x_seconds: the amount of seconds to check if the time difference is smaller than. If x_time is negative,
+    it will return True to allow ignoring the time difference
+    :return: True, if the time difference is smaller or equal than x_seconds, False otherwise
+    """
+    if x_seconds < 0:
+        return True
+    format_str = "%H:%M:%S"
+    time_obj1 = datetime.datetime.strptime(time1, format_str)
+    time_obj2 = datetime.datetime.strptime(time2, format_str)
+    time_difference = abs(time_obj1 - time_obj2)
+    time_difference_seconds = time_difference.total_seconds()
+
+    return time_difference_seconds <= x_seconds
+
+
+def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]], seconds_difference: int) -> list[dict[Any, Any]]:
     """
     A method that preprocesses the data to get the start and end time of each sensor entry
+    :param seconds_difference: the amount of seconds that are maximally allowed to be between two sensor entries that
+    will be aggregated
     :param data: a list of dictionaries
     :return: a list of dictionaries
     """
@@ -24,13 +46,15 @@ def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]]) -> list[di
         current_date = d['date']
         del d['time']
         del d['date']
-        if d == prev:
+        if d == prev and is_time_difference_smaller_than_x_seconds(end_time, current_time, seconds_difference):
             end_time = current_time
         else:
             prev['date'] = start_date
             prev['start_time'] = start_time
-            prev['end_time'] = current_time
-            if (prev['type'] == 'Power' and prev['state'] == 'ON') or \
+            if end_time == start_time and is_time_difference_smaller_than_x_seconds(end_time, current_time, 120):
+                end_time = current_time
+            prev['end_time'] = end_time
+            if ('state' in prev and prev['state'] == 'ON') or \
                     ('occupancy' in prev and prev['occupancy'] is True) or \
                     ('contact' in prev and prev['contact'] is False):
                 new_data.append(prev)
@@ -48,9 +72,12 @@ def preprocess_data_to_start_and_end_time(data: list[dict[Any, Any]]) -> list[di
     return new_data
 
 
-def preprocess_contact_sensor_data_to_start_and_end_time(data: list[dict[Any, Any]]) -> list[dict[Any, Any]]:
+def group_sensors_on_friendly_names_and_preprocess(data: list[dict[Any, Any]], seconds_difference: int) \
+        -> list[dict[Any, Any]]:
     """
     A method that preprocesses the contact sensors entries to get the start and end time of each sensor entry
+    :param seconds_difference: the amount of seconds that are maximally allowed to be between two sensor entries that
+    will be aggregated
     :param data: a list of dictionaries
     :return: a list of dictionaries
     """
@@ -69,7 +96,8 @@ def preprocess_contact_sensor_data_to_start_and_end_time(data: list[dict[Any, An
                     break
     new_data = []
     for group in result:
-        new_data.extend(preprocess_data_to_start_and_end_time(group))
+        # new_data.extend(group)
+        new_data.extend(preprocess_data_to_start_and_end_time(group, seconds_difference))
     return new_data
 
 
@@ -127,6 +155,15 @@ class DatabaseTunnel:
         for document in cursor:
             last_seen = document.get('last_seen')
             document['type'] = sensors_type
+            if document['type'] == 'Power':
+                if 'power' in document and document.get('power') > 0:
+                    document['state'] = 'ON'
+                    del document['power']
+                elif 'power' in document:
+                    document['state'] = 'OFF'
+                    del document['power']
+                else:
+                    document['state'] = 'OFF'
             if last_seen:
                 last_seen_dt = datetime.datetime.fromtimestamp(last_seen / 1000)
                 document['date'] = last_seen_dt.strftime("%Y-%m-%d")
@@ -145,7 +182,7 @@ class DatabaseTunnel:
                                                                   'contact': 1,
                                                                   'last_seen': 1,
                                                                   'device.friendlyName': 1}).sort('last_seen', 1)
-        return preprocess_contact_sensor_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'Contact'))
+        return group_sensors_on_friendly_names_and_preprocess(self.get_data_from_cursor(cursor, 'Contact'), -1)
 
     def get_pir_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -153,13 +190,13 @@ class DatabaseTunnel:
         :return: a list of dictionaries
         """
         collection = self.collection
-        cursor = collection.find({'motion_sensitivity': {'$exists': True}}, {'_id': 0,
-                                                                             # 'motion_sensitivity': 1,
-                                                                             'last_seen': 1,
-                                                                             'device.friendlyName': 1,
-                                                                             # 'illuminance': 0,
-                                                                             'occupancy': 1}).sort('last_seen', 1)
-        return preprocess_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'PIR'))
+        cursor = collection.find({'motion_sensitivity': {'$exists': True},
+                                  'occupancy': True}, {'_id': 0,
+                                                       'last_seen': 1,
+                                                       'device.friendlyName': 1,
+                                                       'occupancy': 1}).sort(
+            'last_seen', 1)
+        return preprocess_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'PIR'), 60)
 
     def get_button_sensors(self) -> list[dict[Any, Any]]:
         """
@@ -184,8 +221,10 @@ class DatabaseTunnel:
         cursor = collection.find({'state': {'$exists': True}}, {'_id': 0,
                                                                 'state': 1,
                                                                 'last_seen': 1,
-                                                                'device.friendlyName': 1}).sort('last_seen', 1)
-        return preprocess_data_to_start_and_end_time(self.get_data_from_cursor(cursor, 'Power'))
+                                                                'power': 1,
+                                                                'device.friendlyName': 1}).sort(
+            'last_seen', 1)
+        return group_sensors_on_friendly_names_and_preprocess(self.get_data_from_cursor(cursor, 'Power'), 60)
 
     @staticmethod
     def plot_distribution_week_days(data: list[dict[Any, Any]]) -> None:
@@ -233,7 +272,7 @@ class DatabaseTunnel:
         A method that plots the distribution of the entries based on the hour of the day
         :param data: a list of dictionaries
         """
-        time = [d['time'] for d in data]
+        time = [d['start_time'] for d in data]
         hours = [datetime.datetime.strptime(t, '%H:%M:%S').strftime('%H') for t in time]
 
         # Count the frequency of each hour
@@ -301,4 +340,3 @@ class DatabaseTunnel:
         the distribution based on the hour of the day
         """
         self.plot_distribution_week_days(self.get_button_sensors())
-        self.plot_distribution_hourly(self.get_button_sensors())
