@@ -4,8 +4,8 @@ from multi_modal_edge_ai.adl_inference.parser import parse_file
 
 
 def test_parser():
-    (sdf, adf) = parse_file("tests/adl_inference/dummy_dataset/dummy_sensor.csv",
-                            "tests/adl_inference/dummy_dataset/dummy_adl.csv")
+    (sdf, adf) = parse_file("tests/adl_inference/dummy_datasets/dummy_sensor.csv",
+                            "tests/adl_inference/dummy_datasets/dummy_adl.csv")
 
     # Check sensor dataframe is correctly parsed
     sensor_data = {
