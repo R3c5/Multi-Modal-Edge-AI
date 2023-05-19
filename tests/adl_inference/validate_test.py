@@ -9,8 +9,8 @@ from multi_modal_edge_ai.adl_inference.validate import split_and_validate, valid
 
 
 (sdf, adf) = parse_file(
-    "/home/roach/PycharmProjects/multi-modal-edge-ai/tests/adl_inference/dummy_dataset/dummy_sensor.csv",
-    "/home/roach/PycharmProjects/multi-modal-edge-ai/tests/adl_inference/dummy_dataset/dummy_adl.csv")
+    "tests/adl_inference/dummy_dataset/dummy_sensor.csv",
+    "tests/adl_inference/dummy_dataset/dummy_adl.csv")
 
 window1 = (pd.DataFrame({
     'Start_Time': [pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:01:00')],
