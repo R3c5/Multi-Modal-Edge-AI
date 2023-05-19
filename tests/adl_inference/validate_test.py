@@ -7,10 +7,10 @@ import pandas as pd
 from multi_modal_edge_ai.adl_inference.parser import parse_file
 from multi_modal_edge_ai.adl_inference.validate import split_and_validate, validate
 
-
 (sdf, adf) = parse_file(
     "tests/adl_inference/dummy_dataset/dummy_sensor.csv",
     "tests/adl_inference/dummy_dataset/dummy_adl.csv")
+
 
 window1 = (pd.DataFrame({
     'Start_Time': [pd.Timestamp('2023-01-01 01:00:05'), pd.Timestamp('2023-01-01 01:01:00')],
@@ -92,8 +92,15 @@ def test_validate():
     model_mock.predict.return_value = 'Sleeping'
 
     # Assert
-    result = validate(train, test, model_mock)
-    assert result == 0.5
+    average, cm = validate(train, test, model_mock)
+    assert average == 0.5
+    assert (cm == [[1, 0, 0, 0, 0, 0, 0],
+                   [1, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0]]).all()
     train_calls = model_mock.train.call_args_list
     assert [window2, window4] == train_calls[0][0][0]
 

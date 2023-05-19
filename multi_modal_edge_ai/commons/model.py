@@ -8,7 +8,7 @@ from pandas import DataFrame
 
 class Model(ABC):
     @abstractmethod
-    def __int__(self, model: Any) -> None:
+    def __init__(self, model: Any) -> None:
         self.model = model
 
     @abstractmethod
