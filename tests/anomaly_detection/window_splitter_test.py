@@ -78,6 +78,8 @@ def test_split_event_windows():
         [pd.Timestamp("2010-11-04 08:28:30"), pd.Timestamp("2010-11-04 08:58:00"), "Sleeping",
          pd.Timestamp("2010-11-04 08:58:30"), pd.Timestamp("2010-11-04 09:10:00"), "Relax"]])
 
+    assert_frame_equal(expected, result)
+
 
 def test_split_windows_through_time():
     result = split_into_windows(adl, 3.0, 2.0, event_based=False)
