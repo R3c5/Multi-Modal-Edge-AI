@@ -37,8 +37,6 @@ window4 = (pd.DataFrame({
     'Sensor': ['PIR_bathroom', 'PIR_bedroom', 'PIR_kitchen']}),
            'Idle', pd.Timestamp('2023-01-01 01:10:05'), pd.Timestamp('2023-01-01 01:13:25'))
 
-window_list = [window1, window2, window3, window4]
-
 
 @patch('multi_modal_edge_ai.adl_inference.validate.split_into_windows')
 @patch('multi_modal_edge_ai.adl_inference.validate.validate')
@@ -50,7 +48,7 @@ def test_split_and_validate_with_random_split(validate_mock, windower_mock):
     # Mock
     model_mock = Mock()
 
-    windower_mock.return_value = window_list
+    windower_mock.return_value = [window1, window2, window3, window4]
     validate_mock.return_value = 0.5
 
     # Assert
@@ -65,23 +63,19 @@ def test_split_and_validate_with_random_split(validate_mock, windower_mock):
 @patch('multi_modal_edge_ai.adl_inference.validate.validate')
 def test_validate_with_split_function(validate_mock, windower_mock):
     # Setup
-    seed = 0xBEEF  # Train will be split into window 2 and window 4, test into window 3 and window 1
-    random.seed(seed)
-
-    # Define a split function that takes first half as train
     def split_method(windows: List) -> Tuple[List, List]:
         return windows[:2], windows[2:]
 
     # Mock
     model_mock = Mock()
 
-    windower_mock.return_value = window_list
+    windower_mock.return_value = [window1, window2, window3, window4]
     validate_mock.return_value = 0.5
 
     # Assert
-    split_and_validate(sdf, adf, model_mock)
+    split_and_validate(sdf, adf, model_mock, split_method=split_method)
     call = validate_mock.call_args_list[0]
-    expected_args = [[window2, window4], [window3, window1], model_mock]
+    expected_args = [[window1, window2], [window3, window4], model_mock]
     for (arg, expected_arg) in zip(call[0], expected_args):
         assert arg == expected_arg
 
@@ -90,8 +84,6 @@ def test_validate():
     # Setup
     train = [window2, window4]
     test = [window3, window1]
-    seed = 0xBEEF  # Train will be split into window 2 and window 4, test into window 3 and window 1
-    random.seed(seed)
 
     # Mock
     model_mock = Mock()
