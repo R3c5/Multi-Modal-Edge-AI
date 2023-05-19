@@ -6,7 +6,7 @@ import pandas as pd
 
 def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: float, event_based=True) -> pd.DataFrame:
     """
-    This function will perform a sliding_window transformation according to the passed parameters
+    This function will perform a sliding window transformation according to the passed parameters
     :param data: The Dataframe on which to perform the sliding window
     :param window_size: The size of the window, either in events (int) or in time:hours (float)
     :param window_slide: The slide of the window in the same units as above
@@ -51,13 +51,11 @@ def activity_mask(data: pd.DataFrame, window_start: pd.Timestamp, window_end: pd
     :param data: the dataframe to perform the retrieval from
     :param window_start: the start of the window in timestamp
     :param window_end:  the end of the window in timestamp
-    :return: A dataframe with rows as the windows and colums the many activities of the windows. Keep in mind that this
+    :return: A dataframe with rows as the windows and columns the many activities of the windows. Keep in mind that this
     dataframe will have as many columns as the largest window. For all other windows that contain less activities, the
     dataframe will fill the values with NaNs
     """
-    mask = ((data['Start_Time'] >= window_start) & (data['Start_Time'] <= window_end)) | \
-           ((data['End_Time'] >= window_start) & (data['End_Time'] <= window_end)) | \
-           ((data['Start_Time'] <= window_start) & (data['End_Time'] >= window_end))
+    mask = ((data['Start_Time'] < window_end) & (data['End_Time'] > window_start))
     filtered_data = data.loc[mask].copy()
 
     # Adjust start and end times of activities to not exceed the window start and end times
