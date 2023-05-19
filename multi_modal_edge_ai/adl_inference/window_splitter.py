@@ -53,14 +53,14 @@ def find_activity(data: pd.DataFrame, window_start_time: pd.Timestamp, window_en
 
 
 def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame,
-                       window_length_seconds: int, window_overlap_seconds: int | None = None) -> \
+                       window_length_seconds: int, window_slide_seconds: int | None = None) -> \
         List[Tuple[pd.DataFrame, str, pd.Timestamp, pd.Timestamp]]:
     """
     Split 2 dataframes into multiple windows, where multiple rows in sensors will be mapped to exactly one adl.
-    :param sensor_data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Sensor_Name'
+    :param sensor_data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Sensor'
     :param adl_data: dataframe with the following column: 'Start_Time', 'End_Time' and 'Activity'
     :param window_length_seconds: integer that represents the length of the window in seconds.
-    :param window_overlap_seconds: integer that represents the overlap of the windows in seconds.
+    :param window_slide_seconds: integer that represents the overlap of the windows in seconds.
                 If left empty, the default value of this is equal to the window length
                 (windows will have no overlap and no gaps between them)
     :return: a list of tuples, where a tuple has:
@@ -70,8 +70,8 @@ def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame,
             * end time of the window
     """
     # Set window overlap default as window length
-    if window_overlap_seconds is None:
-        window_overlap_seconds = window_length_seconds
+    if window_slide_seconds is None:
+        window_slide_seconds = window_length_seconds
     window_list = []
 
     window_start_time = adl_data.iloc[0]['Start_Time']
@@ -85,7 +85,7 @@ def split_into_windows(sensor_data: pd.DataFrame, adl_data: pd.DataFrame,
 
         window_list.append((sensor_window, activity, window_start_time, window_end_time))
 
-        window_start_time = window_start_time + timedelta(seconds=window_overlap_seconds)
+        window_start_time = window_start_time + timedelta(seconds=window_slide_seconds)
         window_end_time = window_start_time + timedelta(seconds=window_length_seconds)
 
     return window_list

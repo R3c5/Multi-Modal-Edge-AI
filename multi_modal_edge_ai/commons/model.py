@@ -12,7 +12,7 @@ class Model(ABC):
         self.model = model
 
     @abstractmethod
-    def train(self, dataset: Union['DataLoader[Any]', List], **hyperparams: Any) -> None:
+    def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> None:
         """
         abstract method in order to train a model on a dataset, with any hyperparams needed
         """
@@ -29,5 +29,12 @@ class Model(ABC):
     def save(self, file_path: str) -> None:
         """
         abstract method to save the model at a given file path
+        """
+        pass
+
+    @abstractmethod
+    def load(self, file_path: str) -> None:
+        """
+        abstract method to load the model from a given file path
         """
         pass
