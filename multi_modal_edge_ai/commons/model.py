@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any, Union, List
+
 from torch.utils.data import DataLoader
 from torch import Tensor
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 
 class Model(ABC):
@@ -11,14 +12,14 @@ class Model(ABC):
         self.model = model
 
     @abstractmethod
-    def train(self, dataset: Union['DataLoader[Any]', DataFrame], **hyperparams: Any) -> None:
+    def train(self, dataset: Union['DataLoader[Any]', List], **hyperparams: Any) -> None:
         """
         abstract method in order to train a model on a dataset, with any hyperparams needed
         """
         pass
 
     @abstractmethod
-    def predict(self, instance: Union[Tensor, 'Series[Any]']) -> Any:
+    def predict(self, instance: Union[Tensor, DataFrame]) -> Any:
         """
         abstract method to predict an instance using the model
         """
