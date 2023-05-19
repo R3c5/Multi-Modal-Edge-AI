@@ -8,8 +8,8 @@ from pandas import DataFrame
 
 class Model(ABC):
     @abstractmethod
-    def __init__(self, model: Any) -> None:
-        self.model = model
+    def __init__(self) -> None:
+        self.model = None
 
     @abstractmethod
     def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> None:
