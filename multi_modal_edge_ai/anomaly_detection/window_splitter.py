@@ -55,7 +55,7 @@ def activity_mask(data: pd.DataFrame, window_start: pd.Timestamp, window_end: pd
     dataframe will have as many columns as the largest window. For all other windows that contain less activities, the
     dataframe will fill the values with NaNs
     """
-    mask = ((data['Start_Time'] < window_end) & (data['End_Time'] > window_start))
+    mask = ((data['Start_Time'] <= window_end) & (data['End_Time'] >= window_start))
     filtered_data = data.loc[mask].copy()
 
     # Adjust start and end times of activities to not exceed the window start and end times
