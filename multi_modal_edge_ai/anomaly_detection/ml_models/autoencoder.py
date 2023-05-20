@@ -1,5 +1,6 @@
 from typing import Any, Union, List
 
+import numpy as np
 import torch.nn
 from pandas import DataFrame
 from torch import Tensor
@@ -12,14 +13,32 @@ from multi_modal_edge_ai.commons.model import Model
 class Autoencoder(Model):
 
     def __init__(self, encoder_dimensions: list[int], decoder_dimensions: list[int],
-                 hidden_layers_activation_function: torch.nn.Module, output_layer_activation_function: torch.nn.Module,
-                 loss_limit: float) -> None:
-        self.model = PytorchAutoencoder(encoder_dimensions, decoder_dimensions, hidden_layers_activation_function,
-                                        output_layer_activation_function)
+                 hidden_activation_fun: torch.nn.Module, output_activation_fun: torch.nn.Module) -> None:
+        """
+        This function will construct the autoencoder as specified in the function parameters and will set some fields
+        regarding gpu/cpu and decision thresholds
+        :param encoder_dimensions: A list with the size and dimensions of each layer of the encoder. Each entry in the
+        list is a new layer, and its value the width in neurons of the layer
+        :param decoder_dimensions: A list with the size and dimensions of each layer of the decoder part. This is most
+        likely going to be the reverse of encoder_dimensions but not necessarily so.
+        :param hidden_activation_fun: The activation function to be used for the hidden layers, most likely ReLu
+        :param output_activation_fun: The activation function to be used for the hidden layers, most likely Sigmoid
+        """
+        self.model = PytorchAutoencoder(encoder_dimensions, decoder_dimensions, hidden_activation_fun,
+                                        output_activation_fun)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = self.model.to(self.device)
         self.loss_function = torch.nn.MSELoss()
-        self.loss_limit = loss_limit
+        self.reconstruction_errors: list[float] = []
+        self.reconstruction_loss_threshold = -1.0
 
-    def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> list[float]:
+    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> list[float]:
+        """
+        This function will perform the entire training procedure on the autoencoder with the data provided
+        :param data: The data on which to perform the training procedure
+        :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
+        :return: A list with the average training losses of each epoch
+        """
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
         optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams.get('learning_rate', 0.1),
                                      weight_decay=1e-8)
@@ -28,7 +47,7 @@ class Autoencoder(Model):
 
         for epoch in range(hyperparams.get('epochs', 10)):
             epoch_training_loss = []
-            for (window, _) in dataset:
+            for (window, _) in data:
                 reconstructed_window = self.model(window)
 
                 loss = self.loss_function(reconstructed_window, window)
@@ -37,50 +56,46 @@ class Autoencoder(Model):
                 optimizer.step()
 
                 epoch_training_loss.append(loss)
+            self.reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
         return avg_training_loss
 
+    def set_reconstruction_error_threshold(self, quantile: float = 0.99) -> None:
+        """
+        This function will set the reconstruction error threshold, which is used on prediction time, according to the
+        specified quantile on the errors seen in training
+        :param quantile: The quantile of the threshold, e.g., 0.99
+        """
+        self.reconstruction_loss_threshold = float(np.quantile(self.reconstruction_errors, quantile))
+
     def predict(self, instance: Union[Tensor, DataFrame]) -> int:
-        reconstructed = self.model(instance)
-        return self.loss_function(reconstructed, instance) > 1
+        """
+        This function will perform a forward pass on the instance provided. If the reconstruction error of the
+        autoencoder is superior to the threshold set, it will return 0 for anomaly, and 1 otherwise. If the threshold
+        has not been set, it will throw a NotImplementedError
+        :param instance: The instance on which to perform the forward pass
+        :return: 0 for anomaly, 1 for normal
+        """
+        self.model.eval()  # turn the model into evaluation mode
+        instance = instance.to(self.device)  # send device to gpu if needed
+
+        if self.reconstruction_loss_threshold == -1:
+            raise NotImplementedError("You must set the reconstruction error before using prediction")
+
+        with torch.no_grad():  # no need to construct the computation graph
+            reconstructed = self.model(instance)
+            return self.loss_function(reconstructed, instance) <= self.reconstruction_loss_threshold
 
     def save(self, file_path: str) -> None:
-        pass
+        """
+        This function will save the torch autoencoder on the specified path
+        :param file_path: the file path
+        """
+        torch.save(self.model.state_dict(), file_path)
 
     def load(self, file_path: str) -> None:
-        pass
-
-    @property
-    def loss_limit(self):
-        return self.loss_function
-
-    @loss_limit.setter
-    def loss_limit(self, value: float):
-        self.loss_function = value
-
-# class MyDataset(Dataset):
-#     def __init__(self, df):
-#         self.df = df
-#
-#     def __len__(self):
-#         return len(self.df)
-#
-#     def __getitem__(self, idx):
-#         # Assuming that there are two columns 'features' and 'labels'
-#         features = self.df.iloc[idx]
-#         return features, features
-#
-#
-# if __name__ == "__main__":
-#     def clean(window):
-#         return torch.Tensor([1] * 30)
-#
-#
-#     adl_df = parse_file_with_idle(
-#         "/home/rafael/TUDelft/cse/year2/q4/software-project/multi-modal-edge-ai/multi_modal_edge_ai/public_datasets/Aruba_Idle_Squashed.csv")
-#     adl_df = split_into_windows(adl_df, 10, 3)
-#     ae = Autoencoder([30, 18, 12, 8], [8, 12, 18, 30], torch.nn.ReLU(), torch.nn.Sigmoid())
-#     df = adl_df.apply(clean, axis=1)
-#     dataloader = DataLoader(MyDataset(df), batch_size=32, shuffle=True)
-#     ae.train(dataloader, learning_rate=0.01)
-#     print("trained")
+        """
+        This function will load the torch autoencoder from the specified path
+        :param file_path: the file path
+        """
+        self.model.load_state_dict(torch.load(file_path))
