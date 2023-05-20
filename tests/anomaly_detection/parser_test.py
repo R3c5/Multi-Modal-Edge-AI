@@ -1,6 +1,6 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle,\
+from multi_modal_edge_ai.anomaly_detection.data_access.parser import parse_file_without_idle,\
     parse_file_with_idle, combine_equal_consecutive_activities, insert_idle_activity
 
 

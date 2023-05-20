@@ -1,8 +1,8 @@
 from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
 
-from multi_modal_edge_ai.anomaly_detection.parser import *
-from multi_modal_edge_ai.anomaly_detection.window_splitter import *
+from multi_modal_edge_ai.anomaly_detection.data_access.parser import *
+from multi_modal_edge_ai.anomaly_detection.preprocessing.window_splitter import *
 
 adl = combine_equal_consecutive_activities(parse_file_with_idle
                                            ("tests/anomaly_detection/test_dataset/dummy_adl_windowing_test.csv"))

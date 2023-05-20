@@ -5,7 +5,7 @@ from pandas import DataFrame
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from multi_modal_edge_ai.anomaly_detection.ml_models.pytorch_models.pytorch_autoencoder import PytorchAutoencoder
+from multi_modal_edge_ai.anomaly_detection.torch_models.pytorch_autoencoder import PytorchAutoencoder
 from multi_modal_edge_ai.commons.model import Model
 
 
@@ -18,10 +18,6 @@ class Autoencoder(Model):
                                         output_layer_activation_function)
         self.loss_function = torch.nn.MSELoss()
         self.loss_limit = loss_limit
-
-    @self.loss_limit.setter
-    def loss_limit(self, value: float):
-        self.loss_function = value
 
     def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> list[float]:
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
@@ -53,6 +49,14 @@ class Autoencoder(Model):
 
     def load(self, file_path: str) -> None:
         pass
+
+    @property
+    def loss_limit(self):
+        return self.loss_function
+
+    @loss_limit.setter
+    def loss_limit(self, value: float):
+        self.loss_function = value
 
 # class MyDataset(Dataset):
 #     def __init__(self, df):

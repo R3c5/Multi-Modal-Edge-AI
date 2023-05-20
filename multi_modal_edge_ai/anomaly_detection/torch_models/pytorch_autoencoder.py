@@ -19,7 +19,7 @@ class PytorchAutoencoder(torch.nn.Module):
         for i in range(1, len(decoder_dimensions)):
             decoder_layers.append(torch.nn.Linear(decoder_dimensions[i - 1], decoder_dimensions[i]))
             decoder_layers.append(hidden_layers_activation_function if i != (
-                        len(decoder_dimensions) - 1) else output_layer_activation_function)
+                len(decoder_dimensions) - 1) else output_layer_activation_function)
 
         self.decoder = torch.nn.Sequential(*decoder_layers)
 
