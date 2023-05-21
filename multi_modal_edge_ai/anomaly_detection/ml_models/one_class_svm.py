@@ -7,10 +7,8 @@ from sklearn.svm import OneClassSVM
 from torch import Tensor
 from torch.utils.data import DataLoader
 
+from multi_modal_edge_ai.anomaly_detection.utils import dataloader_to_numpy
 from multi_modal_edge_ai.commons.model import Model
-
-
-
 
 
 class SVM(Model):
