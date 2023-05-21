@@ -5,7 +5,7 @@ from multi_modal_edge_ai.anomaly_detection.data_access.parser import *
 from multi_modal_edge_ai.anomaly_detection.preprocessing.window_splitter import *
 
 adl = combine_equal_consecutive_activities(parse_file_with_idle
-                                           ("tests/anomaly_detection/test_dataset/dummy_adl_windowing_test.csv"))
+                                           ("tests/anomaly_detection/dummy_datasets/dummy_adl_windowing_test.csv"))
 
 
 def test_split_time_windows():
