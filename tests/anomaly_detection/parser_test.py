@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle,\
@@ -5,7 +7,7 @@ from multi_modal_edge_ai.anomaly_detection.parser import parse_file_without_idle
 
 
 def test_parser_without_idle():
-    adl = parse_file_without_idle("tests/anomaly_detection/test_dataset/dummy_adl.csv")
+    adl = parse_file_without_idle("tests/anomaly_detection/dummy_datasets/dummy_adl.csv")
 
     # Check activity dataframe is correctly parsed
     activity_data = {
@@ -23,7 +25,7 @@ def test_parser_without_idle():
 
 
 def test_parser_with_idle():
-    adl = parse_file_with_idle("tests/anomaly_detection/test_dataset/dummy_adl.csv")
+    adl = parse_file_with_idle("tests/anomaly_detection/dummy_datasets/dummy_adl.csv")
 
     # Check activity dataframe is correctly parsed
     activity_data = {
@@ -39,7 +41,7 @@ def test_parser_with_idle():
 
 
 def test_combine_equal_consecutive_activities():
-    adl = parse_file_with_idle("tests/anomaly_detection/test_dataset/dummy_adl_check_squashed.csv")
+    adl = parse_file_with_idle("tests/anomaly_detection/dummy_datasets/dummy_adl_check_squashed.csv")
     adl = combine_equal_consecutive_activities(adl)
 
     # Check activity dataframe is correctly parsed
@@ -56,7 +58,7 @@ def test_combine_equal_consecutive_activities():
 
 
 def test_insert_idle_activity():
-    adl = parse_file_with_idle("tests/anomaly_detection/test_dataset/dummy_adl.csv")
+    adl = parse_file_with_idle("tests/anomaly_detection/dummy_datasets/dummy_adl.csv")
     adl = insert_idle_activity(adl)
 
     # Check activity dataframe is correctly parsed
@@ -75,7 +77,7 @@ def test_insert_idle_activity():
 
 
 def test_combine_equal_consecutive_activities_with_idle():
-    adl = parse_file_with_idle("tests/anomaly_detection/test_dataset/dummy_adl_check_squashed.csv")
+    adl = parse_file_with_idle("tests/anomaly_detection/dummy_datasets/dummy_adl_check_squashed.csv")
     adl = insert_idle_activity(adl)
     adl = combine_equal_consecutive_activities(adl)
 
