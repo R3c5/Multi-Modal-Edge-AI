@@ -10,14 +10,7 @@ from torch.utils.data import DataLoader
 from multi_modal_edge_ai.commons.model import Model
 
 
-def dataloader_to_numpy(dataloader):
-    data_list = []
 
-    for batch in dataloader:
-        batch_numpy = batch.numpy()
-        data_list.append(batch_numpy)
-
-    return np.concatenate(data_list, axis=0)
 
 
 class SVM(Model):
