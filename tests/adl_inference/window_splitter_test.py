@@ -1,6 +1,6 @@
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.adl_inference.parser import parse_file
-from multi_modal_edge_ai.adl_inference.window_splitter import *
+from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
+from multi_modal_edge_ai.adl_inference.preprocessing.window_splitter import *
 
 (sdf, adf) = parse_file("tests/adl_inference/dummy_datasets/dummy_sensor.csv",
                         "tests/adl_inference/dummy_datasets/dummy_adl.csv")

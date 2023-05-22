@@ -3,7 +3,7 @@ from typing import Callable, List, Tuple, Any
 
 import pandas as pd
 
-from multi_modal_edge_ai.adl_inference.window_splitter import split_into_windows
+from multi_modal_edge_ai.adl_inference.preprocessing.window_splitter import split_into_windows
 from multi_modal_edge_ai.commons.model import Model
 
 from sklearn.metrics import confusion_matrix

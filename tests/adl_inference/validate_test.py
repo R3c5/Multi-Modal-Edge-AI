@@ -4,8 +4,8 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from multi_modal_edge_ai.adl_inference.parser import parse_file
-from multi_modal_edge_ai.adl_inference.validate import split_and_validate, validate
+from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
+from multi_modal_edge_ai.adl_inference.validating.validate import split_and_validate, validate
 
 (sdf, adf) = parse_file(
     "tests/adl_inference/dummy_dataset/dummy_sensor.csv",
