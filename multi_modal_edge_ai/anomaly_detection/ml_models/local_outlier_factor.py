@@ -1,32 +1,33 @@
 from typing import Any, Union, List
 
 import numpy as np
+import torch
 from joblib import dump, load
 from pandas import DataFrame
-from sklearn.svm import OneClassSVM
+from sklearn.neighbors import LocalOutlierFactor
 from torch import Tensor
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from multi_modal_edge_ai.anomaly_detection.utils import dataloader_to_numpy
 from multi_modal_edge_ai.commons.model import Model
 
 
-class OCSVM(Model):
+class LOF(Model):
 
     def __init__(self) -> None:
         """
-        Constructor for the SVM class. This method initializes a new instance of the SVM model.
+        Constructor for the LOF class. This method initializes a new instance of the Local Outlier Factor model.
 
-        The SVM model defaults to sklearn's OneClassSVM with no specific parameters set.
+        The LOF model defaults to sklearn's LocalOutlierFactor with no specific parameters set.
         The parameters of the model can be customized during the training process.
         """
-        self.model = OneClassSVM()
+        self.model = LocalOutlierFactor()
 
     def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> None:
         """
-        Train the SVM model on the provided data. This method uses the sklearn OneClassSVM's fit method to train the
-        model. The model's parameters can be customized by providing them in the `hyperparams` argument. The input data
-        is transformed into a numpy array before training the model.
+        Train the LOF model on the provided data. This method uses the sklearn LocalOutlierFactor's fit method to train
+        the model. The model's parameters can be customized by providing them in the `hyperparams` argument. The input
+        data is transformed into a numpy array before training the model.
         :param data: the dataloader of the instances on which to train
         :param hyperparams: the hyperparameters to set the SVM to
         """
@@ -35,10 +36,10 @@ class OCSVM(Model):
 
     def predict(self, instance: Union[Tensor, DataFrame]) -> list[int]:
         """
-        Perform anomaly detection on the provided instance using the trained SVM model.
-        The method uses the sklearn OneClassSVM's predict method to classify the instance.
+        Perform anomaly detection on the provided instance using the trained LOF model.
+        The method uses the sklearn LocalOutlierFactor's predict method to classify the instance.
         The instance is first converted to a numpy array, if it is not already.
-        Anomalous instances are identified by a prediction of -1 from the SVM model,
+        Anomalous instances are identified by a prediction of -1 from the LOF model,
         while normal instances are identified by a prediction of 1.
         The method returns a list of binary labels where 0 indicates an anomaly and 1 indicates a normal instance.
         :param instance: the data instances on which to perform anomaly detection
@@ -55,14 +56,42 @@ class OCSVM(Model):
 
     def save(self, file_path: str) -> None:
         """
-        This function will save sklearn's one class svm on the specified path
+        This function will save sklearn's LocalOutlierFactor on the specified path
         :param file_path: the file path
         """
         dump(self.model, file_path)
 
     def load(self, file_path: str) -> None:
         """
-        This function will load sklearn's one class svm from the specified path
+        This function will load sklearn's LocalOutlierFactor from the specified path
         :param file_path: the file path
         """
         self.model = load(file_path)
+
+class CustomDataset(Dataset):
+    def __init__(self, data):
+        self.data = torch.from_numpy(data)  # Convert NumPy array to PyTorch tensor
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __len__(self):
+        return len(self.data)
+
+
+if __name__ == "__main__":
+    a = []
+    for i in range(100):
+        a.append([1, 0, 1])
+    numpy_array = np.array(a)
+    a.append([1, 1, 1])
+
+    # Create an instance of your custom dataset
+    dataset = CustomDataset(numpy_array)
+
+    # Create a data loader
+    batch_size = 2
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    model = LOF()
+    model.train(dataloader, n_neighbors=3, novelty=True)
+    print(model.predict(np.array(a)))

@@ -42,12 +42,13 @@ class Autoencoder(Model):
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
         optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams.get('learning_rate', 0.1),
                                      weight_decay=1e-8)
-
+        curr_reconstruction_errors = []
         avg_training_loss = []
 
         for epoch in range(hyperparams.get('epochs', 10)):
             epoch_training_loss = []
             for (window, _) in data:
+                window = window.to(self.device)
                 reconstructed_window = self.model(window)
 
                 loss = self.loss_function(reconstructed_window, window)
@@ -56,8 +57,10 @@ class Autoencoder(Model):
                 optimizer.step()
 
                 epoch_training_loss.append(loss)
-            self.reconstruction_errors += epoch_training_loss
+            curr_reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
+
+        self.reconstruction_errors += torch.tensor(curr_reconstruction_errors, device='cpu').tolist()
         return avg_training_loss
 
     def set_reconstruction_error_threshold(self, quantile: float = 0.99) -> None:
@@ -66,7 +69,8 @@ class Autoencoder(Model):
         specified quantile on the errors seen in training
         :param quantile: The quantile of the threshold, e.g., 0.99
         """
-        self.reconstruction_loss_threshold = float(np.quantile(self.reconstruction_errors, quantile))
+        quantile_value = np.quantile(self.reconstruction_errors, quantile)
+        self.reconstruction_loss_threshold = float(quantile_value)
 
     def predict(self, instance: Union[Tensor, DataFrame]) -> int:
         """
@@ -84,7 +88,7 @@ class Autoencoder(Model):
 
         with torch.no_grad():  # no need to construct the computation graph
             reconstructed = self.model(instance)
-            return self.loss_function(reconstructed, instance) <= self.reconstruction_loss_threshold
+            return int(self.loss_function(reconstructed, instance) <= self.reconstruction_loss_threshold)
 
     def save(self, file_path: str) -> None:
         """
