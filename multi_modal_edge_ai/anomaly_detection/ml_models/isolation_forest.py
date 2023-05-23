@@ -67,31 +67,3 @@ class IForest(Model):
         :param file_path: the file path
         """
         self.model = load(file_path)
-
-# class CustomDataset(Dataset):
-#     def __init__(self, data):
-#         self.data = torch.from_numpy(data)  # Convert NumPy array to PyTorch tensor
-#
-#     def __getitem__(self, index):
-#         return self.data[index]
-#
-#     def __len__(self):
-#         return len(self.data)
-#
-#
-# if __name__ == "__main__":
-#     a = []
-#     for i in range(100):
-#         a.append([1, 0, 1])
-#     numpy_array = np.array(a)
-#     a.append([1, 1, 1])
-#
-#     # Create an instance of your custom dataset
-#     dataset = CustomDataset(numpy_array)
-#
-#     # Create a data loader
-#     batch_size = 2
-#     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-#     model = IForest()
-#     model.train(dataloader, n_estimators=3)
-#     print(model.predict(np.array(a)))

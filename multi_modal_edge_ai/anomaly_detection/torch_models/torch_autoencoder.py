@@ -5,7 +5,7 @@ from pandas import DataFrame
 from torch import Tensor
 
 
-class PytorchAutoencoder(torch.nn.Module):
+class TorchAutoencoder(torch.nn.Module):
     def __init__(self, encoder_dim: list[int], decoder_dim: list[int], hidden_activation_fun: torch.nn.Module,
                  output_activation_fun: torch.nn.Module) -> None:
         """
