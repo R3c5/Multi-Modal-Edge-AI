@@ -8,8 +8,8 @@ from multi_modal_edge_ai.adl_inference.parser import parse_file
 from multi_modal_edge_ai.adl_inference.validate import split_and_validate, validate
 
 (sdf, adf) = parse_file(
-    "tests/adl_inference/dummy_dataset/dummy_sensor.csv",
-    "tests/adl_inference/dummy_dataset/dummy_adl.csv")
+    "tests/adl_inference/dummy_datasets/dummy_sensor.csv",
+    "tests/adl_inference/dummy_datasets/dummy_adl.csv")
 
 
 window1 = (pd.DataFrame({
