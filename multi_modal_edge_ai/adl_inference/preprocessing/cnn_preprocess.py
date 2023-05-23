@@ -29,7 +29,7 @@ def cnn_format_input(sensor_df, window_start, window_end, num_sensors, encoder):
     :param encoder: Encoder used to encode the sensor names into ints
     :return: a 2d array with the transformed data
     """
-    num_seconds = window_end - window_start + 1
+    num_seconds = int((window_end - window_start).seconds + 1)
     data = np.zeros((num_sensors, num_seconds), dtype=int)
 
     for _, row in sensor_df.iterrows():
@@ -38,9 +38,9 @@ def cnn_format_input(sensor_df, window_start, window_end, num_sensors, encoder):
         sensor = row['Sensor']
 
         # Convert sensor name to encoded value
-        encoded_sensor = encoder.label_encoder(sensor)
+        encoded_sensor = encoder.encode_label(sensor)
 
         # Mark the corresponding time range as active
-        data[encoded_sensor, start_time - window_start: end_time - window_start + 1] = 1
+        data[encoded_sensor, int((start_time - window_start).seconds): int((end_time - window_start).seconds + 1)] = 1
 
     return data

@@ -75,4 +75,4 @@ class PytorchCNN(nn.Module):
         conv_output_size = input_size
         for _ in range(num_conv_layers):
             conv_output_size = (conv_output_size - 2) / 2 + 1
-        return conv_output_size
+        return int(conv_output_size)
