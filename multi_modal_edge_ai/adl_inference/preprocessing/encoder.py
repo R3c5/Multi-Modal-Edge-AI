@@ -24,4 +24,4 @@ class Encoder:
         :param label: int representing the encoded label
         :return: the string version of the decoded label
         """
-        return self.inverse_transform([label])[0]
+        return self.label_encoder.inverse_transform([label])[0]
