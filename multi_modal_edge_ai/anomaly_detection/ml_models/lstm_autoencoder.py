@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn
 from pandas import DataFrame
 from torch import Tensor
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 
 from multi_modal_edge_ai.anomaly_detection.torch_models.torch_lstm_autoencoder import TorchLSTMAutoencoder
 from multi_modal_edge_ai.commons.model import Model
@@ -12,28 +12,34 @@ from multi_modal_edge_ai.commons.model import Model
 
 class LSTMAutoencoder(Model):
 
-    def __init__(self, input_dim, hidden_dim) -> None:
+    def __init__(self, n_features: int, seq_len: int, hidden_dim: int, encoder_layers: int, decoder_layers: int,
+                 dropout_rate: float = 0.05) -> None:
         """
-        This function will construct the autoencoder as specified in the function parameters and will set some fields
-        regarding gpu/cpu and decision thresholds
-        :param encoder_dimensions: A list with the size and dimensions of each layer of the encoder. Each entry in the
-        list is a new layer, and its value the width in neurons of the layer
-        :param decoder_dimensions: A list with the size and dimensions of each layer of the decoder part. This is most
-        likely going to be the reverse of encoder_dimensions but not necessarily so.
-        :param hidden_activation_fun: The activation function to be used for the hidden layers, most likely ReLu
-        :param output_activation_fun: The activation function to be used for the hidden layers, most likely Sigmoid
+        Initialize the LSTM Autoencoder model.
+        The model is moved to the GPU if available. Mean Squared Error (MSE) is used as the loss function.
+        The reconstruction loss threshold is initially set to -1.0, and the list of reconstruction errors is initialized
+        as an empty list.
+        :param n_features: The number of input features per ADL
+        :param seq_len: The length of the input sequence in ADLs (most likely window size)
+        :param hidden_dim: The number of hidden units in the LSTM layers.
+        :param encoder_layers: The number of layers in the encoder part of the autoencoder.
+        :param decoder_layers: The number of layers in the decoder part of the autoencoder.
+        :param dropout_rate: The dropout rate to be used in the LSTM layers. Default is 0.05.
         """
-        self.model = TorchLSTMAutoencoder(input_dim, hidden_dim)
+        self.model = TorchLSTMAutoencoder(n_features, seq_len, hidden_dim, encoder_layers, decoder_layers, dropout_rate)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = self.model.to(self.device)
+        self.n_features = n_features
+        self.seq_len = seq_len
         self.loss_function = torch.nn.MSELoss()
         self.reconstruction_errors: list[float] = []
         self.reconstruction_loss_threshold = -1.0
 
     def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> list[float]:
         """
-        This function will perform the entire training procedure on the lstm autoencoder with the data provided
-        :param data: The data on which to perform the training procedure
+        This function will perform the entire training procedure on the lstm autoencoder with the data provided.
+        :param data: The data on which to perform the training procedure. It is important to note that the data received
+        should be of the size (number_of_instances, window_size * n_features_per_adl)
         :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
         :return: A list with the average training losses of each epoch
         """
@@ -46,7 +52,7 @@ class LSTMAutoencoder(Model):
         for epoch in range(hyperparams.get('epochs', 10)):
             epoch_training_loss = []
             for windows in data:
-                windows = windows.to(self.device).float()
+                windows = windows.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
                 reconstructed_window = self.model(windows)
 
                 loss = self.loss_function(reconstructed_window, windows)

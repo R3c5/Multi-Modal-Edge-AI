@@ -10,9 +10,9 @@ class TorchAutoencoder(torch.nn.Module):
                  output_activation_fun: torch.nn.Module) -> None:
         """
         This function initializes the autoencoder network. It will create all the layers with their activation functions
-        :param encoder_dimensions: A list with the size and dimensions of each layer of the encoder. Each entry in the
+        :param encoder_dim: A list with the size and dimensions of each layer of the encoder. Each entry in the
         list is a new layer, and its value the width in neurons of the layer
-        :param decoder_dimensions: A list with the size and dimensions of each layer of the decoder part. This is most
+        :param decoder_dim: A list with the size and dimensions of each layer of the decoder part. This is most
         likely going to be the reverse of encoder_dimensions but not necessarily so.
         :param hidden_activation_fun: The activation function to be used for the hidden layers, most likely ReLu
         :param output_activation_fun: The activation function to be used for the hidden layers, most likely Sigmoid
