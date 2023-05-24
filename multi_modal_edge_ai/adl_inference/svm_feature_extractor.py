@@ -26,11 +26,11 @@ def extract_features(df: pd.DataFrame) -> np.ndarray:
     :return: A numpy array of extracted features.
     """
     # Extract important features
-    duration_bedroom = get_sensor_duration('motion_bedroom', df)
-    duration_living_room = get_sensor_duration('motion_living', df)
-    duration_kitchen = get_sensor_duration('motion_kitchen', df)
-    duration_tv = get_sensor_duration('power_tv', df)
-    duration_microwave = get_sensor_duration('power_microwave', df)
+    duration_bedroom = total_sensor_duration('motion_bedroom', df)
+    duration_living_room = total_sensor_duration('motion_living', df)
+    duration_kitchen = total_sensor_duration('motion_kitchen', df)
+    duration_tv = total_sensor_duration('power_tv', df)
+    duration_microwave = total_sensor_duration('power_microwave', df)
     opens_fridge = len(df[df['Sensor'] == 'contact_fridge'])
     opens_bathroom = len(df[df['Sensor'] == 'contact_bathroom'])
     opens_main_door = len(df[df['Sensor'] == 'contact_entrance'])
@@ -39,7 +39,7 @@ def extract_features(df: pd.DataFrame) -> np.ndarray:
                      opens_fridge, opens_bathroom, opens_main_door])
 
 
-def get_sensor_duration(sensor_name: str, df: pd.DataFrame) -> float:
+def total_sensor_duration(sensor_name: str, df: pd.DataFrame) -> float:
     """
     Calculates the total duration of a specific sensor's activity in the given DataFrame.
 

@@ -12,11 +12,13 @@ from multi_modal_edge_ai.commons.model import Model
 
 
 class SVMModel(Model):
-    def __init__(self) -> None:
+    def __init__(self, **hyperparams: Any) -> None:
         self.model = make_pipeline(
             StandardScaler(),
-            PCA(n_components=7),
-            SVC(max_iter=-1)
+            PCA(n_components=hyperparams.get('n_components', 6)),
+            SVC(max_iter=hyperparams.get('max_iter', -1),
+                kernel=hyperparams.get('kernel', 'rbf'),
+                degree=hyperparams.get('degree', 3))
         )
 
     def train(self, data: Union[torch.utils.data.DataLoader[Any], List[Any]], **hyperparams: Any) -> None:
@@ -41,7 +43,7 @@ class SVMModel(Model):
         :return: string output of ADL
         """
         if not isinstance(instance, pd.DataFrame):
-            raise TypeError("Predict method instance is not of type pd.Dataframe")
+            raise TypeError("Instance is not of type pd.Dataframe")
         features = extract_features(instance).reshape(1, -1)
         return self.model.predict(features)
 

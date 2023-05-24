@@ -1,7 +1,7 @@
 import pandas as pd
 
 from multi_modal_edge_ai.adl_inference.parser import parse_file
-from multi_modal_edge_ai.adl_inference.svm_feature_extractor import get_sensor_duration, extract_features, \
+from multi_modal_edge_ai.adl_inference.svm_feature_extractor import total_sensor_duration, extract_features, \
     extract_features_dataset
 
 
@@ -78,15 +78,15 @@ def test_extract_features_with_empty_dataframe():
 
 def test_get_sensor_duration_with_matching_sensor():
     sdf, _ = load_datasets()
-    duration = get_sensor_duration('PIR_bedroom', sdf)
+    duration = total_sensor_duration('PIR_bedroom', sdf)
     assert duration == 140
 
 def test_get_sensor_duration_with_no_matching_sensor():
     sdf, _ = load_datasets()
-    duration = get_sensor_duration('Non-existent', sdf)
+    duration = total_sensor_duration('Non-existent', sdf)
     assert duration == 0
 
 def test_get_sensor_duration_with_empty_dataframe():
     empty_df = pd.DataFrame(columns=['Start_Time', 'End_Time', 'Sensor'])
-    duration = get_sensor_duration('PIR_bedroom', empty_df)
+    duration = total_sensor_duration('PIR_bedroom', empty_df)
     assert duration == 0
