@@ -2,7 +2,7 @@ from typing import Union
 
 import torch.nn as nn
 from pandas import DataFrame
-from torch import Tensor
+from torch import Tensor, flatten
 
 
 class PytorchCNN(nn.Module):
@@ -27,20 +27,26 @@ class PytorchCNN(nn.Module):
         self.num_classes = num_classes
         self.hidden_activation = hidden_activation
         self.output_activation = output_activation
+        # This only works for 6 conv layers and 7 sensors and window length of 400
+        self.fc_in_features = 32 * 7
 
         # Convolution layers
         self.conv_layers = nn.ModuleList()
-        self.conv_layers.append(nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1))
+        self.conv_layers.append(nn.Conv2d(1, 32, kernel_size=4, stride=1, padding=2))
         self.conv_layers.append(hidden_activation)
         self.conv_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
         for _ in range(self.num_conv_layers - 1):
-            self.conv_layers.append(nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1))
+            self.conv_layers.append(nn.Conv2d(32, 32, kernel_size=4, stride=1, padding=2))
             self.conv_layers.append(hidden_activation)
             self.conv_layers.append(nn.MaxPool2d(kernel_size=2, stride=2))
 
+
+        # Flatten layer
+        self.flatten = nn.Flatten()
+
         # Fully connected layers
         self.fc_layers = nn.ModuleList()
-        self.fc_layers.append(nn.Linear(window_length // 4, 128))
+        self.fc_layers.append(nn.Linear(self.fc_in_features, 128))
         self.fc_layers.append(hidden_activation)
         for _ in range(self.num_fc_layers - 2):
             self.fc_layers.append(nn.Linear(128, 128))
@@ -58,7 +64,7 @@ class PytorchCNN(nn.Module):
         :return: The decoded encoding of the original instance
         """
         x = self.apply_conv_layers(x)
-        x = x.view(x.size(0), -1)
+        x = x.flatten()
         x = self.apply_fc_layers(x)
         x = self.output_layer(x)
         x = self.output_activation(x)

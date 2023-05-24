@@ -58,6 +58,8 @@ class CNNModel(Model):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate,
                                      weight_decay=1e-8)
 
+        torch.set_printoptions(profile="full")
+        np.set_printoptions(threshold=np.inf)
         print('\n')
         print("Training started....")
         self.model.train()
@@ -65,14 +67,10 @@ class CNNModel(Model):
             running_loss = 0.0
             for inputs, labels in data:
                 inputs = torch.from_numpy(inputs).unsqueeze(0).float()
-                label_tensor = torch.zeros(1, self.num_classes, dtype=torch.long)  # Initialize label tensor with zeros
-                label_tensor[0, labels] = 1  # Set the label of interest to 1
-                labels = label_tensor
-
+                label_tensor = torch.eye(self.num_classes)[labels]
                 optimizer.zero_grad()
                 outputs = self.model(inputs)
-                outputs = outputs.squeeze()  # Remove any unnecessary dimensions
-                loss = self.loss_function(outputs.unsqueeze(0), labels)  # Add necessary dimensions
+                loss = self.loss_function(outputs, label_tensor)  # Add necessary dimensions
 
                 loss.backward()
                 optimizer.step()
@@ -95,9 +93,6 @@ class CNNModel(Model):
         if None, the latest sensor end time will be taken
         :return: the encoded label of the predicted activity
         """
-        if instance.empty:
-            return 1
-
         # if no window_start given, take the minimum start time of the sensors
         if window_start is None:
             window_start = np.min(instance['Start_Time'])
@@ -109,9 +104,8 @@ class CNNModel(Model):
         instance = torch.from_numpy(instance).unsqueeze(0).float()
 
         outputs = self.model(instance)
-        _, predicted = torch.max(outputs, 1)
-        predicted = torch.mode(predicted).values.item()
-        return predicted
+        predicted = outputs.argmax()
+        return predicted.item()
 
     def save(self, file_path: str) -> None:
         """
