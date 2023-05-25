@@ -69,10 +69,10 @@ class CNNModel(Model):
         for epoch in range(num_epochs):
             running_loss = 0.0
             for inputs, labels in data:
-                inputs = torch.from_numpy(inputs).unsqueeze(0).float()
+                tensor_inputs = torch.from_numpy(inputs).unsqueeze(0).float()
                 label_tensor = torch.eye(self.num_classes)[labels]
                 optimizer.zero_grad()
-                outputs = self.model(inputs)
+                outputs = self.model(tensor_inputs)
                 loss = self.loss_function(outputs, label_tensor)  # Add necessary dimensions
 
                 loss.backward()
@@ -103,13 +103,14 @@ class CNNModel(Model):
         if window_start is None:
             window_start = np.min(instance['Start_Time'])
 
-        instance = nn_format_input(instance, window_start, self.window_length, self.num_sensors, self.sensor_encoder)
+        formatted_instance = nn_format_input(instance, window_start, self.window_length, self.num_sensors,
+                                             self.sensor_encoder)
 
         self.model.eval()
 
-        instance = torch.from_numpy(instance).unsqueeze(0).float()
+        tensor_instance = torch.from_numpy(formatted_instance).unsqueeze(0).float()
 
-        outputs = self.model(instance)
+        outputs = self.model(tensor_instance)
         predicted = outputs.argmax()
         return predicted.item()
 
