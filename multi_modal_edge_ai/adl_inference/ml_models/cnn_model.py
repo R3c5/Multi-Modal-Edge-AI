@@ -63,8 +63,6 @@ class CNNModel(Model):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate,
                                      weight_decay=1e-8)
 
-        torch.set_printoptions(profile="full")
-        np.set_printoptions(threshold=np.inf)
         print('\n')
         print("Training started....")
         self.model.train()

@@ -17,7 +17,8 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
     """
     Full validation process of a model for dataset with a ground truth, with custom splitting method,
     returns the percentage predicted correctly and a confusion matrix
-    :param labels:
+    :param label_encoder: encoder for labels
+    :param labels: list of labels
     :param data: pd.Dataframe with 'Start_Time', 'End_Time', 'Sensor' columns
     :param ground_truth: pd.Dataframe with 'Start_Time', 'End_Time', 'Activity' columns
     :param model: implementation of abstract commons.Model class
@@ -42,12 +43,15 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
     return validate(train, test, model, labels, label_encoder, model_hyperparams)
 
 
-def validate(train: list[tuple[pd.DataFrame, str, pd.Timestamp, pd.Timestamp]],
-             test: list[tuple[pd.DataFrame, str, pd.Timestamp, pd.Timestamp]],
-             model: Model, labels: list[str], label_encoder: Encoder, model_hyperparams: dict | None = None) -> tuple[float, Any]:
+def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
+             test: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
+             model: Model, labels: list[str], label_encoder: Encoder, model_hyperparams: dict | None = None) \
+        -> tuple[float, Any]:
     """
     Validates a given model using a train and test list of windows, returns the percentage predicted
     correctly and a confusion matrix
+    :param label_encoder: encoder for labels
+    :param labels: list of labels
     :param train: tuple from window_splitter
     :param test:  tuple from window_splitter
     :param model: implementation of abstract commons.Model class
