@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def cnn_format_dataset(dataset, num_sensors, window_length, encoder):
+def nn_format_dataset(dataset, num_sensors, window_length, encoder):
     """
     Converts a list of windows (explained in window_splitter) to a list that contains
     input to the cnn and expected label
@@ -13,12 +13,12 @@ def cnn_format_dataset(dataset, num_sensors, window_length, encoder):
     """
     formatted_data = []
     for window in dataset:
-        input_dataframe = cnn_format_input(window[0], window[2], window_length, num_sensors, encoder)
+        input_dataframe = nn_format_input(window[0], window[2], window_length, num_sensors, encoder)
         formatted_data.append((input_dataframe, window[1]))
     return formatted_data
 
 
-def cnn_format_input(sensor_df, window_start, window_length, num_sensors, encoder):
+def nn_format_input(sensor_df, window_start, window_length, num_sensors, encoder):
     """
     Convert a sensor_df into a 2D array that has on one axis the sensor and on the other the time
     and has a 1 if the sensor was active during that second and 0 otherwise

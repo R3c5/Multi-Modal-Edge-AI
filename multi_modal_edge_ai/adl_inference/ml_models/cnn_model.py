@@ -1,25 +1,27 @@
 from typing import Union, Any, List
 
 import numpy as np
+import pandas as pd
 import torch
 from pandas import DataFrame
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from multi_modal_edge_ai.adl_inference.preprocessing.cnn_preprocess import cnn_format_dataset, cnn_format_input
+from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import nn_format_dataset, nn_format_input
 from multi_modal_edge_ai.adl_inference.preprocessing.encoder import Encoder
-from multi_modal_edge_ai.adl_inference.torch_models.pytorch_cnn import PytorchCNN
+from multi_modal_edge_ai.adl_inference.torch_models.torch_cnn import TorchCNN
 from multi_modal_edge_ai.commons.model import Model
 
 
 class CNNModel(Model):
-    def __init__(self, num_conv_layers: int, num_fc_layers: int,
+    def __init__(self, num_conv_layers: int, num_fc_layers: int, fc_in_features: int,
                  window_length: int, sensors: list[str], num_classes: int,
                  hidden_activation: torch.nn.Module, output_activation: torch.nn.Module) -> None:
         """
         This function initializes the CNN network. It will create all the layers with their activation functions
         :param num_conv_layers: integer representing the number of convolution layers
         :param num_fc_layers: integer representing the number of fully connected layers
+        :param fc_in_features: integer representing the number of input features for the first fully connected layer
         :param window_length: integer representing the size of the input
         :param sensors: list containing all the sensors present
         :param num_classes: integer representing the number of classes that can be classified
@@ -30,8 +32,8 @@ class CNNModel(Model):
         """
         super(CNNModel, self).__init__()
 
-        self.model = PytorchCNN(num_conv_layers, num_fc_layers, window_length, len(sensors), num_classes,
-                                hidden_activation, output_activation)
+        self.model = TorchCNN(num_conv_layers, num_fc_layers, fc_in_features, num_classes,
+                              hidden_activation, output_activation)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = self.model.to(self.device)
 
@@ -48,7 +50,10 @@ class CNNModel(Model):
         :param dataset: A list of windows as described in window_splitter.py
         :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
         """
-        data = cnn_format_dataset(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
+        if not isinstance(dataset, List):
+            raise TypeError("Training dataset is supposed to be a list of windows.")
+
+        data = nn_format_dataset(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
 
         learning_rate = hyperparams.get("learning_rate", 0.001)
         num_epochs = hyperparams.get("num_epochs", 10)
@@ -93,11 +98,14 @@ class CNNModel(Model):
         if None, the latest sensor end time will be taken
         :return: the encoded label of the predicted activity
         """
+        if not isinstance(instance, pd.DataFrame):
+            raise TypeError("Instance is not of type pd.Dataframe")
+
         # if no window_start given, take the minimum start time of the sensors
         if window_start is None:
             window_start = np.min(instance['Start_Time'])
 
-        instance = cnn_format_input(instance, window_start, self.window_length, self.num_sensors, self.sensor_encoder)
+        instance = nn_format_input(instance, window_start, self.window_length, self.num_sensors, self.sensor_encoder)
 
         self.model.eval()
 
