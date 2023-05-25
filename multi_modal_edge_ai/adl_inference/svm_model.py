@@ -6,7 +6,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
 import pickle
-import torch.utils.data
+from torch.utils.data import DataLoader
+import torch
 from multi_modal_edge_ai.adl_inference.svm_feature_extractor import extract_features_dataset, extract_features
 from multi_modal_edge_ai.commons.model import Model
 
@@ -21,7 +22,7 @@ class SVMModel(Model):
                 degree=hyperparams.get('degree', 3))
         )
 
-    def train(self, data: Union[torch.utils.data.DataLoader[Any], List[Any]], **hyperparams: Any) -> None:
+    def train(self, data: Union[DataLoader[Any], List[Any]], **hyperparams: Any) -> None:
         """
         Trains the model using the provided data.
         Data should be in the form of a list of windows returned by the split_into_windows function.
