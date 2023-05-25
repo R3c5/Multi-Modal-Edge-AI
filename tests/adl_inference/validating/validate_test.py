@@ -57,7 +57,7 @@ def test_split_and_validate_with_random_split(validate_mock, windower_mock):
     validate_mock.return_value = 0.5
 
     # Assert
-    split_and_validate(sdf, adf, labels, encoder, model_mock)
+    split_and_validate(sdf, adf, labels, encoder, 0, model_mock)
     call = validate_mock.call_args_list[0]
     expected_args = [[window2, window4], [window3, window1], model_mock]
     for (arg, expected_arg) in zip(call[0], expected_args):
@@ -78,7 +78,7 @@ def test_validate_with_split_function(validate_mock, windower_mock):
     validate_mock.return_value = 0.5
 
     # Assert
-    split_and_validate(sdf, adf, labels, encoder, model_mock, split_method=split_method)
+    split_and_validate(sdf, adf, labels, encoder, 0, model_mock, split_method=split_method)
     call = validate_mock.call_args_list[0]
     expected_args = [[window1, window2], [window3, window4], model_mock]
     for (arg, expected_arg) in zip(call[0], expected_args):

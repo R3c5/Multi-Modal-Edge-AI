@@ -11,7 +11,7 @@ from sklearn.metrics import confusion_matrix
 
 
 def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: list[str], label_encoder: Encoder,
-                       model: Model, model_hyperparams: dict | None = None,
+                       default_activity: int, model: Model, model_hyperparams: dict | None = None,
                        window_length_seconds: int = 300, window_slide_seconds: int | None = None,
                        split_method: Callable[[List], Tuple[List, List]] | None = None) -> tuple[float, Any]:
     """
@@ -19,6 +19,7 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
     returns the percentage predicted correctly and a confusion matrix
     :param label_encoder: encoder for labels
     :param labels: list of labels
+    :param default_activity: int representing encoded default activity
     :param data: pd.Dataframe with 'Start_Time', 'End_Time', 'Sensor' columns
     :param ground_truth: pd.Dataframe with 'Start_Time', 'End_Time', 'Activity' columns
     :param model: implementation of abstract commons.Model class
@@ -29,7 +30,8 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
     :return the total average and a confusion matrix for the model
     """
     # Window the data
-    windows = split_into_windows(data, ground_truth, window_length_seconds, window_slide_seconds)
+    windows = split_into_windows(data, ground_truth, default_activity, window_length_seconds,
+                                 window_slide_seconds)
     # Split the windows into train and test
     if split_method is not None:
         train, test = split_method(windows)

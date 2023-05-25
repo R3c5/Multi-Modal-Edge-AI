@@ -50,5 +50,4 @@ def nn_format_input(sensor_df: pd.DataFrame, window_start: pd.Timestamp, window_
 
         # Mark the corresponding time range as active
         data[encoded_sensor, int((start_time - window_start).seconds): int((end_time - window_start).seconds + 1)] = 1
-    print(data.dtype)
     return data
