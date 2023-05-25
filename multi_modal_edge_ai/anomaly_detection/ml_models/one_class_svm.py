@@ -30,6 +30,8 @@ class OCSVM(Model):
         :param data: the dataloader of the instances on which to train
         :param hyperparams: the hyperparameters to set the SVM to
         """
+        assert isinstance(data, DataLoader), "Data must be of type DataLoader for the OCSVM model"
+
         self.model.set_params(**hyperparams)
         self.model.fit(dataloader_to_numpy(data))
 

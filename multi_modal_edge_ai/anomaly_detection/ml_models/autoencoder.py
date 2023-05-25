@@ -39,6 +39,8 @@ class Autoencoder(Model):
         :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
         :return: A list with the average training losses of each epoch
         """
+        assert isinstance(data, DataLoader), "Data must be of type DataLoader for the Autoencoder model"
+
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
         optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams.get('learning_rate', 0.1),
                                      weight_decay=1e-8)

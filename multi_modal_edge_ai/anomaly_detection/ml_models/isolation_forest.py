@@ -18,7 +18,7 @@ class IForest(Model):
         """
         Constructor for the IForest class. This method initializes a new instance of the IsolationForest model.
 
-        The IForest model defaults to sklearn's LocalOutlierFactor with no specific parameters set.
+        The IForest model defaults to sklearn's IsolationForest with no specific parameters set.
         The parameters of the model can be customized during the training process.
         """
         self.model = IsolationForest()
@@ -31,6 +31,8 @@ class IForest(Model):
         :param data: the dataloader of the instances on which to train
         :param hyperparams: the hyperparameters to set the IForest to
         """
+        assert isinstance(data, DataLoader), "Data must be of type DataLoader for the IForest model"
+
         self.model.set_params(**hyperparams)
         self.model.fit(dataloader_to_numpy(data))
 
