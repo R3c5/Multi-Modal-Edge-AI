@@ -7,7 +7,8 @@ from pandas import DataFrame
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import nn_format_dataset, nn_format_input
+from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import transform_window_list_to_nn_data, \
+    transform_df_to_nn_input_matrix
 from multi_modal_edge_ai.adl_inference.preprocessing.encoder import Encoder
 from multi_modal_edge_ai.adl_inference.torch_models.torch_cnn import TorchCNN
 from multi_modal_edge_ai.commons.model import Model
@@ -53,7 +54,7 @@ class CNNModel(Model):
         if not isinstance(dataset, List):
             raise TypeError("Training dataset is supposed to be a list of windows.")
 
-        data = nn_format_dataset(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
+        data = transform_window_list_to_nn_data(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
 
         learning_rate = hyperparams.get("learning_rate", 0.001)
         num_epochs = hyperparams.get("num_epochs", 10)
@@ -73,7 +74,7 @@ class CNNModel(Model):
                 label_tensor = torch.eye(self.num_classes)[labels]
                 optimizer.zero_grad()
                 outputs = self.model(tensor_inputs)
-                loss = self.loss_function(outputs, label_tensor)  # Add necessary dimensions
+                loss = self.loss_function(outputs, label_tensor)
 
                 loss.backward()
                 optimizer.step()
@@ -86,9 +87,8 @@ class CNNModel(Model):
 
     def predict(self, instance: Union[Tensor, DataFrame], window_start=None, window_end=None) -> Any:
         """
-        This function will perform a forward pass on the instance provided. If the reconstruction error of the
-        autoencoder is superior to the threshold set, it will return 0 for anomaly, and 1 otherwise. If the threshold
-        has not been set, it will throw a NotImplementedError
+        This function will perform a forward pass on the instance provided and return the class with the highest
+        probability
         :param instance: The instance on which to perform the forward pass
         :param window_start: datetime representing the start time of the window,
         if None, the earliest sensor start time will be taken
@@ -103,8 +103,8 @@ class CNNModel(Model):
         if window_start is None:
             window_start = np.min(instance['Start_Time'])
 
-        formatted_instance = nn_format_input(instance, window_start, self.window_length, self.num_sensors,
-                                             self.sensor_encoder)
+        formatted_instance = transform_df_to_nn_input_matrix(instance, window_start, self.window_length,
+                                                             self.num_sensors, self.sensor_encoder)
 
         self.model.eval()
 

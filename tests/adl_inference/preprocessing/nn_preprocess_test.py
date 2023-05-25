@@ -1,7 +1,8 @@
 import pandas as pd
 
 from multi_modal_edge_ai.adl_inference.preprocessing.encoder import Encoder
-from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import nn_format_input, nn_format_dataset
+from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import transform_df_to_nn_input_matrix, \
+    transform_window_list_to_nn_data
 
 sensors = ['sa', 'sb', 'sc']
 encoder = Encoder(sensors)
@@ -22,15 +23,15 @@ dataset = [
 ]
 
 
-def test_nn_format_input():
-    result = nn_format_input(sensors_df_1, pd.Timestamp('2023-01-01 01:00:00'), 5, 3, encoder)
+def test_transform_df_to_nn_input_matrix():
+    result = transform_df_to_nn_input_matrix(sensors_df_1, pd.Timestamp('2023-01-01 01:00:00'), 5, 3, encoder)
     assert (result == [[0, 1, 1, 1, 0],
                        [0, 0, 0, 0, 0],
                        [0, 0, 1, 1, 1]]).all()
 
 
-def test_nn_format_dataset():
-    result = nn_format_dataset(dataset, 3, 5, encoder)
+def test_transform_window_list_to_nn_data():
+    result = transform_window_list_to_nn_data(dataset, 3, 5, encoder)
     result0 = result[0]
     result1 = result[1]
     assert (result0[0] == [[0, 1, 1, 1, 0],
