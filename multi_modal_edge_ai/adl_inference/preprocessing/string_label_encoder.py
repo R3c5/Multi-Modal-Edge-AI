@@ -1,7 +1,7 @@
 from sklearn.preprocessing import LabelEncoder
 
 
-class Encoder:
+class StringLabelEncoder:
     def __init__(self, labels: list[str]) -> None:
         """
         Create the encoder on the list of labels

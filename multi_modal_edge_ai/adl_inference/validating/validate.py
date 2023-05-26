@@ -3,14 +3,14 @@ from typing import Callable, List, Tuple, Any
 
 import pandas as pd
 
-from multi_modal_edge_ai.adl_inference.preprocessing.encoder import Encoder
+from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.adl_inference.preprocessing.window_splitter import split_into_windows
 from multi_modal_edge_ai.commons.model import Model
 
 from sklearn.metrics import confusion_matrix
 
 
-def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: list[str], label_encoder: Encoder,
+def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: list[str], label_encoder: StringLabelEncoder,
                        default_activity: int, model: Model, model_hyperparams: dict | None = None,
                        window_length_seconds: int = 300, window_slide_seconds: int | None = None,
                        split_method: Callable[[List], Tuple[List, List]] | None = None) -> tuple[float, Any]:
@@ -47,7 +47,7 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
 
 def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
              test: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
-             model: Model, labels: list[str], label_encoder: Encoder, model_hyperparams: dict | None = None) \
+             model: Model, labels: list[str], label_encoder: StringLabelEncoder, model_hyperparams: dict | None = None) \
         -> tuple[float, Any]:
     """
     Validates a given model using a train and test list of windows, returns the percentage predicted

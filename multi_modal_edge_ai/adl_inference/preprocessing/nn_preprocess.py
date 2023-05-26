@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 from numpy import ndarray
 
-from multi_modal_edge_ai.adl_inference.preprocessing.encoder import Encoder
+from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
 
 
-def transform_window_list_to_nn_data(dataset: List[Tuple[pd.DataFrame, Union[int], pd.Timestamp, pd.Timestamp]],
-                                     num_sensors: int, window_length: int, encoder: Encoder) \
+def window_list_to_nn_dataset(dataset: List[Tuple[pd.DataFrame, Union[int], pd.Timestamp, pd.Timestamp]],
+                              num_sensors: int, window_length: int, encoder: StringLabelEncoder) \
         -> List[Tuple[np.ndarray, int]]:
     """
     Converts a list of windows (explained in window_splitter) to a list that contains
@@ -16,18 +16,18 @@ def transform_window_list_to_nn_data(dataset: List[Tuple[pd.DataFrame, Union[int
     :param dataset: list of windows that will be formatted
     :param num_sensors: total number of sensors that the model can encounter
     :param window_length: total length of the window in seconds
-    :param encoder: Encoder used to encode the sensor names into ints
+    :param encoder: StringLabelEncoder used to encode the sensor names into ints
     :return: a list containing tuples of a 2D array and the expected output
     """
     formatted_data = []
     for window in dataset:
-        input_dataframe = transform_df_to_nn_input_matrix(window[0], window[2], window_length, num_sensors, encoder)
+        input_dataframe = sensor_df_to_nn_input_matrix(window[0], window[2], window_length, num_sensors, encoder)
         formatted_data.append((input_dataframe, window[1]))
     return formatted_data
 
 
-def transform_df_to_nn_input_matrix(sensor_df: pd.DataFrame, window_start: pd.Timestamp, window_length: int,
-                                    num_sensors: int, encoder: Encoder) -> np.ndarray:
+def sensor_df_to_nn_input_matrix(sensor_df: pd.DataFrame, window_start: pd.Timestamp, window_length: int,
+                                 num_sensors: int, encoder: StringLabelEncoder) -> np.ndarray:
     """
     Convert a sensor_df into a 2D array that has on one axis the sensor and on the other the time
     and has a 1 if the sensor was active during that second and 0 otherwise
@@ -36,7 +36,7 @@ def transform_df_to_nn_input_matrix(sensor_df: pd.DataFrame, window_start: pd.Ti
     :param window_length: total length of the window in seconds
     :param sensor_df: a dataframe containing 'Start_Time', 'End_time' and 'Sensor'
     :param num_sensors: total number of sensors that the model can encounter
-    :param encoder: Encoder used to encode the sensor names into ints
+    :param encoder: StringLabelEncoder used to encode the sensor names into ints
     :return: a 2d array with the transformed data
     """
     data = np.zeros((num_sensors, window_length), dtype=int)

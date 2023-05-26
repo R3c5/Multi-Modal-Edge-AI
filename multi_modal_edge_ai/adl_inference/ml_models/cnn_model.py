@@ -7,9 +7,9 @@ from pandas import DataFrame
 from torch import Tensor
 from torch.utils.data import DataLoader
 
-from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import transform_window_list_to_nn_data, \
-    transform_df_to_nn_input_matrix
-from multi_modal_edge_ai.adl_inference.preprocessing.encoder import Encoder
+from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import window_list_to_nn_dataset, \
+    sensor_df_to_nn_input_matrix
+from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.adl_inference.torch_models.torch_cnn import TorchCNN
 from multi_modal_edge_ai.commons.model import Model
 
@@ -43,18 +43,18 @@ class CNNModel(Model):
         self.window_length = window_length
         self.loss_function = torch.nn.CrossEntropyLoss()
 
-        self.sensor_encoder = Encoder(sensors)
+        self.sensor_encoder = StringLabelEncoder(sensors)
 
     def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> None:
         """
-        This function will perform the entire training procedure on the autoencoder with the data provided
+        This function will perform the entire training procedure on the CNN model with the data provided
         :param dataset: A list of windows as described in window_splitter.py
         :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
         """
         if not isinstance(dataset, List):
             raise TypeError("Training dataset is supposed to be a list of windows.")
 
-        data = transform_window_list_to_nn_data(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
+        data = window_list_to_nn_dataset(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
 
         learning_rate = hyperparams.get("learning_rate", 0.001)
         num_epochs = hyperparams.get("num_epochs", 10)
@@ -103,8 +103,8 @@ class CNNModel(Model):
         if window_start is None:
             window_start = np.min(instance['Start_Time'])
 
-        formatted_instance = transform_df_to_nn_input_matrix(instance, window_start, self.window_length,
-                                                             self.num_sensors, self.sensor_encoder)
+        formatted_instance = sensor_df_to_nn_input_matrix(instance, window_start, self.window_length, self.num_sensors,
+                                                          self.sensor_encoder)
 
         self.model.eval()
 
