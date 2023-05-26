@@ -1,8 +1,6 @@
-import pandas as pd
 from pandas.testing import assert_series_equal, assert_frame_equal
 
-from multi_modal_edge_ai.anomaly_detection.preprocessing.adl_preprocessing import *
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from multi_modal_edge_ai.anomaly_detection.preprocessing.adl_dataframe_preprocessing import *
 
 distinct_adl_list = ["Sleeping", "Eating", "Relax", "Outside"]
 original_adl = pd.Series([pd.Timestamp("2023-05-25 04:03:50"), pd.Timestamp("2023-05-25 04:03:55"), "Sleeping"])
