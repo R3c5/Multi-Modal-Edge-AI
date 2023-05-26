@@ -5,7 +5,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 
-def dataframe_categorical_to_numeric(df: pd.DataFrame, window_size: int, one_hot=True) -> Tuple[pd.DataFrame, int]:
+def dataframe_categorical_to_numeric(df: pd.DataFrame, window_size: int, distinct_adl_list: list[str], one_hot=True) \
+        -> Tuple[pd.DataFrame, int]:
     """
     This function will perform the conversion from categorical variables to numerical ones. In the process there are
     some changes to the concrete variables. The original ADL which was composed by (start_time, end_time, adl_time) will
@@ -14,11 +15,11 @@ def dataframe_categorical_to_numeric(df: pd.DataFrame, window_size: int, one_hot
     (n_windows, 3 * window_size) -> 3 because of the (start_time, end_time, adl_time)
     :param df: The dataframe on which to perform the transformation. It is assumed to be a windowed dataset
     :param window_size: The size, in ADLs, of each window
+    :param distinct_adl_list: The list of distinct adls on which to fit the encoder
     :param one_hot: A boolean specifying the encoding. True for One-hot encoding, false for Label encoding
     :return: A tuple representing in the first place the modified dataframe, and in the second place the size, in number
     of features, of each ADL
     """
-    distinct_adl_list = pd.unique(df.iloc[:, 2::3].values.ravel('K'))
 
     if one_hot:
         encoding_function = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
