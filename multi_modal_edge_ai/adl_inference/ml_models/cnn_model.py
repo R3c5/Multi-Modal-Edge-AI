@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 from multi_modal_edge_ai.adl_inference.preprocessing.nn_preprocess import window_list_to_nn_dataset, \
     sensor_df_to_nn_input_matrix
-from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
+from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.adl_inference.torch_models.torch_cnn import TorchCNN
 from multi_modal_edge_ai.commons.model import Model
 

@@ -1,4 +1,4 @@
-from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
+from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 
 labels = ['A', 'B', 'C']
 encoder = StringLabelEncoder(labels)

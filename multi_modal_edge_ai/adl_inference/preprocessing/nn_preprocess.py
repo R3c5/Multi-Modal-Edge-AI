@@ -2,9 +2,8 @@ from typing import Union, List, Tuple
 
 import numpy as np
 import pandas as pd
-from numpy import ndarray
 
-from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
+from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 
 
 def window_list_to_nn_dataset(dataset: List[Tuple[pd.DataFrame, Union[int], pd.Timestamp, pd.Timestamp]],

@@ -6,7 +6,7 @@ import pandas as pd
 
 from multi_modal_edge_ai.adl_inference.validating.validate import split_and_validate, validate
 from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
-from multi_modal_edge_ai.adl_inference.preprocessing.string_label_encoder import StringLabelEncoder
+from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 
 (sdf, adf) = parse_file(
     "tests/adl_inference/dummy_datasets/dummy_sensor.csv",
