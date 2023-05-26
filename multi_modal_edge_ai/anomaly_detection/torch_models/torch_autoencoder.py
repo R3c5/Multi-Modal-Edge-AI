@@ -35,7 +35,7 @@ class TorchAutoencoder(torch.nn.Module):
 
         self.decoder = torch.nn.Sequential(*decoder_layers)
 
-    def forward(self, x: Union[Tensor, DataFrame]) -> Union[Tensor, DataFrame]:
+    def forward(self, x: Tensor) -> Tensor:
         """
         This function performs the forward pass on the given instance, by first encoding and then returning the decoding
         of such encoding

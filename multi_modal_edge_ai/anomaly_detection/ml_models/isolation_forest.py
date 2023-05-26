@@ -1,12 +1,11 @@
+import pickle
 from typing import Any, Union, List
 
 import numpy as np
-import torch
-from joblib import dump, load
 from pandas import DataFrame
 from sklearn.ensemble import IsolationForest
 from torch import Tensor
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 
 from multi_modal_edge_ai.anomaly_detection.utils import dataloader_to_numpy
 from multi_modal_edge_ai.commons.model import Model
@@ -61,11 +60,13 @@ class IForest(Model):
         This function will save sklearn's IsolationForest on the specified path
         :param file_path: the file path
         """
-        dump(self.model, file_path)
+        with open(file_path, "wb") as file:
+            pickle.dump(self.model, file)
 
     def load(self, file_path: str) -> None:
         """
         This function will load sklearn's IsolationForest from the specified path
         :param file_path: the file path
         """
-        self.model = load(file_path)
+        with open(file_path, "rb") as file:
+            self.model = pickle.load(file)
