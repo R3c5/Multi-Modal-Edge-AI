@@ -1,11 +1,12 @@
-import pickle
 from typing import Any, Union, List
 
 import numpy as np
+import torch
+from joblib import dump, load
 from pandas import DataFrame
 from sklearn.neighbors import LocalOutlierFactor
 from torch import Tensor
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 from multi_modal_edge_ai.anomaly_detection.utils import dataloader_to_numpy
 from multi_modal_edge_ai.commons.model import Model
@@ -60,13 +61,11 @@ class LOF(Model):
         This function will save sklearn's LocalOutlierFactor on the specified path
         :param file_path: the file path
         """
-        with open(file_path, "wb") as file:
-            pickle.dump(self.model, file)
+        dump(self.model, file_path)
 
     def load(self, file_path: str) -> None:
         """
         This function will load sklearn's LocalOutlierFactor from the specified path
         :param file_path: the file path
         """
-        with open(file_path, "rb") as file:
-            self.model = pickle.load(file)
+        self.model = load(file_path)

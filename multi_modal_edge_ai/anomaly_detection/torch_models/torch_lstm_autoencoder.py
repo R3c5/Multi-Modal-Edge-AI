@@ -31,7 +31,7 @@ class TorchLSTMAutoencoder(nn.Module):
         self.decoder = nn.LSTM(hidden_dim, n_features, num_layers=decoder_layers,
                                batch_first=True, dropout=dropout_rate)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x: Union[Tensor, DataFrame]) -> Union[Tensor, DataFrame]:
         """
         This function performs the forward pass on the given instance, by first encoding and then returning the decoding
         of such encoding
