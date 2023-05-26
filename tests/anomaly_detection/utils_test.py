@@ -1,7 +1,12 @@
+import numpy as np
+import torch
+from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
+from torch.utils.data import DataLoader
 
-from multi_modal_edge_ai.anomaly_detection.parser import combine_equal_consecutive_activities, parse_file_with_idle
-from multi_modal_edge_ai.anomaly_detection.utils import isolate_adl_in_dataframe
+from multi_modal_edge_ai.anomaly_detection.data_access.parser import combine_equal_consecutive_activities, \
+    parse_file_with_idle
+from multi_modal_edge_ai.anomaly_detection.utils import isolate_adl_in_dataframe, dataloader_to_numpy
 
 
 def load_datasets():
@@ -28,3 +33,13 @@ def test_isolate_adl_in_dataframe_mixed():
     result = isolate_adl_in_dataframe(datasets['adl_df'], "Sleeping")
     print(result)
     assert_frame_equal(expected, result)
+
+
+def test_dataloader_to_numpy():
+    data = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    dataloader = DataLoader(data, batch_size=2)
+
+    expected_result = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    result = dataloader_to_numpy(dataloader)
+
+    assert_array_equal(result, expected_result)
