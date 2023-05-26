@@ -9,10 +9,10 @@ from pandas import DataFrame
 class Model(ABC):
     @abstractmethod
     def __init__(self) -> None:
-        self.model = None
+        pass
 
     @abstractmethod
-    def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> None:
+    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         abstract method in order to train a model on a dataset, with any hyperparams needed
         """
