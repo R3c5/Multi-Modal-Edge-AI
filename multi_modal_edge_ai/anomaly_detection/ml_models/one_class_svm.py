@@ -1,7 +1,7 @@
+import pickle
 from typing import Any, Union, List
 
 import numpy as np
-from joblib import dump, load
 from pandas import DataFrame
 from sklearn.svm import OneClassSVM
 from torch import Tensor
@@ -60,11 +60,13 @@ class OCSVM(Model):
         This function will save sklearn's one class svm on the specified path
         :param file_path: the file path
         """
-        dump(self.model, file_path)
+        with open(file_path, "wb") as file:
+            pickle.dump(self.model, file)
 
     def load(self, file_path: str) -> None:
         """
         This function will load sklearn's one class svm from the specified path
         :param file_path: the file path
         """
-        self.model = load(file_path)
+        with open(file_path, "rb") as file:
+            self.model = pickle.load(file)
