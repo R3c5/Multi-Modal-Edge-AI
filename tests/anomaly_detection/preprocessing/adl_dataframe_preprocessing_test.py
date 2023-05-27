@@ -15,7 +15,7 @@ def test_dataframe_categorical_to_numeric_label():
                                                               one_hot=False).tolist(),
                                 window_categorical_to_numeric(pd.concat([original_adl2, original_adl2]), 2,
                                                               adl_encoding, one_hot=False).tolist()])
-    returned_value = dataframe_categorical_to_numeric(df, 2, one_hot=False)
+    returned_value = dataframe_categorical_to_numeric(df, 2, ["Sleeping", "Relax"], one_hot=False)
     returned_df = returned_value[0]
     returned_int = returned_value[1]
     assert_frame_equal(returned_df, expected_df)
@@ -28,7 +28,7 @@ def test_dataframe_categorical_to_numeric_one_hot():
                                                               one_hot=True).tolist(),
                                 window_categorical_to_numeric(pd.concat([original_adl2, original_adl2]), 2,
                                                               adl_encoding, one_hot=True).tolist()])
-    returned_value = dataframe_categorical_to_numeric(df, 2, one_hot=True)
+    returned_value = dataframe_categorical_to_numeric(df, 2, ["Sleeping", "Relax"], one_hot=True)
     returned_df = returned_value[0]
     returned_int = returned_value[1]
     assert_frame_equal(returned_df, expected_df)
