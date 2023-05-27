@@ -1,6 +1,6 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.adl_inference.parser import parse_file
+from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
 
 
 def test_parser():
