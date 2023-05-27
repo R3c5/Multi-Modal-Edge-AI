@@ -1,4 +1,5 @@
 import pandas as pd
+import torch
 
 import multi_modal_edge_ai.anomaly_detection.ml_models.one_class_svm
 from multi_modal_edge_ai.anomaly_detection.data_access.adl_dataset import ADLDataset
@@ -40,7 +41,12 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     normalized_testing_df = dataframe_standard_scaling(numeric_testing_df, n_features_adl)
 
     normalized_training_dataloader = DataLoader(ADLDataset(normalized_testing_df))
-    normalized_testing_dataloader = DataLoader(ADLDataset(normalized_testing_df))
 
     model.train(normalized_training_dataloader, **vars(hparams))
+
+    n_correctly_predicted, total = 0, 0
+
+    for window in normalized_testing_df:
+        tensor_window = torch.Tensor(window)
+
 
