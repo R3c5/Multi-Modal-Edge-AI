@@ -83,7 +83,8 @@ def synthetic_anomaly_generator(data: pd.DataFrame, windows: pd.DataFrame, windo
     return synthetic_anomalies_df
 
 
-def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based: bool =True) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based: bool = True) -> \
+        Tuple[pd.DataFrame, pd.DataFrame]:
     """
     This function will split the windows into normal and anomalous windows
     :param data: The Dataframe on which to perform the sliding window
