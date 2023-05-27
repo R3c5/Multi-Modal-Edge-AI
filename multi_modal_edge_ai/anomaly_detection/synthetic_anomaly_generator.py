@@ -1,75 +1,43 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Tuple, List
 import random
 import pandas as pd
 
 
-def synthetic_anomaly_generator(data: pd.DataFrame, windows: pd.DataFrame, window_size: float,
-                                window_slide: float, magnitude: float, event_based: bool = True) -> pd.DataFrame:
+def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generation_ratio: float,
+                                event_based: bool = True) -> pd.DataFrame:
     """
     This function will generate synthetic anomalies for a given dataset. The function takes the dataset and splits
-    :param data: The Dataframe on which to perform the sliding window
-    :param windows: The windows that were generated from the data
-    :param window_size: The size of the window, either in events (int) or in time:hours (float)
-    :param window_slide: The slide of the window in the same units as above
-    :param magnitude: The magnitude of the synthetic anomalies to be generated. A value of 0.1 means that 10%
+    :param anomalous_windows: The windows that were generated from the data
+    :param anomaly_generation_ratio: The ratio of the synthetic anomalies to be generated. A value of 0.1 means that 10%
     :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: the Dataframe after performing the synthetic anomaly generation
     """
 
-    # Perform the window cleaning
-    (normal_windows, anomalous_windows) = clean_windows(data, windows)
-
-    number_of_synthetic_anomalies = int(len(anomalous_windows) * magnitude)
+    # Calculate the number of synthetic anomalies to be generated
+    number_of_synthetic_anomalies = int(len(anomalous_windows) * anomaly_generation_ratio)
     index_anomalies = 0
 
     # Create a new dataframe to store the synthetic anomalies
     synthetic_anomalies: List[pd.DataFrame] = []
 
     while index_anomalies < number_of_synthetic_anomalies:
-
         anomalous_windows = anomalous_windows.sample(frac=1, random_state=42)
-
         for index_window, window in anomalous_windows.iterrows():
-
-            window = pd.DataFrame([anomalous_windows.loc[index_window]])
-            reason = window['Reason'].tolist()[0].split(' ')[0]
-            type = window['Reason'].tolist()[0].split(' ')[-1]
-            window = window.drop(columns=['Reason', 'Duration'])
-
-            # Convert series to list
-            list_data = window.values.tolist()[0]
-
-            # Group into sets of 3 (start time, end time, activity)
-            grouped_data = zip(*[iter(list_data)] * 3)
-
-            # Convert to dataframe
-            activity = pd.DataFrame(grouped_data, columns=["Start_Time", "End_Time", "Activity"])
+            # Get the activity, reason and type of anomaly window
+            activity, reason, type_anomaly, window = process_window(anomalous_windows, index_window)
             new_activity: List[pd.DataFrame] = []
             new_duration = timedelta(0)
 
+            # Loop through the activities and generate the synthetic anomalies
             for act in range(len(activity)):
-                start_time = activity['Start_Time'][act]
-                end_time = activity['End_Time'][act]
-                if activity['Activity'][act] == reason and type == 'short':
-                    # select a random time between the start and end time of the activity
-                    random_time = random.uniform(activity['Start_Time'][act], activity['End_Time'][act])
-                    end_time = random_time
-                    new_duration = new_duration + end_time - start_time
-                    if act < len(activity):
-                        activity.loc['Start_Time', act + 1] = end_time
-                    new_activity.append(pd.DataFrame([start_time, end_time, activity['Activity'][act]]))
-                elif activity['Activity'][act] == reason and type == 'long':
-                    if act > 0:
-                        random_time = random.uniform(activity['Start_Time'][act - 1], activity['End_Time'][act - 1])
-                    else:
-                        random_time = random.uniform(activity['Start_Time'][act],
-                                                     activity['Start_Time'][act] - timedelta(hours=2))
-                    start_time = random_time
-                    new_duration = new_duration + end_time - start_time
-                    new_activity.append(pd.DataFrame([start_time, end_time, activity['Activity'][act]]))
+                start_time, end_time, name = activity.loc[act, ["Start_Time", "End_Time", "Activity"]]
+                if activity['Activity'][act] == reason and type_anomaly == 'short':
+                    new_duration = handle_short_anomaly_type(activity, act, start_time, new_duration, new_activity)
+                elif activity['Activity'][act] == reason and type_anomaly == 'long':
+                    new_duration = handle_long_anomaly_type(activity, act, start_time, new_duration, new_activity)
                 else:
-                    new_activity.append(pd.DataFrame([start_time, end_time, activity['Activity'][act]]))
+                    new_activity.append(pd.DataFrame([start_time, end_time, name]))
 
             new_activity_df = pd.concat(new_activity, ignore_index=True)
             new_anomalous_window = new_activity_df.transpose()
@@ -83,12 +51,84 @@ def synthetic_anomaly_generator(data: pd.DataFrame, windows: pd.DataFrame, windo
     return synthetic_anomalies_df
 
 
-def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based: bool = True) -> \
+def process_window(anomalous_windows: pd.DataFrame, index_window: int) -> Tuple[pd.DataFrame, str, str, pd.DataFrame]:
+    """
+    This function will process the window and return the activity, reason and type of anomaly
+    :param anomalous_windows: the windows to be processed
+    :param index_window: the index of the window to be processed
+    :return:
+    """
+
+    window = pd.DataFrame([anomalous_windows.loc[index_window]])
+    reason = window['Reason'].tolist()[0].split(' ')[0]
+    type_anomaly = window['Reason'].tolist()[0].split(' ')[-1]
+    window = window.drop(columns=['Reason', 'Duration'])
+
+    # Convert series to list
+    list_data = window.values.tolist()[0]
+
+    # Group into sets of 3 (start time, end time, activity)
+    grouped_data = zip(*[iter(list_data)] * 3)
+
+    # Convert to dataframe
+    activity = pd.DataFrame(grouped_data, columns=["Start_Time", "End_Time", "Activity"])
+    return activity, reason, type_anomaly, window
+
+
+def handle_short_anomaly_type(activity: pd.DataFrame, act: int, start_time: datetime, new_duration: timedelta,
+                              new_activity: List[pd.DataFrame]) -> timedelta:
+    """
+    This function will handle the short anomaly type
+    :param activity: the activities to be processed
+    :param act: index of the activity to be processed
+    :param start_time: start time of the activity
+    :param new_duration: new duration of the activity
+    :param new_activity: the generated synthetic activity
+    :return:
+    """
+
+    # select a random time between the start and end time of the current activity
+    random_time = pd.Timestamp(random.uniform(activity['Start_Time'][act], activity['End_Time'][act]))
+    end_time = random_time
+    new_duration = new_duration + end_time - start_time
+    if act < len(activity):
+        activity.loc[act + 1, 'Start_Time'] = end_time
+    new_activity.append(pd.DataFrame([start_time, end_time, activity['Activity'][act]]))
+    return new_duration
+
+
+def handle_long_anomaly_type(activity: pd.DataFrame, act: int, end_time: datetime, new_duration: timedelta,
+                             new_activity: List[pd.DataFrame]) -> timedelta:
+    """
+    This function will handle the short anomaly type
+    :param activity: the activities to be processed
+    :param act: index of the activity to be processed
+    :param end_time: start time of the activity
+    :param new_duration: new duration of the activity
+    :param new_activity: the generated synthetic activity
+    :return:
+    """
+
+    if act > 0:
+        # select a random time between the start and end time of the previous activity
+        st = activity['Start_Time'][act - 1]
+        random_time = pd.Timestamp(random.uniform(activity['Start_Time'][act - 1], activity['End_Time'][act - 1]))
+        new_activity[act - 1].loc[1, 0] = random_time
+    else:
+        random_time = random.uniform(activity['Start_Time'][act] - timedelta(hours=2), activity['Start_Time'][act])
+    start_time = random_time
+    new_duration = new_duration + end_time - start_time
+    new_activity.append(pd.DataFrame([start_time, end_time, activity['Activity'][act]]))
+    return new_duration
+
+
+def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.5, event_based: bool = True) -> \
         Tuple[pd.DataFrame, pd.DataFrame]:
     """
     This function will split the windows into normal and anomalous windows
     :param data: The Dataframe on which to perform the sliding window
     :param windows: The windows to be split
+    :param whisker: how far the data can be from the interquartile range
     :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: A tuple containing the normal and anomalous windows
     """
@@ -110,7 +150,6 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based: bool =
     activity_stats = data.groupby(['Activity', 'day'])['duration'].sum().groupby('Activity').agg(['mean', 'std'])
     # Perform the window cleaning
     # Calculate thresholds based on whiskers (e.g., 1.5 times the standard deviation)
-    whisker = 1.5
     activity_stats['upper_threshold'] = activity_stats['mean'] + whisker * activity_stats['std']
     activity_stats['lower_threshold'] = activity_stats['mean'] - whisker * activity_stats['std']
     activity_stats['lower_threshold'] = activity_stats['lower_threshold'].apply(lambda x: max(x, timedelta(0)))

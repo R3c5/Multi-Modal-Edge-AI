@@ -14,7 +14,14 @@ def test_statistics():
 def test_synthetic_anomaly_generator():
     df = parse_file_without_idle("tests/anomaly_detection/test_dataset/dummy_aruba.csv")
     windows = split_into_windows(df, 3, 2)
-    synthetic_data = synthetic_anomaly_generator(df, windows, 3, 2, 1)
+
+    (normal_windows, anomalous_windows) = clean_windows(df, windows, event_based=True)
+    synthetic_data = synthetic_anomaly_generator(anomalous_windows, 1)
+
+    # Check if the synthetic data is correct (i.e. data is choronologically ordered in a particular window)
+    for i in range(len(synthetic_data)):
+        assert synthetic_data.loc[i, 1] <= synthetic_data.loc[i, 3]
+        assert synthetic_data.loc[i, 4] <= synthetic_data.loc[i, 6]
 
     assert len(synthetic_data) == 49
 
