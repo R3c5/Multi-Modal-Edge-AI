@@ -1,7 +1,4 @@
-from typing import Union
-
 import torch.nn
-from pandas import DataFrame
 from torch import Tensor
 
 
@@ -31,11 +28,11 @@ class TorchAutoencoder(torch.nn.Module):
         for i in range(1, len(decoder_dim)):
             decoder_layers.append(torch.nn.Linear(decoder_dim[i - 1], decoder_dim[i]))
             decoder_layers.append(hidden_activation_fun if i != (
-                len(decoder_dim) - 1) else output_activation_fun)
+                    len(decoder_dim) - 1) else output_activation_fun)
 
         self.decoder = torch.nn.Sequential(*decoder_layers)
 
-    def forward(self, x: Union[Tensor, DataFrame]) -> Union[Tensor, DataFrame]:
+    def forward(self, x: Tensor) -> Tensor:
         """
         This function performs the forward pass on the given instance, by first encoding and then returning the decoding
         of such encoding
