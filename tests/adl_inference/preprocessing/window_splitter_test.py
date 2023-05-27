@@ -1,9 +1,9 @@
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.adl_inference.parser import parse_file
-from multi_modal_edge_ai.adl_inference.window_splitter import *
+from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
+from multi_modal_edge_ai.adl_inference.preprocessing.window_splitter import *
 
-(sdf, adf) = parse_file("tests/adl_inference/dummy_dataset/dummy_sensor.csv",
-                        "tests/adl_inference/dummy_dataset/dummy_adl.csv")
+(sdf, adf) = parse_file("tests/adl_inference/dummy_datasets/dummy_sensor.csv",
+                        "tests/adl_inference/dummy_datasets/dummy_adl.csv")
 def test_filter():
     start_time = pd.Timestamp("2023-01-01 01:02:30")
     end_time = pd.Timestamp("2023-01-01 01:11:30")
@@ -35,7 +35,7 @@ def test_activity_takes_whole_window():
     start_time = pd.Timestamp("2023-01-01 01:05:00")
     end_time = pd.Timestamp("2023-01-01 01:06:00")
 
-    activity = find_activity(adf, start_time, end_time)
+    activity = find_activity(adf, 0, start_time, end_time)
 
     assert activity == "Meal_Preparation"
 
@@ -46,7 +46,7 @@ def test_multiple_max_length_activities():
     start_time = pd.Timestamp("2023-01-01 01:09:00")
     end_time = pd.Timestamp("2023-01-01 01:12:00")
 
-    activity = find_activity(adf, start_time, end_time)
+    activity = find_activity(adf, 0, start_time, end_time)
 
     assert activity == "Bathroom"
 
@@ -79,7 +79,7 @@ def test_splitter_multiple_windows():
                'Idle', pd.Timestamp('2023-01-01 01:10:05'), pd.Timestamp('2023-01-01 01:13:25'))
 
     expected_result = [window1, window2, window3, window4]
-    result = split_into_windows(sdf, adf, 200)
+    result = split_into_windows(sdf, adf, 0, 200)
 
     assert_window_list(result, expected_result)
 
@@ -112,7 +112,7 @@ def test_splitter_empty_window():
     )
     expected_result = [window1, window2, window3, window4]
 
-    result = split_into_windows(sdf, adf, 250)
+    result = split_into_windows(sdf, adf, 0, 250)
 
     assert_window_list(result, expected_result)
 
@@ -130,7 +130,7 @@ def test_splitter_one_window():
 
     expected_result = [window]
 
-    result = split_into_windows(sdf, adf, 5000)
+    result = split_into_windows(sdf, adf, 0, 5000)
 
     assert_window_list(result, expected_result)
 
@@ -187,7 +187,7 @@ def test_splitter_overlapping_windows():
                'Idle', pd.Timestamp('2023-01-01 01:11:45'), pd.Timestamp('2023-01-01 01:15:05'))
 
     expected_result = [window1, window2, window3, window4, window5, window6, window7, window8]
-    result = split_into_windows(sdf, adf, 200, 100)
+    result = split_into_windows(sdf, adf, 0, 200, 100)
 
     assert_window_list(result, expected_result)
 

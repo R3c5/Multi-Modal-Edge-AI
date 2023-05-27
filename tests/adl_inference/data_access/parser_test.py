@@ -1,11 +1,11 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.adl_inference.parser import parse_file
+from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
 
 
 def test_parser():
-    (sdf, adf) = parse_file("tests/adl_inference/dummy_dataset/dummy_sensor.csv",
-                            "tests/adl_inference/dummy_dataset/dummy_adl.csv")
+    (sdf, adf) = parse_file("tests/adl_inference/dummy_datasets/dummy_sensor.csv",
+                            "tests/adl_inference/dummy_datasets/dummy_adl.csv")
 
     # Check sensor dataframe is correctly parsed
     sensor_data = {
