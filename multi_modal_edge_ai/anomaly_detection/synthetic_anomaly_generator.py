@@ -5,12 +5,14 @@ import pandas as pd
 
 
 def synthetic_anomaly_generator(data: pd.DataFrame, windows: pd.DataFrame, window_size: float,
-                                window_slide: float, magnitude: float, event_based=True) -> pd.DataFrame:
+                                window_slide: float, magnitude: float, event_based: bool = True) -> pd.DataFrame:
     """
     This function will generate synthetic anomalies for a given dataset. The function takes the dataset and splits
     :param data: The Dataframe on which to perform the sliding window
+    :param windows: The windows that were generated from the data
     :param window_size: The size of the window, either in events (int) or in time:hours (float)
     :param window_slide: The slide of the window in the same units as above
+    :param magnitude: The magnitude of the synthetic anomalies to be generated. A value of 0.1 means that 10%
     :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: the Dataframe after performing the synthetic anomaly generation
     """
@@ -55,7 +57,7 @@ def synthetic_anomaly_generator(data: pd.DataFrame, windows: pd.DataFrame, windo
                     end_time = random_time
                     new_duration = new_duration + end_time - start_time
                     if act < len(activity):
-                        activity['Start_Time'][act + 1] = end_time
+                        activity.loc['Start_Time', act + 1] = end_time
                     new_activity.append(pd.DataFrame([start_time, end_time, activity['Activity'][act]]))
                 elif activity['Activity'][act] == reason and type == 'long':
                     if act > 0:
@@ -77,12 +79,14 @@ def synthetic_anomaly_generator(data: pd.DataFrame, windows: pd.DataFrame, windo
             synthetic_anomalies.append(new_anomalous_window)
             index_anomalies += 1
 
-    return pd.concat(synthetic_anomalies, ignore_index=True)
+    synthetic_anomalies_df = pd.concat(synthetic_anomalies, ignore_index=True)
+    return synthetic_anomalies_df
 
 
-def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based=True) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based: bool =True) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     This function will split the windows into normal and anomalous windows
+    :param data: The Dataframe on which to perform the sliding window
     :param windows: The windows to be split
     :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: A tuple containing the normal and anomalous windows
@@ -147,10 +151,57 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, event_based=True) -
         else:
             normal_windows.append(window)
 
-    normal_windows = pd.concat(normal_windows)
+    normal_windows_df = pd.concat(normal_windows)
     if len(anomalous_windows) > 0:
-        anomalous_windows = pd.concat(anomalous_windows)
+        anomalous_windows_df = pd.concat(anomalous_windows)
     else:
-        anomalous_windows = pd.DataFrame(columns=['Start_Time', 'End_Time', 'Activity', 'Reason', 'Duration'])
+        anomalous_windows_df = pd.DataFrame(columns=['Start_Time', 'End_Time', 'Activity', 'Reason', 'Duration'])
+    return normal_windows_df, anomalous_windows_df
 
-    return normal_windows, anomalous_windows
+
+def get_statistic_per_hour(data: pd.DataFrame) -> pd.DataFrame:
+    # Convert start_time and end_time columns to datetime objects
+    data['Start_Time'] = pd.to_datetime(data['Start_Time'])
+    data['End_Time'] = pd.to_datetime(data['End_Time'])
+    data['Activity'] = data['Activity'].astype(str)
+
+    # Calculate the duration of each activity
+    data['duration'] = data['End_Time'] - data['Start_Time']
+
+    data['Starting_Hour'] = data['Start_Time'].dt.hour
+    data['Ending_Hour'] = data['End_Time'].dt.hour
+
+    hourly_counts = pd.DataFrame(columns=['Activity'] + list(range(24)))
+
+    # Step 4: Iterate over activities and calculate the occurrence counts for each hour
+    activities = data['Activity'].unique()
+    index = 0
+
+    for activity in range(len(activities)):
+        activity_counts = []
+        for hour in range(24):
+            activity_counts.append(0)
+        hourly_counts.loc[activity] = [activities[activity]] + activity_counts
+
+    for row in range(len(data)):
+        start_time = data.loc[row, 'Starting_Hour']
+        end_time = data.loc[row, 'Ending_Hour']
+        act = data.loc[row, 'Activity']
+        if act != 'Idle':
+            for i in range(start_time, end_time + 1):
+                if i == start_time:
+                    hourly_counts.loc[hourly_counts['Activity'] == act, i] = \
+                        hourly_counts.loc[hourly_counts['Activity'] == act, i] + \
+                        1 - (data.loc[row, 'Start_Time'].minute / 60)
+                elif i == end_time:
+                    hourly_counts.loc[hourly_counts['Activity'] == act, i] = \
+                        hourly_counts.loc[hourly_counts['Activity'] == act, i] + data.loc[row, 'End_Time'].minute / 60
+                else:
+                    hourly_counts.loc[hourly_counts['Activity'] == act, i] = \
+                        hourly_counts.loc[hourly_counts['Activity'] == act, i] + 1
+
+    for i in range(24):
+        sum = hourly_counts[i].sum()
+        hourly_counts[i] = hourly_counts[i] / sum
+
+    return hourly_counts
