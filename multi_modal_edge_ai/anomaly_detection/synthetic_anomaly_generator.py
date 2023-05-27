@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime
-from typing import Tuple, List
+from typing import Tuple, List, Any
 import random
 import pandas as pd
 
@@ -126,7 +126,7 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.
         Tuple[pd.DataFrame, pd.DataFrame]:
     """
     This function will split the windows into normal and anomalous windows
-    :param data: The Dataframe on which to perform the sliding window
+    :param data: The Dataframe containing the data
     :param windows: The windows to be split
     :param whisker: how far the data can be from the interquartile range
     :param event_based: A boolean representing if the operation is to be performed event-based or time-based
@@ -134,25 +134,8 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.
     """
     normal_windows: List[pd.DataFrame] = []
     anomalous_windows: List[pd.DataFrame] = []
-
-    # Convert start_time and end_time columns to datetime objects
-    data['Start_Time'] = pd.to_datetime(data['Start_Time'])
-    data['End_Time'] = pd.to_datetime(data['End_Time'])
-    data['Activity'] = data['Activity'].astype(str)
-
-    # Calculate the duration of each activity
-    data['duration'] = data['End_Time'] - data['Start_Time']
-
-    # Create a new column representing the day of each activity
-    data['day'] = data['End_Time'].dt.date
-
-    # Calculate average activity duration per day
-    activity_stats = data.groupby(['Activity', 'day'])['duration'].sum().groupby('Activity').agg(['mean', 'std'])
-    # Perform the window cleaning
-    # Calculate thresholds based on whiskers (e.g., 1.5 times the standard deviation)
-    activity_stats['upper_threshold'] = activity_stats['mean'] + whisker * activity_stats['std']
-    activity_stats['lower_threshold'] = activity_stats['mean'] - whisker * activity_stats['std']
-    activity_stats['lower_threshold'] = activity_stats['lower_threshold'].apply(lambda x: max(x, timedelta(0)))
+    data = prepare_data(data)
+    activity_stats = get_activity_stats(data, whisker)
 
     for i in range(len(windows)):
         is_anomalous = False
@@ -200,17 +183,17 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.
 
 
 def get_statistic_per_hour(data: pd.DataFrame) -> pd.DataFrame:
-    # Convert start_time and end_time columns to datetime objects
-    data['Start_Time'] = pd.to_datetime(data['Start_Time'])
-    data['End_Time'] = pd.to_datetime(data['End_Time'])
-    data['Activity'] = data['Activity'].astype(str)
+    """
+    This function will calculate the average duration of each activity for each hour of the day. For instance, it will
+    check how long the average sleeping activity is at 1:00 AM and so on. So 1:00 AM could have 90% of the time as sleep
+    and 10% as toilet.
+    :param data: The Dataframe containing the data
+    :return: statistics: A dataframe containing the average duration of each activity for each hour of the day
+    """
 
-    # Calculate the duration of each activity
-    data['duration'] = data['End_Time'] - data['Start_Time']
-
+    data = prepare_data(data)
     data['Starting_Hour'] = data['Start_Time'].dt.hour
     data['Ending_Hour'] = data['End_Time'].dt.hour
-
     hourly_counts = pd.DataFrame(columns=['Activity'] + list(range(24)))
 
     # Step 4: Iterate over activities and calculate the occurrence counts for each hour
@@ -245,3 +228,38 @@ def get_statistic_per_hour(data: pd.DataFrame) -> pd.DataFrame:
         hourly_counts[i] = hourly_counts[i] / sum
 
     return hourly_counts
+
+
+def prepare_data(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    This function will prepare the data for the cleaning process
+    :param data: The Dataframe containing the data
+    :return: prepared data
+    """
+    # Convert start_time and end_time columns to datetime objects
+    data['Start_Time'] = pd.to_datetime(data['Start_Time'])
+    data['End_Time'] = pd.to_datetime(data['End_Time'])
+    data['Activity'] = data['Activity'].astype(str)
+
+    # Calculate the duration of each activity
+    data['duration'] = data['End_Time'] - data['Start_Time']
+    return data
+
+
+def get_activity_stats(data: pd.DataFrame, whisker: float) -> Any:
+    """
+    This function will calculate the average duration of each activity and calculate the upper and lower thresholds
+    :param data: The Dataframe containing the data
+    :param whisker: how far the data can be from the interquartile range
+    :return: statistics: A dataframe containing the average duration of each activity and the upper and lower thresholds
+    """
+    data['day'] = data['End_Time'].dt.date
+
+    # Calculate average activity duration per day
+    activity_stats = data.groupby(['Activity', 'day'])['duration'].sum().groupby('Activity').agg(['mean', 'std'])
+    # Perform the window cleaning
+    # Calculate thresholds based on whiskers (e.g., 1.5 times the standard deviation)
+    activity_stats['upper_threshold'] = activity_stats['mean'] + whisker * activity_stats['std']
+    activity_stats['lower_threshold'] = activity_stats['mean'] - whisker * activity_stats['std']
+    activity_stats['lower_threshold'] = activity_stats['lower_threshold'].apply(lambda x: max(x, timedelta(0)))
+    return activity_stats
