@@ -1,10 +1,13 @@
 import pandas as pd
 
+import multi_modal_edge_ai.anomaly_detection.ml_models.one_class_svm
+from multi_modal_edge_ai.anomaly_detection.data_access.adl_dataset import ADLDataset
 from multi_modal_edge_ai.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
     dataframe_categorical_to_numeric, dataframe_standard_scaling
 from multi_modal_edge_ai.anomaly_detection.preprocessing.window_splitter import split_into_windows
 from multi_modal_edge_ai.anomaly_detection.train_and_eval.hyperparameter_config import HyperparameterConfig
 from multi_modal_edge_ai.commons.model import Model
+from torch.utils.data import DataLoader
 
 
 # window the dataframe
@@ -36,8 +39,8 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     normalized_training_df = dataframe_standard_scaling(numeric_training_df, n_features_adl)
     normalized_testing_df = dataframe_standard_scaling(numeric_testing_df, n_features_adl)
 
-    normalized_training_dataloader =
+    normalized_training_dataloader = DataLoader(ADLDataset(normalized_testing_df))
+    normalized_testing_dataloader = DataLoader(ADLDataset(normalized_testing_df))
 
-    model.train(normalized_training_df, )
-
+    model.train(normalized_training_dataloader, **vars(hparams))
 

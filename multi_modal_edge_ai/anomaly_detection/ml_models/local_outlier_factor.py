@@ -32,7 +32,9 @@ class LOF(Model):
         """
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the LOF model"
 
-        self.model.set_params(**hyperparams)
+        i_forest_hparams = hyperparams["lof_hparams"]
+
+        self.model.set_params(**i_forest_hparams)
         self.model.fit(dataloader_to_numpy(data))
 
     def predict(self, instance: Union[Tensor, DataFrame]) -> list[int]:

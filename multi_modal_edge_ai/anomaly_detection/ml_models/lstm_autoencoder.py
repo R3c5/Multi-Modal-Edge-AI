@@ -45,13 +45,13 @@ class LSTMAutoencoder(Model):
         """
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the LSTMAutoencoder model"
 
-        self.loss_function = hyperparams.get('loss_function', self.loss_function)
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams.get('learning_rate', 0.1),
+        self.loss_function = hyperparams["loss_function"]
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"],
                                      weight_decay=1e-8)
         curr_reconstruction_errors = []
         avg_training_loss = []
 
-        for epoch in range(hyperparams.get('epochs', 10)):
+        for epoch in range(hyperparams["n_epochs"]):
             epoch_training_loss = []
             for windows in data:
                 windows = windows.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
