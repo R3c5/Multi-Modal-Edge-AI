@@ -45,16 +45,16 @@ class CNNModel(Model):
 
         self.sensor_encoder = StringLabelEncoder(sensors)
 
-    def train(self, dataset: Union[DataLoader[Any], List], **hyperparams: Any) -> None:
+    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         This function will perform the entire training procedure on the CNN model with the data provided
-        :param dataset: A list of windows as described in window_splitter.py
+        :param data: A list of windows as described in window_splitter.py
         :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
         """
-        if not isinstance(dataset, List):
+        if not isinstance(data, List):
             raise TypeError("Training dataset is supposed to be a list of windows.")
 
-        data = window_list_to_nn_dataset(dataset, self.num_sensors, self.window_length, self.sensor_encoder)
+        dataset = window_list_to_nn_dataset(data, self.num_sensors, self.window_length, self.sensor_encoder)
 
         learning_rate = hyperparams.get("learning_rate", 0.001)
         num_epochs = hyperparams.get("num_epochs", 10)
@@ -69,7 +69,7 @@ class CNNModel(Model):
         self.model.train()
         for epoch in range(num_epochs):
             running_loss = 0.0
-            for inputs, labels in data:
+            for inputs, labels in dataset:
                 tensor_inputs = torch.from_numpy(inputs).unsqueeze(0).float()
                 label_tensor = torch.eye(self.num_classes)[labels]
                 optimizer.zero_grad()

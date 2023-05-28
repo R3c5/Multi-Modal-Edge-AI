@@ -1,6 +1,6 @@
 import pandas as pd
 
-from multi_modal_edge_ai.adl_inference.parser import parse_file
+from multi_modal_edge_ai.adl_inference.data_access.parser import parse_file
 from multi_modal_edge_ai.adl_inference.svm_feature_extractor import total_sensor_duration, extract_features, \
     extract_features_dataset
 
