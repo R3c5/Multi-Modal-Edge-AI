@@ -1,6 +1,6 @@
 from pandas.testing import assert_frame_equal
-from multi_modal_edge_ai.anomaly_detection.parser import *
-from multi_modal_edge_ai.anomaly_detection.window_splitter import *
+from multi_modal_edge_ai.anomaly_detection.data_access.parser import *
+from multi_modal_edge_ai.anomaly_detection.preprocessing.window_splitter import *
 from multi_modal_edge_ai.anomaly_detection.synthetic_anomaly_generator import *
 
 
