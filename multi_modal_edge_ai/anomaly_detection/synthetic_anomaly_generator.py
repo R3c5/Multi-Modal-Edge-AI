@@ -4,8 +4,8 @@ import random
 import pandas as pd
 
 
-def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generation_ratio: float,
-                                event_based: bool = True) -> pd.DataFrame:
+def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generation_ratio: float = 0.1) \
+        -> pd.DataFrame:
     """
     This function will generate synthetic anomalies for a given dataset. The function takes the dataset and splits
     :param anomalous_windows: The windows that were generated from the data
@@ -25,7 +25,7 @@ def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generat
         anomalous_windows = anomalous_windows.sample(frac=1, random_state=42)
         for index_window, window in anomalous_windows.iterrows():
             # Get the activity, reason and type of anomaly window
-            activity, reason, type_anomaly, window = process_window(anomalous_windows, index_window)
+            activity, reason, type_anomaly, window = extract_anomaly_details(anomalous_windows, index_window)
             new_activity: List[pd.DataFrame] = []
             new_duration = timedelta(0)
 
@@ -51,12 +51,13 @@ def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generat
     return synthetic_anomalies_df
 
 
-def process_window(anomalous_windows: pd.DataFrame, index_window: int) -> Tuple[pd.DataFrame, str, str, pd.DataFrame]:
+def extract_anomaly_details(anomalous_windows: pd.DataFrame, index_window: int) -> \
+        Tuple[pd.DataFrame, str, str, pd.DataFrame]:
     """
     This function will process the window and return the activity, reason and type of anomaly
     :param anomalous_windows: the windows to be processed
     :param index_window: the index of the window to be processed
-    :return:
+    :return: the activity, reason, type of anomaly and the window
     """
 
     window = pd.DataFrame([anomalous_windows.loc[index_window]])
@@ -122,7 +123,7 @@ def handle_long_anomaly_type(activity: pd.DataFrame, act: int, end_time: datetim
     return new_duration
 
 
-def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.5, event_based: bool = True) -> \
+def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.5) -> \
         Tuple[pd.DataFrame, pd.DataFrame]:
     """
     This function will split the windows into normal and anomalous windows
@@ -134,7 +135,7 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.
     """
     normal_windows: List[pd.DataFrame] = []
     anomalous_windows: List[pd.DataFrame] = []
-    data = prepare_data(data)
+    data = convert_time_and_calculate_duration(data)
     activity_stats = get_activity_stats(data, whisker)
 
     for i in range(len(windows)):
@@ -191,7 +192,7 @@ def get_statistic_per_hour(data: pd.DataFrame) -> pd.DataFrame:
     :return: statistics: A dataframe containing the average duration of each activity for each hour of the day
     """
 
-    data = prepare_data(data)
+    data = convert_time_and_calculate_duration(data)
     data['Starting_Hour'] = data['Start_Time'].dt.hour
     data['Ending_Hour'] = data['End_Time'].dt.hour
     hourly_counts = pd.DataFrame(columns=['Activity'] + list(range(24)))
@@ -230,7 +231,7 @@ def get_statistic_per_hour(data: pd.DataFrame) -> pd.DataFrame:
     return hourly_counts
 
 
-def prepare_data(data: pd.DataFrame) -> pd.DataFrame:
+def convert_time_and_calculate_duration(data: pd.DataFrame) -> pd.DataFrame:
     """
     This function will prepare the data for the cleaning process
     :param data: The Dataframe containing the data

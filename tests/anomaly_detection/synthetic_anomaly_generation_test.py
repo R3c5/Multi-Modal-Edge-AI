@@ -15,7 +15,7 @@ def test_synthetic_anomaly_generator():
     df = parse_file_without_idle("tests/anomaly_detection/test_dataset/dummy_aruba.csv")
     windows = split_into_windows(df, 3, 2)
 
-    (normal_windows, anomalous_windows) = clean_windows(df, windows, event_based=True)
+    (normal_windows, anomalous_windows) = clean_windows(df, windows)
     synthetic_data = synthetic_anomaly_generator(anomalous_windows, 1)
 
     # Check if the synthetic data is correct (i.e. data is choronologically ordered in a particular window)
@@ -32,7 +32,7 @@ def test_check_number_anomalous_windows_aruba_event_based():
     # Check number of anomalous windows
     windows = split_into_windows(df, 3, 2)
 
-    (normal_windows, anomalous_windows) = clean_windows(df, windows, event_based=True)
+    (normal_windows, anomalous_windows) = clean_windows(df, windows)
 
     assert len(anomalous_windows) == 250
     assert len(normal_windows) == 4562
@@ -45,7 +45,7 @@ def test_check_number_anomalous_windows_aruba_time_based():
     # Check number of anomalous windows
     windows = split_into_windows(df, 3.0, 2.0, event_based=False)
 
-    (normal_windows, anomalous_windows) = clean_windows(df, windows, event_based=True)
+    (normal_windows, anomalous_windows) = clean_windows(df, windows)
 
     assert len(anomalous_windows) == 1165
     assert len(normal_windows) == 1474
