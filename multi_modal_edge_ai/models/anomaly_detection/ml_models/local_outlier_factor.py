@@ -54,7 +54,7 @@ class LOF(Model):
         elif isinstance(instance, Tensor):
             instance = instance.cpu().numpy()
 
-        prediction = self.model.predict(instance)
+        prediction = self.model.predict(np.array([instance]))
         return np.where(prediction == -1, 0, 1).tolist()[0]
 
     def save(self, file_path: str) -> None:

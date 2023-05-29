@@ -130,7 +130,6 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.
     :param data: The Dataframe containing the data
     :param windows: The windows to be split
     :param whisker: how far the data can be from the interquartile range
-    :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: A tuple containing the normal and anomalous windows
     """
     normal_windows: List[pd.DataFrame] = []

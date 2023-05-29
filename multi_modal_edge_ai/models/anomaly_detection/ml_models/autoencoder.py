@@ -47,7 +47,7 @@ class Autoencoder(Model):
         curr_reconstruction_errors = []
         avg_training_loss = []
 
-        for epoch in hyperparams['n_epochs']:
+        for epoch in range(hyperparams['n_epochs']):
             epoch_training_loss = []
             for windows in data:
                 windows = windows.to(self.device).float()
