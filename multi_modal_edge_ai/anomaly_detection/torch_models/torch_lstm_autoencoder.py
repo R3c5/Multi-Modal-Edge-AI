@@ -1,6 +1,3 @@
-from typing import Union
-
-from pandas import DataFrame
 from torch import Tensor
 from torch import nn
 
