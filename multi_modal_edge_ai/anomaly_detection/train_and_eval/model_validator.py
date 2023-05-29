@@ -1,14 +1,16 @@
+from typing import Any
+
 import pandas as pd
 import torch
+from sklearn.metrics import confusion_matrix
+from torch.utils.data import DataLoader
 
-import multi_modal_edge_ai.anomaly_detection.ml_models.one_class_svm
 from multi_modal_edge_ai.anomaly_detection.data_access.adl_dataset import ADLDataset
 from multi_modal_edge_ai.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
     dataframe_categorical_to_numeric, dataframe_standard_scaling
 from multi_modal_edge_ai.anomaly_detection.preprocessing.window_splitter import split_into_windows
 from multi_modal_edge_ai.anomaly_detection.train_and_eval.hyperparameter_config import HyperparameterConfig
 from multi_modal_edge_ai.commons.model import Model
-from torch.utils.data import DataLoader
 
 
 # window the dataframe
@@ -24,12 +26,12 @@ def synthetic_anomaly_generation(window_df, param):
     return window_df, window_df
 
 
-def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterConfig):
+def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterConfig) -> tuple[float, Any]:
     window_df = split_into_windows(data, hparams.window_size, hparams.window_slide, hparams.event_based)
 
     clean_df, anomalous_df = synthetic_anomaly_generation(window_df, ...)  # TODO clean & generate anomalies
 
-    training_df, testing_df = clean_df, anomalous_df  # TODO split into train and test datasets. Requires synth anom.
+    training_df, testing_df, testing_labels = clean_df, anomalous_df, ...  # TODO split into train and test datasets. Requires synth anom.
 
     # currently this numerical transformation doesn't support time-based windows
     numeric_training_df, n_features_adl = dataframe_categorical_to_numeric(training_df, int(hparams.window_size),
@@ -40,13 +42,20 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     normalized_training_df = dataframe_standard_scaling(numeric_training_df, n_features_adl)
     normalized_testing_df = dataframe_standard_scaling(numeric_testing_df, n_features_adl)
 
-    normalized_training_dataloader = DataLoader(ADLDataset(normalized_testing_df))
+    normalized_training_dataloader = DataLoader(ADLDataset(normalized_training_df))
 
     model.train(normalized_training_dataloader, **vars(hparams))
 
-    n_correctly_predicted, total = 0, 0
+    predicted_labels = []
+    n_correctly_predicted = 0
 
-    for window in normalized_testing_df:
+    for i, window in enumerate(normalized_testing_df):
         tensor_window = torch.Tensor(window)
+        predicted_label = model.predict(tensor_window)
+        n_correctly_predicted += 1 if predicted_label == testing_labels[i] else 0
+        predicted_labels.append(predicted_label)
 
+    average = n_correctly_predicted / len(testing_labels)
+    cm = confusion_matrix(testing_labels, predicted_labels)
 
+    return average, cm

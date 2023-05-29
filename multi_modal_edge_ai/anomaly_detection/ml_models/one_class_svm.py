@@ -39,14 +39,14 @@ class OCSVM(Model):
 
     def predict(self, instance: Union[Tensor, DataFrame]) -> list[int]:
         """
-        Perform anomaly detection on the provided instance using the trained SVM model.
+        Perform anomaly detection on the provided instance using the trained OCSVM model.
         The method uses the sklearn OneClassSVM's predict method to classify the instance.
         The instance is first converted to a numpy array, if it is not already.
-        Anomalous instances are identified by a prediction of -1 from the SVM model,
+        Anomalous instances are identified by a prediction of -1 from the OCSVM model,
         while normal instances are identified by a prediction of 1.
-        The method returns a list of binary labels where 0 indicates an anomaly and 1 indicates a normal instance.
-        :param instance: the data instances on which to perform anomaly detection
-        :return: a list of predictions respective to the provided data instances
+        The method returns a binary label where 0 indicates an anomaly and 1 indicates a normal instance.
+        :param instance: the data instance on which to perform anomaly detection
+        :return: a prediction for the provided data instance
         """
         # Ensure that instance is a 2D numpy array
         if isinstance(instance, DataFrame):
@@ -55,7 +55,7 @@ class OCSVM(Model):
             instance = instance.cpu().numpy()
 
         prediction = self.model.predict(instance)
-        return np.where(prediction == -1, 0, 1).tolist()
+        return np.where(prediction == -1, 0, 1).tolist()[0]
 
     def save(self, file_path: str) -> None:
         """
