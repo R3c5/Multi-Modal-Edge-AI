@@ -15,7 +15,7 @@ In the terminal, navigate to the file where the Flask is called and call `flask 
 The following should appear:
  ![Running Server](screenshots/run_server.png)
 
-Note that this server should only be used in the development process, and not as a final server. The link from gave some explanation on how to Dockerize the application and be able to run it in the cloud.
+Note that this server should only be used in the development process, and not as a final server. The link from above gives some explanation on how to Dockerize the application and be able to run it in the cloud.
 
 To close the server do `Ctrl+C` as instructed in the image.
 
