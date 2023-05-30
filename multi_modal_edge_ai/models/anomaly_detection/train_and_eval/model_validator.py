@@ -4,22 +4,35 @@ import numpy as np
 import pandas as pd
 import torch
 from sklearn.metrics import confusion_matrix
+from sklearn.utils import shuffle
 from torch.utils.data import DataLoader
 
+from multi_modal_edge_ai.commons.model import Model
 from multi_modal_edge_ai.models.anomaly_detection.data_access.adl_dataset import ADLDataset
-from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import parse_file_with_idle
-from multi_modal_edge_ai.models.anomaly_detection.ml_models import *
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
     dataframe_categorical_to_numeric, dataframe_standard_scaling
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.window_splitter import split_into_windows
 from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.hyperparameter_config import HyperparameterConfig
-from multi_modal_edge_ai.commons.model import Model
 from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.synthetic_anomaly_generator import clean_windows, \
     synthetic_anomaly_generator
-from sklearn.utils import shuffle
 
 
 def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterConfig) -> tuple[float, Any]:
+    """
+    This function is responsible for training the model on the given dataset and then evaluating it. It splits the
+    provided dataset into windows, cleans the windows, and generates synthetic anomalies. It also separates clean and
+    anomalous instances, shuffles and splits the clean data for training and testing. It normalizes the training and
+    testing data, transforms them to numerical form and prepares them for the model. The function also sets the
+    reconstruction error threshold for the model if applicable. Finally, it predicts the labels for the testing dataset
+    and calculates the accuracy and confusion matrix. Important to note that this function currently does not support
+    time-based windows.
+    :param model: The machine learning model that implements the Model abstract class
+    :param data: The dataframe containing the ADLs sequences
+    :param hparams: The HyperparameterConfig with all the hyperparameters for the model, training and validation
+    procedure
+    :return: A tuple with the first element being the accuracy and the second element being a confusion matrix of the
+    prediction
+    """
     window_df = split_into_windows(data, hparams.window_size, hparams.window_slide, hparams.event_based)
 
     distinct_adl_list = pd.unique(window_df.iloc[:, 2::3].values.ravel('K'))
@@ -38,6 +51,7 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     testing_df.loc[:, "label"] = 1
     anomalous_df.loc[:, "label"] = 0
     testing_df = shuffle(pd.concat([anomalous_df, testing_df]))
+
     testing_labels = testing_df["label"].values
     testing_df = testing_df.drop("label", axis=1)
     testing_df = testing_df.drop("Reason", axis=1)
@@ -46,8 +60,6 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     # currently this numerical transformation doesn't support time-based windows
     numeric_training_df, n_features_adl = dataframe_categorical_to_numeric(training_df, int(hparams.window_size),
                                                                            distinct_adl_list, hparams.one_hot)
-
-    print(n_features_adl)
 
     numeric_testing_df = \
         dataframe_categorical_to_numeric(testing_df, int(hparams.window_size), distinct_adl_list, hparams.one_hot)[0]
@@ -69,7 +81,5 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
 
     average = n_correctly_predicted / len(testing_labels)
     cm = confusion_matrix(testing_labels, predicted_labels)
-    print(testing_labels)
-    print(predicted_labels)
 
     return average, cm
