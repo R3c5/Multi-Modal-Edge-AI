@@ -40,9 +40,14 @@ class RNNModel(Model):
     def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         method to train the RNN model on a data, with any hyperparams needed
-        :param data: A list of windows as described in window_splitter.py
+        :param data: A list of windows as described in window_splitter.py. A window should be in the following format:
+        A list of tuples, where a tuple has:
+            * dataframe containing the sensor data with the following columns ('Sensor', 'Start_Time', 'End_Time')
+            * corresponding activity
+            * start time of the window
+            * end time of the window
         :param hyperparams: training hyperparameters: epochs, learning_rate, loss_function
-        :return:
+        :return: the trained model
         """
         if not isinstance(data, List):
             raise TypeError("Training data is supposed to be a list of windows.")
@@ -83,14 +88,15 @@ class RNNModel(Model):
         print('\n')
         print('Finished training RNN model.')
 
-        # Return any useful information or the trained model
+        # Return the trained model
         return self.model
 
     def predict(self, instance: Union[Tensor, DataFrame], window_start=None, window_end=None) -> Any:
         """
         This function will perform a forward pass on the instance provided and return the class with the highest
         probability
-        :param instance: The instance on which to perform the forward pass
+        :param instance: The instance on which to perform the forward pass. The columns of the dataframe should be:
+        Sensor, Start_Time and End_Time.
         :param window_start: datetime representing the start time of the window,
         if None, the earliest sensor start time will be taken
         :param window_end: datetime representing the end time of the window,
