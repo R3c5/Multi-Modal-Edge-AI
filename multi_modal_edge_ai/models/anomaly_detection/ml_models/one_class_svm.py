@@ -32,9 +32,9 @@ class OCSVM(Model):
         """
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the OCSVM model"
 
-        i_forest_hparams = hyperparams["ocsvm_hparams"]
+        ocsvm_hparams = hyperparams["ocsvm_hparams"]
 
-        self.model.set_params(**i_forest_hparams)
+        self.model.set_params(**ocsvm_hparams)
         self.model.fit(dataloader_to_numpy(data))
 
     def predict(self, instance: Union[Tensor, DataFrame]) -> list[int]:
