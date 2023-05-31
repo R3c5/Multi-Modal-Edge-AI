@@ -8,8 +8,8 @@ class HyperparameterConfig:
                  anomaly_whisker: float = 1.5, learning_rate: float = 0.01,
                  loss_function: torch.nn.Module = torch.nn.MSELoss(), i_forest_hparams: Optional[Dict[str, Any]] = None,
                  ocsvm_hparams: Optional[Dict[str, Any]] = None, lof_hparams: Optional[Dict[str, Any]] = None,
-                 n_epochs: int = 10, window_size: float = 10, window_slide: float = 5, event_based=True,
-                 one_hot=True) -> None:
+                 n_epochs: int = 10, window_size: float = 10, window_slide: float = 5, event_based: bool = True,
+                 one_hot: bool = True) -> None:
         """
         This object is just a data holder for all the hyperparameters. It was created with the purpose of convenience.
         :param batch_size: The batch size of the training dataloader
