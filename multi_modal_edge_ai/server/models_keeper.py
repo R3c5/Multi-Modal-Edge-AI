@@ -2,8 +2,8 @@ from multi_modal_edge_ai.commons.model import Model
 
 
 class ModelsKeeper:
-    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_path: str = './models/adl_model',
-                 anomaly_detection_path: str = './models/anomaly_detection_model') -> None:
+    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_path: str = None,
+                 anomaly_detection_path: str = None) -> None:
         """
         Instantiate the models
         :param adl_model: Model representing the model used on ADL inference
@@ -12,9 +12,12 @@ class ModelsKeeper:
         :param anomaly_detection_path: Path to the file storing the Anomaly detection model
         """
         self.adl_model = adl_model
-        self.adl_path = adl_path
         self.anomaly_detection_model = anomaly_detection_model
-        self.anomaly_detection_path = anomaly_detection_path
+
+        self.adl_path = adl_path if adl_path is not None \
+            else 'multi_modal_edge_ai/server/models/adl_model'
+        self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
+            else 'multi_modal_edge_ai/server/models/anomaly_detection_model'
 
     def load_models(self) -> None:
         """
