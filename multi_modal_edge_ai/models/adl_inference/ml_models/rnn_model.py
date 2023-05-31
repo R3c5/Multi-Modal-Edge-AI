@@ -41,7 +41,6 @@ class RNNModel(Model):
         """
         method to train the RNN model on a data, with any hyperparams needed
         :param data: A list of windows as described in window_splitter.py. A window should be in the following format:
-        A list of tuples, where a tuple has:
             * dataframe containing the sensor data with the following columns ('Sensor', 'Start_Time', 'End_Time')
             * corresponding activity
             * start time of the window

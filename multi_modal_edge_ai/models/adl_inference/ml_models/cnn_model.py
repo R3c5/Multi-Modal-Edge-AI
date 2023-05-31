@@ -48,7 +48,11 @@ class CNNModel(Model):
     def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         This function will perform the entire training procedure on the CNN model with the data provided
-        :param data: A list of windows as described in window_splitter.py
+        :param data: A list of windows which should have the following format:
+            * dataframe containing the sensor data with the following columns ('Sensor', 'Start_Time', 'End_Time')
+            * corresponding activity
+            * start time of the window
+            * end time of the window
         :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
         """
         if not isinstance(data, List):
@@ -89,7 +93,8 @@ class CNNModel(Model):
         """
         This function will perform a forward pass on the instance provided and return the class with the highest
         probability
-        :param instance: The instance on which to perform the forward pass
+        :param instance: The instance on which to perform the forward pass. The columns of the dataframe should be:
+        Sensor, Start_Time and End_Time.
         :param window_start: datetime representing the start time of the window,
         if None, the earliest sensor start time will be taken
         :param window_end: datetime representing the end time of the window,

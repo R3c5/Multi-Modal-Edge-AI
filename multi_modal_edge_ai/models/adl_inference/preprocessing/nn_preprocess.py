@@ -10,13 +10,19 @@ def window_list_to_nn_dataset(dataset: List[Tuple[pd.DataFrame, Union[int], pd.T
                               num_sensors: int, window_length: int, encoder: StringLabelEncoder) \
         -> List[Tuple[np.ndarray, int]]:
     """
-    Converts a list of windows (explained in window_splitter) to a list that contains
-    input to the cnn and expected label
-    :param dataset: list of windows that will be formatted
+    Converts a list of windows (explained in window_splitter or bellow) to a list that contains
+    input to the nn and expected label
+    :param dataset: list of windows that will be formatted, where a window has:
+            * dataframe containing the sensor data. Dataframe with the following columns: 'Start_Time',
+            'End_Time' and 'Sensor'
+            * corresponding activity
+            * start time of the window
+            * end time of the window
     :param num_sensors: total number of sensors that the model can encounter
     :param window_length: total length of the window in seconds
     :param encoder: StringLabelEncoder used to encode the sensor names into ints
-    :return: a list containing tuples of a 2D array and the expected output
+    :return: a list containing tuples of a 2D array (explained in the ```sensor_df_to_nn_input_matrix```) and
+    the expected output.
     """
     formatted_data = []
     for window in dataset:

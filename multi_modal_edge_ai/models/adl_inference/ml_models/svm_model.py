@@ -41,7 +41,8 @@ class SVMModel(Model):
     def predict(self, instance: Union[torch.Tensor, pd.DataFrame]) -> str:
         """
         Classifies an instance into a respective class
-        :param instance: a pd.DataFrame corresponding to sensor activation in the timeframe of one window
+        :param instance: a pd.DataFrame corresponding to sensor activation in the timeframe of one window. The columns
+        of the dataframe should be: Sensor, Start_Time and End_Time.
         :return: string output of ADL
         """
         if not isinstance(instance, pd.DataFrame):
