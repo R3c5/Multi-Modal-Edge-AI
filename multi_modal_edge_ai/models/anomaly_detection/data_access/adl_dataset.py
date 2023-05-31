@@ -4,9 +4,9 @@ import pandas as pd
 from typing import Any, Callable, Optional
 
 
-class ArubaDAO(Dataset[torch.Tensor]):
-    def __init__(self, csv_path: str, transform: Optional[Callable[..., Any]] = None) -> None:
-        self.data = pd.read_csv(csv_path)
+class ADLDataset(Dataset[torch.Tensor]):
+    def __init__(self, data: pd.DataFrame, transform: Optional[Callable[..., Any]] = None) -> None:
+        self.data = data
         self.transform = transform
 
     def __len__(self) -> int:

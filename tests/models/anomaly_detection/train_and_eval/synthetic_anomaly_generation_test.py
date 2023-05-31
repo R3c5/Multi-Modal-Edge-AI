@@ -1,6 +1,6 @@
 from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import *
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.window_splitter import *
-from multi_modal_edge_ai.models.anomaly_detection.synthetic_anomaly_generator import *
+from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.synthetic_anomaly_generator import *
 
 
 def test_statistics():

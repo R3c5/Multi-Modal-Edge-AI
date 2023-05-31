@@ -27,6 +27,7 @@ class TorchAutoencoder(torch.nn.Module):
         decoder_layers: list[torch.nn.Module] = []
         for i in range(1, len(decoder_dim)):
             decoder_layers.append(torch.nn.Linear(decoder_dim[i - 1], decoder_dim[i]))
+
             decoder_layers.append(hidden_activation_fun if i != (len(decoder_dim) - 1) else output_activation_fun)
 
         self.decoder = torch.nn.Sequential(*decoder_layers)
