@@ -45,24 +45,25 @@ class LSTMAutoencoder(Model):
         """
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the LSTMAutoencoder model"
 
-        self.loss_function = hyperparams.get('loss_function', self.loss_function)
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams.get('learning_rate', 0.1),
+        self.loss_function = hyperparams["loss_function"]
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"],
                                      weight_decay=1e-8)
         curr_reconstruction_errors = []
         avg_training_loss = []
 
-        for epoch in range(hyperparams.get('epochs', 10)):
+        for epoch in range(hyperparams["n_epochs"]):
             epoch_training_loss = []
-            for windows in data:
-                windows = windows.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
-                reconstructed_window = self.model(windows)
+            for batch in data:
+                for window in batch:
+                    window = window.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
+                    reconstructed_window = self.model(window)
 
-                loss = self.loss_function(reconstructed_window, windows)
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+                    loss = self.loss_function(reconstructed_window, window)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
 
-                epoch_training_loss.append(loss)
+                    epoch_training_loss.append(loss.item())
             curr_reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
 
@@ -88,6 +89,7 @@ class LSTMAutoencoder(Model):
         """
         self.model.eval()  # turn the model into evaluation mode
         instance = instance.to(self.device)  # send device to gpu if needed
+        instance = instance.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
 
         if self.reconstruction_loss_threshold == -1:
             raise NotImplementedError("You must set the reconstruction error before using prediction")
