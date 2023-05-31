@@ -24,3 +24,5 @@
   >   - ```rnn_playground.py```: Provides a playground for training and evaluating RNN models.
   >   - ```svm_playground.py```: Provides a playground for training and evaluating SVM models.
   >   - ```validate.py```: Implements the full validation process of a model for a dataset with ground truth.
+- Playground Instructions:
+  > - Adjust the parameters and file paths at the beginning of the files to your liking and run the cells.
