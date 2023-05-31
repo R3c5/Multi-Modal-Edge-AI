@@ -48,14 +48,7 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     anomalous_df = pd.concat([anomalous_df, generated_anomalies_df])
 
     testing_df = testing_df.copy()
-    testing_df.loc[:, "label"] = 1
-    anomalous_df.loc[:, "label"] = 0
-    testing_df = shuffle(pd.concat([anomalous_df, testing_df]))
-
-    testing_labels = testing_df["label"].values
-    testing_df = testing_df.drop("label", axis=1)
-    testing_df = testing_df.drop("Reason", axis=1)
-    testing_df = testing_df.drop("Duration", axis=1)
+    testing_df, testing_labels = validation_df_concatenation(testing_df, anomalous_df)
 
     # currently this numerical transformation doesn't support time-based windows
     numeric_training_df, n_features_adl = dataframe_categorical_to_numeric(training_df, int(hparams.window_size),
@@ -79,7 +72,28 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     predicted_labels = [model.predict(torch.Tensor(window)) for window in numpy_windows]
     n_correctly_predicted = np.sum(testing_labels == np.array(predicted_labels))
 
-    average = n_correctly_predicted / len(testing_labels)
+    accuracy = n_correctly_predicted / len(testing_labels)
     cm = confusion_matrix(testing_labels, predicted_labels)
 
-    return average, cm
+    return accuracy, cm
+
+
+def validation_df_concatenation(clean_df: pd.DataFrame, anomalous_df: pd.DataFrame) -> tuple[pd.DataFrame, np.ndarray]:
+    """
+    This function will perform the concatenation of both a clean testing dataframe and an anomalous testing dataframe
+    to form a larger, comprehensive (with both classes) testing dataframe. It will also return a numpy array with
+    the labels (1 for inlier, 0 for outlier) of each of the indices.
+    :param clean_df: The dataframe with the clean data to be used for the testing dataframe
+    :param anomalous_df: The dataframe with the anomalous data to be used for the testing dataframe
+    :return: The testing dataframe and its respective labels.
+    """
+    clean_df.loc[:, "label"] = 1
+    anomalous_df.loc[:, "label"] = 0
+    testing_df = shuffle(pd.concat([anomalous_df, clean_df]))
+
+    testing_labels = testing_df["label"].values
+    testing_df = testing_df.drop("label", axis=1)
+    testing_df = testing_df.drop("Reason", axis=1)
+    testing_df = testing_df.drop("Duration", axis=1)
+
+    return testing_df, testing_labels
