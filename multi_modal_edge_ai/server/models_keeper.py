@@ -1,9 +1,11 @@
+from typing import Union
+
 from multi_modal_edge_ai.commons.model import Model
 
 
 class ModelsKeeper:
-    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_path: str = None,
-                 anomaly_detection_path: str = None) -> None:
+    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_path: Union[str, None] = None,
+                 anomaly_detection_path: Union[str, None] = None) -> None:
         """
         Instantiate the models
         :param adl_model: Model representing the model used on ADL inference
@@ -14,10 +16,13 @@ class ModelsKeeper:
         self.adl_model = adl_model
         self.anomaly_detection_model = anomaly_detection_model
 
+        # For tests use the first path, for running the server choose the second path
         self.adl_path = adl_path if adl_path is not None \
             else 'multi_modal_edge_ai/server/models/adl_model'
+        # else './models/adl_model'
         self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
             else 'multi_modal_edge_ai/server/models/anomaly_detection_model'
+        # else './models/anomaly_detection_model'
 
     def load_models(self) -> None:
         """

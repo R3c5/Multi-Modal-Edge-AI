@@ -4,8 +4,7 @@ from unittest.mock import patch
 import pytest
 from datetime import datetime
 
-from multi_modal_edge_ai.server.api.client_connection import get_connected_clients
-from multi_modal_edge_ai.server.main import app
+from multi_modal_edge_ai.server.main import app, get_connected_clients
 
 
 @pytest.fixture
