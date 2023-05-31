@@ -71,7 +71,7 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
 
     average = n_correctly_predicted / len(testing_labels)
     cm = confusion_matrix(testing_labels, predicted_labels)
-    print(testing_labels)
-    print(predicted_labels)
+    #print(testing_labels)
+    #print(predicted_labels)
 
     return average, cm

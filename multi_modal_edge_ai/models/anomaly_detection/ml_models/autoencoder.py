@@ -61,6 +61,8 @@ class Autoencoder(Model):
                 epoch_training_loss.append(loss)
             curr_reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
+            # TODO: delete this print after playground is done
+            print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
 
         self.reconstruction_errors += torch.tensor(curr_reconstruction_errors, device='cpu').tolist()
         return avg_training_loss
