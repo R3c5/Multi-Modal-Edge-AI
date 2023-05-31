@@ -1,9 +1,10 @@
+import json
 import logging
 from logging.handlers import RotatingFileHandler
 
-from flask import Flask
+from flask import Flask, jsonify, send_file
 
-#This should be changed to import the respective packages
+# This should be changed to import the respective packages
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
 
@@ -21,7 +22,6 @@ app.logger.addHandler(log_handler)
 
 # Register blueprints
 app.register_blueprint(client_connection_blueprint)
-
 
 # Chosen models for ADL inference and Anomaly Detection
 adl_model = SVMModel()
