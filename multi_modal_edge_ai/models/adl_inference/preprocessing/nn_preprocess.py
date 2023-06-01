@@ -10,7 +10,7 @@ def window_list_to_nn_dataset(dataset: List[Tuple[pd.DataFrame, Union[int], pd.T
                               num_sensors: int, window_length: int, encoder: StringLabelEncoder) \
         -> List[Tuple[np.ndarray, int]]:
     """
-    Converts a list of windows (explained in window_splitter or bellow) to a list that contains
+    Converts a list of windows (explained in window_splitter or below) to a list that contains
     input to the nn and expected label
     :param dataset: list of windows that will be formatted, where a window has:
             * dataframe containing the sensor data. Dataframe with the following columns: 'Start_Time',

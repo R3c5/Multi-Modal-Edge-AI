@@ -37,7 +37,7 @@ class RNNModel(Model):
         self.num_classes = num_classes
         self.sensor_encoder = StringLabelEncoder(sensors)
 
-    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
+    def train(self, data: Union[DataLoader[Any], List], verbose: bool, **hyperparams: Any) -> Any:
         """
         method to train the RNN model on a data, with any hyperparams needed
         :param data: A list of windows as described in window_splitter.py. A window should be in the following format:
@@ -45,6 +45,7 @@ class RNNModel(Model):
             * corresponding activity
             * start time of the window
             * end time of the window
+        :param verbose: bool representing whether to print the prediction progress
         :param hyperparams: training hyperparameters: epochs, learning_rate, loss_function
         :return: the trained model
         """
@@ -60,8 +61,9 @@ class RNNModel(Model):
 
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
 
-        print('\n')
-        print('Training RNN model...')
+        if verbose:
+            print('\n')
+            print('Training RNN model...')
         self.model.train()
 
         for epoch in range(epochs):
@@ -82,10 +84,12 @@ class RNNModel(Model):
                 running_loss += loss.item()
 
             # Print training loss for each epoch
-            print(f"Epoch {epoch + 1}/{epochs} | Loss: {running_loss}")
+            if verbose:
+                print(f"Epoch {epoch + 1}/{epochs} | Loss: {running_loss}")
 
-        print('\n')
-        print('Finished training RNN model.')
+        if verbose:
+            print('\n')
+            print('Finished training RNN model.')
 
         # Return the trained model
         return self.model

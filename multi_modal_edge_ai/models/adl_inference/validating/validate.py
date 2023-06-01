@@ -49,10 +49,11 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
 def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
              test: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
              model: Model, labels: list[str], label_encoder: StringLabelEncoder,
-             model_hyperparams: dict | None = None) -> tuple[float, Any]:
+             model_hyperparams: dict | None = None, verbose: bool = True) -> tuple[float, Any]:
     """
     Validates a given model using a train and test list of windows, returns the percentage predicted
     correctly and a confusion matrix
+    :param verbose: bool whether to print out predictions
     :param label_encoder: encoder for labels
     :param labels: list of labels
     :param train: tuple from window_splitter
@@ -64,7 +65,7 @@ def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
     # Train the model
     if model_hyperparams is None:
         model_hyperparams = {}
-    model.train(train, **model_hyperparams)
+    model.train(train, verbose, **model_hyperparams)
 
     # Predict activities for test data using model
     score = 0
@@ -86,5 +87,5 @@ def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
     dy_true = [label_encoder.decode_label(y) for y in y_true]
     dy_pred = [label_encoder.decode_label(y) for y in y_pred]
     # print(len(y_pred))
-    cm = confusion_matrix(dy_true, dy_pred, labels=labels)
+    cm = confusion_matrix(dy_true, dy_pred, labels=labels, normalize='true')
     return average, cm

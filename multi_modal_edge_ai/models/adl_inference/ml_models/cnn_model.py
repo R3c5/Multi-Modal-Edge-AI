@@ -45,9 +45,10 @@ class CNNModel(Model):
 
         self.sensor_encoder = StringLabelEncoder(sensors)
 
-    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
+    def train(self, data: Union[DataLoader[Any], List], verbose: bool, **hyperparams: Any) -> Any:
         """
         This function will perform the entire training procedure on the CNN model with the data provided
+        :param verbose: bool representing whether to print the training progress
         :param data: A list of windows which should have the following format:
             * dataframe containing the sensor data with the following columns ('Sensor', 'Start_Time', 'End_Time')
             * corresponding activity
@@ -68,8 +69,9 @@ class CNNModel(Model):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate,
                                      weight_decay=1e-8)
 
-        print('\n')
-        print("Training started....")
+        if verbose:
+            print('\n')
+            print("Training started....")
         self.model.train()
         for epoch in range(num_epochs):
             running_loss = 0.0
@@ -84,10 +86,12 @@ class CNNModel(Model):
                 optimizer.step()
                 running_loss += loss.item()
 
-            print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss}")
+            if verbose:
+                print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss}")
 
-        print('\n')
-        print("Training completed.")
+        if verbose:
+            print('\n')
+            print("Training completed.")
 
     def predict(self, instance: Union[Tensor, DataFrame], window_start=None, window_end=None) -> Any:
         """
