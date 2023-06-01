@@ -1,10 +1,12 @@
 from datetime import timedelta
+from typing import Any
 
 import numpy as np
 import pandas as pd
 
 
-def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: float, event_based=True) -> pd.DataFrame:
+def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: float, event_based: bool = True) \
+        -> pd.DataFrame:
     """
     This function will perform a sliding window transformation according to the passed parameters
     :param data: The Dataframe on which to perform the sliding window
@@ -13,7 +15,7 @@ def split_into_windows(data: pd.DataFrame, window_size: float, window_slide: flo
     :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: the Dataframe after performing the sliding window operation
     """
-    return split_into_event_windows(data, int(window_size), int(window_slide)) if (event_based) else \
+    return split_into_event_windows(data, int(window_size), int(window_slide)) if event_based else \
         split_into_time_windows(data, window_size, window_slide)
 
 

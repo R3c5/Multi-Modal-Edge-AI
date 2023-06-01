@@ -1,6 +1,7 @@
+import random
 from datetime import timedelta, datetime
 from typing import Tuple, List, Any
-import random
+
 import pandas as pd
 
 
@@ -10,7 +11,6 @@ def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generat
     This function will generate synthetic anomalies for a given dataset. The function takes the dataset and splits
     :param anomalous_windows: The windows that were generated from the data
     :param anomaly_generation_ratio: The ratio of the synthetic anomalies to be generated. A value of 0.1 means that 10%
-    :param event_based: A boolean representing if the operation is to be performed event-based or time-based
     :return: the Dataframe after performing the synthetic anomaly generation
     """
 

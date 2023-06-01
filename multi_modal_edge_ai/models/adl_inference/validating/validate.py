@@ -86,5 +86,5 @@ def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
     dy_true = [label_encoder.decode_label(y) for y in y_true]
     dy_pred = [label_encoder.decode_label(y) for y in y_pred]
     # print(len(y_pred))
-    cm = confusion_matrix(dy_true, dy_pred, labels=labels)
+    cm = confusion_matrix(dy_true, dy_pred, labels=labels, normalize='true')
     return average, cm

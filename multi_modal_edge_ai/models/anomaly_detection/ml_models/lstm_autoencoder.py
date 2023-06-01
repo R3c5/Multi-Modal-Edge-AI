@@ -46,8 +46,9 @@ class LSTMAutoencoder(Model):
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the LSTMAutoencoder model"
 
         self.loss_function = hyperparams["loss_function"]
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"],
-                                     weight_decay=1e-8)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"], weight_decay=1e-8)
+        verbose = hyperparams["verbose"]
+
         curr_reconstruction_errors = []
         avg_training_loss = []
 
@@ -68,6 +69,9 @@ class LSTMAutoencoder(Model):
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
             # TODO: delete this print after playground is done
             print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
+
+            if verbose:
+                print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
 
         self.reconstruction_errors += torch.tensor(curr_reconstruction_errors, device='cpu').tolist()
         return avg_training_loss
@@ -93,8 +97,7 @@ class LSTMAutoencoder(Model):
         instance = instance.to(self.device)  # send device to gpu if needed
         instance = instance.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
 
-        if self.reconstruction_loss_threshold == -1:
-            raise NotImplementedError("You must set the reconstruction error before using prediction")
+        assert self.reconstruction_loss_threshold != -1, "You must set the reconstruction error before using prediction"
 
         with torch.no_grad():  # no need to construct the computation graph
             reconstructed = self.model(instance)
