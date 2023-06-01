@@ -91,7 +91,7 @@ class LSTMAutoencoder(Model):
         instance = instance.to(self.device)  # send device to gpu if needed
         instance = instance.reshape((1, self.seq_len, self.n_features)).to(self.device).float()
 
-        assert self.reconstruction_loss_threshold == -1, "You must set the reconstruction error before using prediction"
+        assert self.reconstruction_loss_threshold != -1, "You must set the reconstruction error before using prediction"
 
         with torch.no_grad():  # no need to construct the computation graph
             reconstructed = self.model(instance)

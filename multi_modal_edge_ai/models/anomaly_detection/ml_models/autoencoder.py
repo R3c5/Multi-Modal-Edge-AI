@@ -85,7 +85,7 @@ class Autoencoder(Model):
         self.model.eval()  # turn the model into evaluation mode
         instance = instance.to(self.device)  # send device to gpu if needed
 
-        assert self.reconstruction_loss_threshold == -1, "You must set the reconstruction error before using prediction"
+        assert self.reconstruction_loss_threshold != -1, "You must set the reconstruction error before using prediction"
 
         with torch.no_grad():  # no need to construct the computation graph
             reconstructed = self.model(instance)
