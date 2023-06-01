@@ -1,7 +1,7 @@
 import pandas as pd
 
 from multi_modal_edge_ai.models.adl_inference.data_access.parser import parse_file
-from multi_modal_edge_ai.models.adl_inference.preprocessing.svm_feature_extractor import total_sensor_duration, \
+from multi_modal_edge_ai.models.adl_inference.preprocessing.feature_extractor import total_sensor_duration, \
     extract_features, extract_features_dataset
 
 
