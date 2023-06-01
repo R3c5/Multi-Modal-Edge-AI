@@ -14,7 +14,7 @@
   >   - ```svm_model.py```: Implements an SVM model for ADL inference. It also provides functionality for saving and loading the model from a file.
   > - preprocessing:
   >   - ```nn_preprocess.py```: Converts a list of windows (explained in window_splitter) to a list that contains input to the nn and the expected label
-  >   - ```svm_feature_extractor.py```: The file contains functions for extracting features from sensor dataframes and calculating the total duration of specific sensor activities within a dataframe.
+  >   - ```feature_extractor.py```: The file contains functions for extracting features from sensor dataframes and calculating the total duration of specific sensor activities within a dataframe.
   >   - ```window_splitter.py```: The file contains utility functions for processing and splitting sensor data and activity data into windows based on a specified window length and slide.
   > - torch_models:
   >   - ```torch_cnn.py```: Custom PyTorch module implementing the CNN architecture.

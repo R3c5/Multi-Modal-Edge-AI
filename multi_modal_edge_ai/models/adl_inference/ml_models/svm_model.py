@@ -8,7 +8,7 @@ import numpy as np
 import pickle
 from torch.utils.data import DataLoader
 import torch
-from multi_modal_edge_ai.models.adl_inference.preprocessing.svm_feature_extractor import extract_features_dataset, \
+from multi_modal_edge_ai.models.adl_inference.preprocessing.feature_extractor import extract_features_dataset, \
     extract_features
 from multi_modal_edge_ai.commons.model import Model
 
