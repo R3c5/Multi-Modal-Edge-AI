@@ -1,13 +1,14 @@
 import datetime
 import logging
+from typing import Tuple, Union, Dict
 
-from flask import request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint, Response
 
 client_connection_blueprint = Blueprint('client_connection', __name__)
 
 
 @client_connection_blueprint.route('/api/set_up_connection', methods=['GET'])
-def set_up_connection():
+def set_up_connection() -> Response | tuple[Response, int]:
     from multi_modal_edge_ai.server.main import connected_clients
     """
     Set up the first time connection. Stores the IPs and the date when they connected in a dictionary.
@@ -17,6 +18,9 @@ def set_up_connection():
     try:
         client_ip = request.remote_addr  # Get the IP address of the client
         timestamp = datetime.datetime.now()  # Get the current timestamp
+
+        if client_ip is None:
+            raise Exception("No IP found")
 
         # Store the client IP and timestamp as a tuple in the dictionary
         connected_clients[client_ip] = timestamp
@@ -35,7 +39,7 @@ def set_up_connection():
 
 
 @client_connection_blueprint.route('/api/heartbeat', methods=['POST'])
-def heartbeat():
+def heartbeat() -> Response | tuple[Response, int]:
     from multi_modal_edge_ai.server.main import connected_clients
     """
     Update the last seen field of the client to know if they are still connected.

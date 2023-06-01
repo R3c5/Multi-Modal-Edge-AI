@@ -28,7 +28,19 @@ class ModelsKeeper:
         """
         Load the **trained** version of the models from the files with the paths initialised
         """
+        self.load_adl_model()
+        self.load_anomaly_detection_model()
+
+    def load_adl_model(self) -> None:
+        """
+        Load the **trained** version of the ADL model from the file with the path initialised
+        """
         self.adl_model.load(self.adl_path)
+
+    def load_anomaly_detection_model(self) -> None:
+        """
+        Load the **trained** version of the anomaly detection model from the file with the path initialised
+        """
         self.anomaly_detection_model.load(self.anomaly_detection_path)
 
     def save_models(self) -> None:
@@ -36,5 +48,18 @@ class ModelsKeeper:
         Save the latest versions of the models in the specified files
         This shall be used in the federated process after the models are aggregated.
         """
+        self.save_adl_model()
+        self.save_anomaly_detection_model()
+
+    def save_adl_model(self) -> None:
+        """
+        Save the latest versions of the ADL model in the specified file.
+        """
         self.adl_model.save(self.adl_path)
+
+    def save_anomaly_detection_model(self) -> None:
+        """
+        Save the latest versions of the anomaly detection model in the specified file
+        This shall be used in the federated process after the models are aggregated.
+        """
         self.anomaly_detection_model.save(self.anomaly_detection_path)
