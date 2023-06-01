@@ -12,7 +12,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def train(self, data: Union[DataLoader[Any], List], verbose: bool, **hyperparams: Any) -> Any:
+    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         abstract method in order to train a model on a dataset, with any hyperparams needed
         """

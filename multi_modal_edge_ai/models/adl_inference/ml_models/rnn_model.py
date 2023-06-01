@@ -37,7 +37,7 @@ class RNNModel(Model):
         self.num_classes = num_classes
         self.sensor_encoder = StringLabelEncoder(sensors)
 
-    def train(self, data: Union[DataLoader[Any], List], verbose: bool, **hyperparams: Any) -> Any:
+    def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         method to train the RNN model on a data, with any hyperparams needed
         :param data: A list of windows as described in window_splitter.py. A window should be in the following format:
@@ -45,8 +45,7 @@ class RNNModel(Model):
             * corresponding activity
             * start time of the window
             * end time of the window
-        :param verbose: bool representing whether to print the prediction progress
-        :param hyperparams: training hyperparameters: epochs, learning_rate, loss_function
+        :param hyperparams: training hyperparameters: epochs, learning_rate, loss_function, verbose
         :return: the trained model
         """
         if not isinstance(data, List):
@@ -54,8 +53,9 @@ class RNNModel(Model):
 
         dataset = window_list_to_nn_dataset(data, self.num_sensors, self.window_length, self.sensor_encoder)
 
-        epochs = hyperparams.get("epochs", 10)
+        epochs = hyperparams.get("epochs", 1)
         learning_rate = hyperparams.get("learning_rate", 0.001)
+        verbose = hyperparams.get("verbose", True)
 
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
 

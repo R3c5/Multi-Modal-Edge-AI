@@ -49,11 +49,10 @@ def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: l
 def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
              test: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
              model: Model, labels: list[str], label_encoder: StringLabelEncoder,
-             model_hyperparams: dict | None = None, verbose: bool = True) -> tuple[float, Any]:
+             model_hyperparams: dict | None = None) -> tuple[float, Any]:
     """
     Validates a given model using a train and test list of windows, returns the percentage predicted
     correctly and a confusion matrix
-    :param verbose: bool whether to print out predictions
     :param label_encoder: encoder for labels
     :param labels: list of labels
     :param train: tuple from window_splitter
@@ -65,7 +64,7 @@ def validate(train: list[tuple[pd.DataFrame, int, pd.Timestamp, pd.Timestamp]],
     # Train the model
     if model_hyperparams is None:
         model_hyperparams = {}
-    model.train(train, verbose, **model_hyperparams)
+    model.train(train, **model_hyperparams)
 
     # Predict activities for test data using model
     score = 0

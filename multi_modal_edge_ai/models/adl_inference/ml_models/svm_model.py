@@ -23,17 +23,17 @@ class SVMModel(Model):
                 degree=hyperparams.get('degree', 3))
         )
 
-    def train(self, data: Union[DataLoader[Any], List[Any]], verbose: bool, **hyperparams: Any) -> None:
+    def train(self, data: Union[DataLoader[Any], List[Any]], **hyperparams: Any) -> None:
         """
         Trains the model using the provided data.
         Data should be in the form of a list of windows returned by the split_into_windows function.
 
         :param data: A list of tuples containing the sensor data, label, start time, and end time for each window
-        :param verbose: bool representing whether to print the prediction progress
         :param hyperparams: Additional hyperparameters for training the model.
         :return: None
         """
         # retrieve features and labels from window
+        verbose = hyperparams.get('verbose', True)
         if verbose:
             print("Extracting features and labels from windows...")
         sensors = [window[0] for window in data]
