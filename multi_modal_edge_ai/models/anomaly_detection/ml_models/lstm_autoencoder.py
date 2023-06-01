@@ -47,6 +47,7 @@ class LSTMAutoencoder(Model):
 
         self.loss_function = hyperparams["loss_function"]
         optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"], weight_decay=1e-8)
+        verbose = hyperparams["verbose"]
 
         curr_reconstruction_errors = []
         avg_training_loss = []
@@ -66,6 +67,9 @@ class LSTMAutoencoder(Model):
                     epoch_training_loss.append(loss.item())
             curr_reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
+
+            if verbose:
+                print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
 
         self.reconstruction_errors += torch.tensor(curr_reconstruction_errors, device='cpu').tolist()
         return avg_training_loss

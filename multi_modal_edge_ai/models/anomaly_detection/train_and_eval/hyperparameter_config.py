@@ -9,7 +9,7 @@ class HyperparameterConfig:
                  loss_function: torch.nn.Module = torch.nn.MSELoss(), i_forest_hparams: Optional[Dict[str, Any]] = None,
                  ocsvm_hparams: Optional[Dict[str, Any]] = None, lof_hparams: Optional[Dict[str, Any]] = None,
                  n_epochs: int = 10, window_size: float = 10, window_slide: float = 5, event_based: bool = True,
-                 one_hot: bool = True) -> None:
+                 one_hot: bool = True, verbose: bool = True) -> None:
         """
         This object is just a data holder for all the hyperparameters. It was created with the purpose of convenience.
         :param batch_size: The batch size of the training dataloader
@@ -29,6 +29,7 @@ class HyperparameterConfig:
         :param event_based: A boolean representing whether the windows are event based or no. CURRENTLY NOT WORKING
         :param one_hot: A boolean representing whether the ADL types are to be encoded using one-hot encoding or
         label encoding
+        :param verbose: The boolean representing if the models should print training information
         """
         self.batch_size = batch_size
         self.reconstruction_error_quantile = reconstruction_error_quantile
@@ -45,3 +46,4 @@ class HyperparameterConfig:
         self.window_slide = window_slide
         self.event_based = event_based
         self.one_hot = one_hot
+        self.verbose = verbose
