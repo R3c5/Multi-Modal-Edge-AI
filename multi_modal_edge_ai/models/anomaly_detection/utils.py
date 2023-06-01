@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from torch.utils.data import DataLoader
 
 from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import combine_equal_consecutive_activities
 
@@ -18,7 +19,7 @@ def isolate_adl_in_dataframe(adl_df: pd.DataFrame, adl: str) -> pd.DataFrame:
     return combine_equal_consecutive_activities(adl_df)
 
 
-def dataloader_to_numpy(dataloader):
+def dataloader_to_numpy(dataloader: DataLoader) -> np.ndarray:
     """
     Converts a PyTorch DataLoader into a 2D numpy array.
     The function iterates over the batches of the DataLoader, converting each batch

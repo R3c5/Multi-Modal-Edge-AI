@@ -5,8 +5,8 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 
-def dataframe_categorical_to_numeric(df: pd.DataFrame, window_size: int, distinct_adl_list: list[str], one_hot=True) \
-        -> Tuple[pd.DataFrame, int]:
+def dataframe_categorical_to_numeric(df: pd.DataFrame, window_size: int, distinct_adl_list: list[str],
+                                     one_hot: bool = True) -> Tuple[pd.DataFrame, int]:
     """
     This function will perform the conversion from categorical variables to numerical ones. In the process there are
     some changes to the concrete variables. The original ADL which was composed by (start_time, end_time, adl_time) will

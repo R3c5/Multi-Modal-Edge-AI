@@ -37,7 +37,7 @@ class IForest(Model):
         self.model.set_params(**i_forest_hparams)
         self.model.fit(dataloader_to_numpy(data))
 
-    def predict(self, instance: Union[Tensor, DataFrame]) -> list[int]:
+    def predict(self, instance: Union[Tensor, DataFrame]) -> int:
         """
         Perform anomaly detection on the provided instance using the trained IForest model.
         The method uses the sklearn IsolationForest's predict method to classify the instance.
