@@ -42,7 +42,7 @@ class Autoencoder(Model):
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the Autoencoder model"
 
         self.loss_function = hyperparams['loss_function']
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"],weight_decay=1e-8)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"], weight_decay=1e-8)
         verbose = hyperparams["verbose"]
 
         curr_reconstruction_errors = []
