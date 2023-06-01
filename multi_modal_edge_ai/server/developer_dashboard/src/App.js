@@ -1,17 +1,17 @@
-import './App.css';
-import React from 'react';
 import {Card, HTMLTable, Icon} from '@blueprintjs/core';
 import 'normalize.css';
 import "@blueprintjs/core/lib/css/blueprint.css";
+import './App.css';
+import React from 'react';
 
 
 
 
 const CircleCard = ({ title, value }) => (
-    <Card style={{ width: '200px', margin: '10px' }}>
+    <Card style={{ width: '200px', margin: '10px', backgroundColor: '#181a1b' }}>
         <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>{title}</div>
-            <div style={{ width: '125px', height: '125px', borderRadius: '50%', backgroundColor: '#e6e6e6', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '24px', fontWeight: 'bold' }}>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px'}}>{title}</div>
+            <div style={{ width: '125px', height: '125px', borderRadius: '50%', backgroundColor: '#26292b', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '24px', fontWeight: 'bold' }}>
                 {value}
             </div>
         </div>
@@ -131,15 +131,15 @@ class Dashboard extends React.Component {
         const { numClients, clients, sortColumn, sortDirection } = this.state;
 
         return (
-            <>
-            <div> <!-- This div deals with the top row of circles -->
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div>
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'center', color:"white"}}>
                     <CircleCard title="Number of clients" value={numClients} />
                     <CircleCard title="Last update" value={7 + " hours"} />
                     <CircleCard title="Next update in" value={10 + " hours"} />
                 </div>
             </div>
-            <div style={{ width: '100%'}}> <!-- This div deals with the table -->
+            <div style={{ width: '100%', color: "white"}}>
                 <h2>Clients</h2>
                 <div style={{maxHeight: '50vh', overflow: 'auto', width: '100%'}}>
                     <HTMLTable striped interactive style={{ width: '100%' }}>
@@ -149,31 +149,31 @@ class Dashboard extends React.Component {
                             <col style={{ width: '30%' }} />
                         </colgroup>
                         <thead>
-                            <tr> <!-- Handles sorting functionality of the table -->
-                                <th onClick={() => this.handleSort('ip')}>
+                            <tr>
+                                <th onClick={() => this.handleSort('ip')} style={{color:"white"}}>
                                     Client IP {sortColumn === 'ip' && <Icon icon={sortDirection === 'asc' ? 'caret-up' : 'caret-down'} />}
                                 </th>
-                                <th onClick={() => this.handleSort('connectionStatus')}>
+                                <th onClick={() => this.handleSort('connectionStatus')} style={{color:"white"}}>
                                     Connection Status {sortColumn === 'connectionStatus' && <Icon icon={sortDirection === 'asc' ? 'caret-up' : 'caret-down'} />}
                                 </th>
-                                <th onClick={() => this.handleSort('lastUpdate')}>
+                                <th onClick={() => this.handleSort('lastUpdate')} style={{color:"white"}}>
                                     Last Update {sortColumn === 'lastUpdate' && <Icon icon={sortDirection === 'asc' ? 'caret-up' : 'caret-down'} />}
                                 </th>
                             </tr>
                         </thead>
-                        <tbody> <!-- Display each client as a table entry -->
+                        <tbody>
                         {clients.map(client => (
                             <tr key={client.id}>
-                                <td>{client.ip}</td>
-                                <td>{client.connectionStatus}</td>
-                                <td>{client.lastUpdate}</td>
+                                <td style={{color:"white"}}>{client.ip}</td>
+                                <td style={{color:"white"}}>{client.connectionStatus}</td>
+                                <td style={{color:"white"}}>{client.lastUpdate}</td>
                             </tr>
                         ))}
                         </tbody>
                     </HTMLTable>
                 </div>
             </div>
-            </>
+            </div>
         );
     }
 }
