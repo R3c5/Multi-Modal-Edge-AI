@@ -67,8 +67,6 @@ class LSTMAutoencoder(Model):
                     epoch_training_loss.append(loss.item())
             curr_reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
-            # TODO: delete this print after playground is done
-            print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
 
             if verbose:
                 print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
