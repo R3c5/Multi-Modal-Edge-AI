@@ -130,9 +130,18 @@ class DatabaseTunnel:
         :param collection_name: the name of the collection, default is 'raw_sensor'
         """
         # Establish an SSH tunnel to the remote MongoDB instance
-        client = pymongo.MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
+        client = self.create_mongo_client()
         db = client[database_name]
         self.collection = db[collection_name]
+
+    @staticmethod
+    def create_mongo_client():
+        """
+        A method to create a MongoDB client. The client is used to connect to the remote MongoDB instance.
+        This is for mocking purposes only.
+        :return: mongoDB client
+        """
+        return pymongo.MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
 
     def get_sensor_data_from_x_minutes_ago(self, xminutes: int) -> list[dict[Any, Any]]:
         """
@@ -221,12 +230,14 @@ class DatabaseTunnel:
         :return: a list of dictionaries
         """
         collection = self.collection
+        print(collection)
         cursor = collection.find({'motion_sensitivity': {'$exists': True},
                                   'occupancy': True}, {'_id': 0,
                                                        'last_seen': 1,
                                                        'device.friendlyName': 1,
-                                                       'occupancy': 1}).sort(
-            'last_seen', 1)
+                                                       'occupancy': 1})\
+            .sort('last_seen', 1)
+        print("invinrinv")
         return aggregate_similar_entries(self.get_data_from_cursor(cursor, 'PIR'), 60)
 
     def get_button_sensors(self) -> list[dict[Any, Any]]:
