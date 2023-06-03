@@ -24,17 +24,7 @@ def set_up_connection() -> Response | tuple[Response, int]:
             raise Exception("No IP found")
 
         # Store the new client
-        # Add a new element
-        new_client = {
-            'ip': client_ip,
-            'status': 'Connected',
-            'last_seen': timestamp,
-            'num_adls': 0,
-            'num_anomalies': 0
-        }
-
-        # TODO: Make sure connection is only done once
-        client_keeper.add_client(new_client)
+        client_keeper.add_client(client_ip, 'Connected', timestamp)
 
         # Return a response
         # TODO: Send models to API on client side
@@ -60,6 +50,10 @@ def heartbeat() -> Response | tuple[Response, int]:
     try:
 
         client_ip = request.remote_addr
+
+        if client_ip is None:
+            raise Exception("No IP found")
+
         timestamp = datetime.datetime.now()
 
         data: Dict[str, int] = cast(Dict[str, int], request.json)
@@ -69,15 +63,7 @@ def heartbeat() -> Response | tuple[Response, int]:
         recent_adls = data['recent_adls']
         recent_anomalies = data['recent_anomalies']
 
-        client = {
-            'ip': client_ip,
-            'status': 'Connected',
-            'last_seen': timestamp,
-            'num_adls': recent_adls,
-            'num_anomalies': recent_anomalies
-        }
-
-        if not client_keeper.update_client(client):
+        if not client_keeper.update_client(client_ip, 'Connected', timestamp, recent_adls, recent_anomalies):
             return jsonify({'message': 'Client not found'}), 404
 
         return jsonify({'message': 'Heartbeat received'})

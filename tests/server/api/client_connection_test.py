@@ -34,8 +34,26 @@ def test_set_up_connection(client):
 
 def test_heartbeat_seen_client(client):
     payload = {
-        'recent_adls': 10,
+        'recent_adls': 5,
         'recent_anomalies': 5
+    }
+    response = client.post('api/heartbeat', json=payload)
+    assert response.status_code == 200
+    assert response.get_json() == {'message': 'Heartbeat received'}
+
+    expected_data = {
+        'ip': ['0.0.0.0'],
+        'status': ['Connected'],
+        'num_adls': [5],
+        'num_anomalies': [5]
+    }
+    expected_df = pd.DataFrame(expected_data)
+    assert_connected_clients_with_expected(expected_df)
+
+def test_heartbeat_extra_adls(client):
+    payload = {
+        'recent_adls': 5,
+        'recent_anomalies': 0
     }
     response = client.post('api/heartbeat', json=payload)
     assert response.status_code == 200
@@ -49,7 +67,6 @@ def test_heartbeat_seen_client(client):
     }
     expected_df = pd.DataFrame(expected_data)
     assert_connected_clients_with_expected(expected_df)
-
 
 def test_heartbeat_bad_payload(client):
     payload = {
