@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from functools import wraps
 from typing import Tuple, Union, Dict, List, Any
 
@@ -23,11 +24,14 @@ def authenticate(func):
 @dashboard_connection_blueprint.route('/dashboard/get_client_info', methods=['GET'])
 @authenticate
 def get_clients_info() -> Response:
-    from multi_modal_edge_ai.server.main import connected_clients
+    from multi_modal_edge_ai.server.main import client_keeper
     """
-    This was done only for testing purposes. It shows a list of the IPs of the connected clients
-    :return: a list of all the connected clients.
+    This is the API called by the dashboard to access all the client info
+    :return: a list of all the connected clients, where each client is represented as a dictionary
+    the clients have the following fields: ip, status, last_seen, num_adls, num_anomalies.
     """
 
-    clients = [{'ip': ip, 'last_seen': timestamp.isoformat()} for ip, timestamp in connected_clients.items()]
+    client_keeper.update_clients_statuses()
+
+    clients = client_keeper.connected_clients.to_dict(orient='records')
     return jsonify({'connected_clients': clients})
