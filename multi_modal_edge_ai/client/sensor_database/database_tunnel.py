@@ -135,7 +135,7 @@ class DatabaseTunnel:
         self.collection = db[collection_name]
 
     @staticmethod
-    def create_mongo_client():
+    def create_mongo_client() -> pymongo.MongoClient:
         """
         A method to create a MongoDB client. The client is used to connect to the remote MongoDB instance.
         This is for mocking purposes only.
@@ -151,8 +151,8 @@ class DatabaseTunnel:
         :return: a list of sensor entries
         """
         collection = self.collection
-        time = datetime.datetime.now() - timedelta(minutes=xminutes)
-        cursor = collection.find({'time': {'$gte': time.strftime('%H:%M:%S')}})
+        time = (datetime.datetime.now().timestamp() - xminutes * 60) * 1000
+        cursor = collection.find({'last_seen': {'$gt': time}})
         data = []
         for document in cursor:
             data.append(document)
