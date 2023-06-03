@@ -22,7 +22,6 @@ def test_set_up_connection(client):
     assert response.status_code == 200
     assert response.get_json() == {'message': 'Connection set up successfully'}
 
-    # Create expected DataFrame
     expected_data = {
         'ip': ['0.0.0.0'],
         'status': ['Connected'],
@@ -32,37 +31,63 @@ def test_set_up_connection(client):
     expected_df = pd.DataFrame(expected_data)
     assert_connected_clients_with_expected(expected_df)
 
-    # def test_heartbeat_seen_client(client):
-    #     client.get('/api/set_up_connection')
-    #     response = client.post('api/heartbeat')
-    #     assert response.status_code == 200
-    #     assert response.get_json() == {'message': 'Heartbeat received'}
-    #
-    #     # Assert connected_clients dictionary
-    #     connected_clients = get_connected_clients()
-    #     assert len(connected_clients) == 1
-    #     client_ip = list(connected_clients.keys())[0]
-    #     timestamp = connected_clients[client_ip]
-    #     assert client_ip == '0.0.0.0'
-    #     assert isinstance(timestamp, datetime)
-    #
-    #
 
-# def test_heartbeat_unseen_client():
-#     with app.test_client() as unseen_client:
-#         unseen_client.environ_base['REMOTE_ADDR'] = '0.0.0.1'
-#     response = unseen_client.post('/api/heartbeat')
-#     assert response.status_code == 404
-#     assert response.get_json() == {'message': 'Client not found'}
-#
-#     # Create expected DataFrame
-#     expected_data = {
-#         'ip': ['0.0.0.0'],
-#         'status': ['Connected'],
-#         'num_adls': [0],
-#         'num_anomalies': [0]
-#     }
-#     assert_connected_clients_with_expected(pd.DataFrame(expected_data))
+def test_heartbeat_seen_client(client):
+    payload = {
+        'recent_adls': 10,
+        'recent_anomalies': 5
+    }
+    response = client.post('api/heartbeat', json=payload)
+    assert response.status_code == 200
+    assert response.get_json() == {'message': 'Heartbeat received'}
+
+    expected_data = {
+        'ip': ['0.0.0.0'],
+        'status': ['Connected'],
+        'num_adls': [10],
+        'num_anomalies': [5]
+    }
+    expected_df = pd.DataFrame(expected_data)
+    assert_connected_clients_with_expected(expected_df)
+
+
+def test_heartbeat_bad_payload(client):
+    payload = {
+        'other_data': 42
+    }
+    response = client.post('api/heartbeat', json=payload)
+    assert response.status_code == 400
+    assert response.get_json() == {'message': 'Invalid JSON payload'}
+
+    expected_data = {
+        'ip': ['0.0.0.0'],
+        'status': ['Connected'],
+        'num_adls': [10],
+        'num_anomalies': [5]
+    }
+    expected_df = pd.DataFrame(expected_data)
+    assert_connected_clients_with_expected(expected_df)
+
+
+def test_heartbeat_unseen_client():
+    with app.test_client() as unseen_client:
+        unseen_client.environ_base['REMOTE_ADDR'] = '0.0.0.1'
+    payload = {
+        'recent_adls': 10,
+        'recent_anomalies': 5
+    }
+    response = unseen_client.post('api/heartbeat', json=payload)
+    assert response.status_code == 404
+    assert response.get_json() == {'message': 'Client not found'}
+
+    expected_data = {
+        'ip': ['0.0.0.0'],
+        'status': ['Connected'],
+        'num_adls': [10],
+        'num_anomalies': [5]
+    }
+    expected_df = pd.DataFrame(expected_data)
+    assert_connected_clients_with_expected(expected_df)
 
 
 def assert_connected_clients_with_expected(expected):

@@ -35,9 +35,9 @@ def test_get_client_info(client):
     assert len(connected_clients) == 1
     expected = {
             'ip': '0.0.0.0',
-            'num_adls': 0,
-            'num_anomalies': 0,
-            'status': 'Connected'
+            'status': 'Connected',
+            'num_adls': 10,
+            'num_anomalies': 5
         }
     # Remove 'last_seen' key from both dictionaries
     clients_without_time = {k: v for k, v in connected_clients[0].items() if k != 'last_seen'}
