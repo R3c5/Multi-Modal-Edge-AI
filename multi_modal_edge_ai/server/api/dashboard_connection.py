@@ -10,10 +10,18 @@ dashboard_connection_blueprint = Blueprint('dashboard_connection', __name__)
 def authenticate(func):
     @wraps(func)
     def decorated_function(*args, **kwargs) -> tuple[Response, int] | Any:
-        token = request.headers.get('Authorization')
+        # Use this for automatic tests
+        file = open('multi_modal_edge_ai/server/developer_dashboard/token.txt', 'r')
+
+        # Use this for manual tests
+        # file = open('./developer_dashboard/token.txt', 'r')
+
+        token = file.read().strip()
+
+        request_token = request.headers.get('Authorization')
 
         # Check if the token is valid
-        if token == 'super_secure_token_here_123':  # Replace with your generated token
+        if request_token == token:  # Replace with your generated token
             return func(*args, **kwargs)
         else:
             return jsonify({'message': 'Unauthorized'}), 401

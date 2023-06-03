@@ -71,6 +71,8 @@ class ClientsKeeper:
         """
         update the statuses of the clients that were last seen more than 3 hours ago to 'Disconnected'
         """
+        if self.connected_clients.empty:
+            return
         current_time = datetime.now()
         timeout_threshold = timedelta(hours=3)
 
