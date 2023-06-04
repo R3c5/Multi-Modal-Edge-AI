@@ -1,5 +1,3 @@
-import datetime
-
 from multi_modal_edge_ai.client.sensor_database.database_tunnel import *
 import pytest
 import unittest
@@ -300,20 +298,20 @@ class TestDatabaseTunnel(unittest.TestCase):
         last_seen4 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=3)) * 1000
 
         # Create test entries
-        # last seen is 2023-05-08 16:57:07
+        # last seen is 7 minutes ago
         entry1 = {'device': {'friendlyName': 'motion_bedroom'}, '_id': 'Object1', 'battery': 100,
                   'detection_interval': 30, 'illuminance': 156, 'last_seen': last_seen1, 'linkquality': 126,
                   'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
                   'voltage': 3100}
-        # last seen is 2023-05-08 16:57:27
+        # last seen is 6 minutes ago
         entry2 = {'device': {'friendlyName': 'contact_bathroom'}, 'contact': False, 'last_seen': last_seen2,
                   'linkquality': 150}
 
-        # last seen is 2023-05-08 16:59:42
+        # last seen is 4 minutes ago
         entry3 = {
             'device': {'friendlyName': 'contact_bathroom'}, 'contact': True, 'last_seen': last_seen3,
             'linkquality': 150}
-        # last seen is 2023-05-08 17:08:42
+        # last seen is 3 minutes ago
         entry4 = {
             'device': {'friendlyName': 'motion_bedroom'}, '_id': 'Object3', 'battery': 100,
             'detection_interval': 30, 'illuminance': 155, 'last_seen': last_seen4, 'linkquality': 126,
@@ -329,3 +327,102 @@ class TestDatabaseTunnel(unittest.TestCase):
         # Call get_sensor_data_from_x_minutes_ago and check its result
         result = db_tunnel.get_sensor_data_from_x_minutes_ago(5)
         self.assertEqual(len(result), 2)
+
+    @patch.object(DatabaseTunnel, 'create_mongo_client', return_value=mongomock.MongoClient())
+    def test_get_power_sensors(self, mock_create_mongo_client):
+        # Create an instance of DatabaseTunnel
+        db_tunnel = DatabaseTunnel('mydatabase')
+
+        # Create test entries
+        # last seen is 2023-05-08 16:57:07
+        entry1 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object1', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557827000, 'linkquality': 168, 'power': 10,
+                  'power_outage_memory': 'off', 'state': 'ON', 'voltage': 223}
+        # last seen is 2023-05-08 16:57:27
+        entry2 = {'device': {'friendlyName': 'contact_bathroom'}, '_id': 'Object3', 'contact': True,
+                  'last_seen': 1683557847000, 'linkquality': 150}
+        # last seen is 2023-05-08 16:59:42
+        entry3 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object2', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557982000, 'linkquality': 168, 'power': 0,
+                  'power_outage_memory': 'off', 'state': 'OFF', 'voltage': 245}
+        # last seen is 2023-05-08 17:08:42
+        entry4 = {'device': {'friendlyName': 'power_microwave'}, '_id': 'Object4', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683558522000, 'linkquality': 168, 'power': 0,
+                  'power_outage_memory': 'off', 'state': 'ON', 'voltage': 245}
+
+        # Set up the mock for self.collection based on this entries
+        db_tunnel.create_mongo_client = mock_create_mongo_client
+        db_tunnel.collection = db_tunnel.create_mongo_client().db.collection
+        db_tunnel.collection.insert_many([entry1, entry2, entry3, entry4])
+
+        # Call get_power_sensors and check its result
+        result = db_tunnel.get_power_sensors()
+        self.assertEqual(len(result), 1)
+
+    @patch.object(DatabaseTunnel, 'create_mongo_client', return_value=mongomock.MongoClient())
+    def test_get_button_sensors(self, mock_create_mongo_client):
+        # Create an instance of DatabaseTunnel
+        db_tunnel = DatabaseTunnel('mydatabase')
+
+        # Create test entries
+        # last seen is 2023-05-08 16:57:07
+        entry1 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object1', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557827000, 'linkquality': 168, 'power': 10,
+                  'power_outage_memory': 'off', 'state': 'ON', 'voltage': 223}
+        # last seen is 2023-05-08 16:57:27
+        entry2 = {'device': {'friendlyName': 'contact_bathroom'}, '_id': 'Object2', 'contact': True,
+                  'last_seen': 1683557847000, 'linkquality': 150}
+        # last seen is 2023-05-08 16:59:42
+        entry3 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object3', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557982000, 'linkquality': 168, 'power': 0,
+                  'power_outage_memory': 'off', 'state': 'OFF', 'voltage': 245}
+        # last seen is 2023-05-08 17:08:42
+        entry4 = {'device': {'friendlyName': 'button_microwave'}, '_id': 'Object4', 'battery': 100,
+                  'last_seen': 1683558522000, 'linkquality': 168, 'voltage': 245}
+
+        # Set up the mock for self.collection based on this entries
+        db_tunnel.create_mongo_client = mock_create_mongo_client
+        db_tunnel.collection = db_tunnel.create_mongo_client().db.collection
+        db_tunnel.collection.insert_many([entry1, entry2, entry3, entry4])
+
+        # Call get_button_sensors and check its result
+        result = db_tunnel.get_button_sensors()
+        self.assertEqual(len(result), 1)
+
+    @patch.object(DatabaseTunnel, 'create_mongo_client', return_value=mongomock.MongoClient())
+    def test_get_all_documents(self, mock_create_mongo_client):
+        # Create an instance of DatabaseTunnel
+        db_tunnel = DatabaseTunnel('mydatabase')
+
+        # Create test entries
+        # last seen is 2023-05-08 16:57:07
+        entry1 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object1', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557827000, 'linkquality': 168, 'power': 10,
+                  'power_outage_memory': 'off', 'state': 'ON', 'voltage': 223}
+        # last seen is 2023-05-08 16:57:27
+        entry2 = {'device': {'friendlyName': 'motion_bedroom'}, '_id': 'Object2', 'battery': 100,
+                  'detection_interval': 30, 'illuminance': 156, 'last_seen': 1683557847000, 'linkquality': 126,
+                  'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
+                  'voltage': 3100}
+        # last seen is 2023-05-08 16:59:42
+        entry3 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object3', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557982000, 'linkquality': 168, 'power': 0,
+                  'power_outage_memory': 'off', 'state': 'OFF', 'voltage': 245}
+        # last seen is 2023-05-08 17:08:42
+        entry4 = {'device': {'friendlyName': 'contact_bathroom'}, '_id': 'Object4', 'contact': False,
+                  'last_seen': 1683558522000, 'linkquality': 150}
+        # last seen is 2023-05-08 17:09:42
+        entry5 = {'device': {'friendlyName': 'contact_bathroom'}, '_id': 'Object4', 'contact': True,
+                  'last_seen': 1683558582000, 'linkquality': 150}
+
+        # Set up the mock for self.collection based on this entries
+        db_tunnel.create_mongo_client = mock_create_mongo_client
+        db_tunnel.collection = db_tunnel.create_mongo_client().db.collection
+        db_tunnel.collection.insert_many([entry1, entry2, entry3, entry4])
+
+        # Call get_all_documents and check its result
+        result = db_tunnel.get_all_documents()
+        self.assertEqual(len(db_tunnel.get_contact_sensors()), 1)
+        self.assertEqual(len(db_tunnel.get_pir_sensors()), 1)
+        self.assertEqual(len(db_tunnel.get_power_sensors()), 1)
+        self.assertEqual(len(result), 3)

@@ -173,8 +173,6 @@ class DatabaseTunnel:
         power = self.get_power_sensors()
         pir = self.get_pir_sensors()
         contact = self.get_contact_sensors()
-        # button = self.get_button_sensors()
-        # return power + pir + contact + button
         return power + pir + contact
 
     @staticmethod
@@ -232,7 +230,6 @@ class DatabaseTunnel:
                                                        'device.friendlyName': 1,
                                                        'occupancy': 1})\
             .sort('last_seen', 1)
-        print("invinrinv")
         return aggregate_similar_entries(self.get_data_from_cursor(cursor, 'PIR'), 60)
 
     def get_button_sensors(self) -> list[dict[Any, Any]]:
