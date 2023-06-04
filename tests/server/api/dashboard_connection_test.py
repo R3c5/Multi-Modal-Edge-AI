@@ -1,11 +1,7 @@
-from datetime import datetime
-from unittest.mock import patch
-
-import pandas as pd
 import pytest
-from pandas._testing import assert_frame_equal
 
 from multi_modal_edge_ai.server.main import app
+from tests.server.api.client_connection_test import assert_connected_clients_with_expected
 
 
 @pytest.fixture
@@ -27,23 +23,17 @@ def test_get_client_info(client):
     # Assert the response JSON data contains the expected keys
     data = response.get_json()
     assert 'connected_clients' in data
-    assert isinstance(data['connected_clients'], list)
+    assert isinstance(data['connected_clients'], dict)
 
     # You can add more assertions to validate the response data
     connected_clients = data['connected_clients']
 
     assert len(connected_clients) == 1
     expected = {
-            'ip': '0.0.0.0',
-            'status': 'Connected',
-            'num_adls': 10,
-            'num_anomalies': 5
-        }
-    # Remove 'last_seen' key from both dictionaries
-    clients_without_time = {k: v for k, v in connected_clients[0].items() if k != 'last_seen'}
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 10,
+                    'num_anomalies': 5
+                    }
+    }
 
-    # Compare the dictionaries without 'last_seen' key
-    assert clients_without_time == expected
-
-    # Assert last_seen column is datetime
-    assert isinstance(pd.Timestamp(connected_clients[0]['last_seen']), datetime)
+    assert_connected_clients_with_expected(expected)

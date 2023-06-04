@@ -1,9 +1,7 @@
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from typing import Dict
 
-import pandas as pd
 from flask import Flask
 # This should be changed to import the respective packages
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
@@ -43,7 +41,7 @@ if __name__ == '__main__':
     app.run()
 
 
-def get_connected_clients() -> pd.DataFrame:
+def get_connected_clients() -> dict[str, dict[str, str | datetime | int]]:
     """
     Get the connected_clients dictionary. This method was used for automated testing
     :return: the connected_clients dictionary

@@ -1,6 +1,5 @@
-from datetime import datetime, timedelta
 from functools import wraps
-from typing import Tuple, Union, Dict, List, Any
+from typing import Any
 
 from flask import request, jsonify, Blueprint, Response
 
@@ -41,5 +40,5 @@ def get_clients_info() -> Response:
 
     client_keeper.update_clients_statuses()
 
-    clients = client_keeper.connected_clients.to_dict(orient='records')
+    clients = client_keeper.connected_clients
     return jsonify({'connected_clients': clients})
