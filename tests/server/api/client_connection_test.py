@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from datetime import datetime
 
@@ -12,17 +14,22 @@ def client():
 
 
 def test_set_up_connection(client):
-    response = client.get('/api/set_up_connection')
-    assert response.status_code == 200
-    assert response.get_json() == {'message': 'Connection set up successfully'}
+    with patch('multi_modal_edge_ai.server.api.client_connection.requests.post') as mock_post:
+        # Configure the mock response
+        mock_post.return_value.status_code = 200
 
-    expected_data = {
-        '0.0.0.0': {'status': 'Connected',
-                    'num_adls': 0,
-                    'num_anomalies': 0
-                    }
-    }
-    assert_connected_clients_with_expected(expected_data)
+        response = client.get('/api/set_up_connection')
+        assert response.status_code == 200
+        assert response.get_json() == {'message': 'Connection set up successfully'}
+
+        expected_data = {
+            '0.0.0.0': {
+                'status': 'Connected',
+                'num_adls': 0,
+                'num_anomalies': 0
+            }
+        }
+        assert_connected_clients_with_expected(expected_data)
 
 
 def test_heartbeat_seen_client(client):
