@@ -16,17 +16,10 @@ class ModelsKeeper:
         self.adl_model = adl_model
         self.anomaly_detection_model = anomaly_detection_model
 
-        # For automatic tests use this
         self.adl_path = adl_path if adl_path is not None \
-            else 'multi_modal_edge_ai/server/models/adl_model'
+            else './models/adl_model'
         self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
-            else 'multi_modal_edge_ai/server/models/anomaly_detection_model'
-
-        # # For manual testing use this
-        # self.adl_path = adl_path if adl_path is not None \
-        #     else './models/adl_model'
-        # self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
-        #     else './models/anomaly_detection_model'
+            else './models/anomaly_detection_model'
 
     def load_models(self) -> None:
         """

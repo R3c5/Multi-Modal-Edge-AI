@@ -6,6 +6,9 @@ server_url = 'http://127.0.0.1:5000'
 
 
 def send_set_up_connection_request():
+    """
+    Send a set_up_connection request to the server
+    """
     try:
         response = requests.get(server_url + '/api/set_up_connection')
         if response.status_code == 200:

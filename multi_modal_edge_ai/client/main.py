@@ -25,8 +25,15 @@ app.logger.addHandler(log_handler)
 adl_model = SVMModel()
 anomaly_detection_model = IForest()
 
-adl_keeper = ADLKeeper(adl_model)
-anomaly_detection_keeper = AnomalyDetectionKeeper(anomaly_detection_model)
+adl_path = None
+anomaly_detection_path = None
+
+# Comment this out when running the server manually
+adl_path = 'multi_modal_edge_ai/client/adl_inference/test_adl'
+anomaly_detection_path = 'multi_modal_edge_ai/client/anomaly_detection/test_anomaly_detection'
+
+adl_keeper = ADLKeeper(adl_model, adl_path)
+anomaly_detection_keeper = AnomalyDetectionKeeper(anomaly_detection_model, anomaly_detection_path)
 
 # Register the client API blueprint
 app.register_blueprint(models_updates_api_blueprint)
@@ -37,6 +44,10 @@ app_started = threading.Event()
 
 # Function to send request to set_up_connection API on the server
 def run_set_up():
+    """
+    This function waits for the local server to start and then send a set up request to the server
+    :return:
+    """
     # Wait for the app to start
     app_started.wait()
 

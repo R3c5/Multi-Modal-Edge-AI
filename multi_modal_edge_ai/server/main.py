@@ -21,12 +21,24 @@ log_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
 log_handler.setLevel(logging.INFO)
 app.logger.addHandler(log_handler)
 
+# Comment the first one when running manually and the second one for automatic testing
+dashboard_token_path = 'multi_modal_edge_ai/server/developer_dashboard/token.txt'
+# dashboard_token_path = './developer_dashboard/token.txt'
+
+adl_path = None
+anomaly_detection_path = None
+
+# Comment this out when running the server manually
+adl_path = 'multi_modal_edge_ai/server/models/adl_model'
+anomaly_detection_path = 'multi_modal_edge_ai/server/models/anomaly_detection_model'
+
 # Chosen models for ADL inference and Anomaly Detection
 adl_model = SVMModel()
 anomaly_detection_model = IForest()
 
+
 # Instantiate ModelsKeeper and load models
-models_keeper = ModelsKeeper(adl_model, anomaly_detection_model)
+models_keeper = ModelsKeeper(adl_model, anomaly_detection_model, adl_path, anomaly_detection_path)
 models_keeper.load_models()
 
 # initialize clients keeper

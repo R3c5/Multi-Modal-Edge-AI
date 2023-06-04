@@ -22,8 +22,7 @@ def update_adl_model() -> Response | tuple[Response, int]:
             return jsonify({'message': 'ADL model file not provided'}), 400
 
         file = request.files.get('adl_model_file')
-        save_path = 'multi_modal_edge_ai/client/adl_inference/test_adl'
-        # save_path = './adl_inference/adl_model'
+        save_path = adl_keeper.adl_path
 
         response = save_file(file, save_path)
         adl_keeper.load_model()
@@ -47,8 +46,7 @@ def update_anomaly_detection_model() -> Response | tuple[Response, int]:
             return jsonify({'message': 'Anomaly detection model file not provided'}), 400
 
         file = request.files.get('anomaly_detection_model_file')
-        save_path = 'multi_modal_edge_ai/client/anomaly_detection/test_anomaly_detection'
-        # save_path = './anomaly_detection/anomaly_detection_model'
+        save_path = anomaly_detection_keeper.anomaly_detection_path
 
         response = save_file(file, save_path)
         anomaly_detection_keeper.load_model()
@@ -70,5 +68,7 @@ def save_file(file: Union[FileStorage, None], path: str) -> Response | tuple[Res
     if file is None:
         return jsonify({'message': 'No file provided'}), 400
 
+    print('file exists')
     file.save(path)
+    print('file saved')
     return jsonify({'message': 'File saved successfully'})

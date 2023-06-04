@@ -28,13 +28,12 @@ def test_update_adl_model_with_file(client):
     file = FileStorage(stream=BytesIO(b'Test contents'), filename='test_adl')
 
     with patch('multi_modal_edge_ai.client.main.adl_keeper') as mock_adl_keeper:
+        mock_adl_keeper.adl_path = file_path
+
         response = client.post('/api/update_adl_model', data={'adl_model_file': file})
         assert response.get_json() == {'message': 'File saved successfully'}
         assert response.status_code == 200
         mock_adl_keeper.load_model.assert_called_once()
-    # response = client.post('/api/update_adl_model', data={'adl_model_file': file})
-    # assert response.get_json() == {'message': 'File saved successfully'}
-    # assert response.status_code == 200
 
     with open(file_path, 'r') as updated_file:
         contents = updated_file.read()
@@ -56,11 +55,12 @@ def test_update_anomaly_detection_model_with_file(client):
     file = FileStorage(stream=BytesIO(b'Test contents'), filename='test_anomaly_detection')
 
     with patch('multi_modal_edge_ai.client.main.anomaly_detection_keeper') as mock_anomaly_detection_keeper:
+        mock_anomaly_detection_keeper.anomaly_detection_path = file_path
+
         response = client.post('/api/update_anomaly_detection_model', data={'anomaly_detection_model_file': file})
         assert response.get_json() == {'message': 'File saved successfully'}
         assert response.status_code == 200
         mock_anomaly_detection_keeper.load_model.assert_called_once()
-
 
     with open(file_path, 'r') as updated_file:
         contents = updated_file.read()
