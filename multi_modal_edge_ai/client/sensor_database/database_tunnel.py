@@ -1,10 +1,6 @@
-from collections import Counter
 from typing import Any
-
 import pymongo
-import matplotlib.pyplot as plt
 import datetime
-from datetime import timedelta
 
 
 def is_time_difference_smaller_than_x_seconds(time1: str, time2: str, x_seconds: int) -> bool:
@@ -112,7 +108,6 @@ def group_sensors_on_friendly_names_and_aggregate_entries(data: list[dict[Any, A
                     break
     new_data = []
     for group in result:
-        # new_data.extend(group)
         new_data.extend(aggregate_similar_entries(group, seconds_difference))
     return new_data
 
@@ -267,118 +262,3 @@ class DatabaseTunnel:
                                                                 'device.friendlyName': 1}).sort(
             'last_seen', 1)
         return group_sensors_on_friendly_names_and_aggregate_entries(self.get_data_from_cursor(cursor, 'Power'), 60)
-
-    @staticmethod
-    def plot_distribution_week_days(data: list[dict[Any, Any]]) -> None:
-        """
-        A method that plots the distribution of the entries based on the day of the week
-        :param data: a list of dictionaries
-        """
-        print('Total number of entries: {}'.format(len(data)))
-        dates = [d['date'] for d in data]
-        days = [datetime.datetime.strptime(d, '%Y-%m-%d').strftime('%A') for d in dates]
-
-        # Count the frequency of each day
-        day_counts = Counter(days)
-
-        # Extract the days and their corresponding counts
-        days = list(day_counts.keys())
-        counts = list(day_counts.values())
-
-        # Define a custom order for the days of the week
-        day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
-        # Sort the lists based on the custom order of the days of the week
-        sorted_pairs = sorted(zip(days, counts), key=lambda x: day_order.index(x[0]))
-
-        # Separate the sorted pairs into two separate lists
-        days_tuple, counts_tuple = zip(*sorted_pairs)
-        days = list(days_tuple)
-        counts = list(counts_tuple)
-
-        # Convert the counts to percentages
-        sum_counts = sum(counts) / 100
-        counts_percent = [count / sum_counts for count in counts]
-
-        # Plotting the distribution
-        plt.bar(days, counts_percent)
-        plt.xlabel('Days of the Week')
-        plt.ylabel('Frequency(%)')
-        plt.title('Distribution of Days of the Week')
-        plt.xticks(rotation=45)
-        plt.show()
-
-    @staticmethod
-    def plot_distribution_hourly(data: list[dict[Any, Any]]) -> None:
-        """
-        A method that plots the distribution of the entries based on the hour of the day
-        :param data: a list of dictionaries
-        """
-        time = [d['start_time'] for d in data]
-        hours = [datetime.datetime.strptime(t, '%H:%M:%S').strftime('%H') for t in time]
-
-        # Count the frequency of each hour
-        hour_counts = Counter(hours)
-
-        # Extract the hours and their corresponding counts
-        hours = list(hour_counts.keys())
-        counts = list(hour_counts.values())
-
-        sorted_pairs = sorted(zip(hours, counts))
-
-        # Separate the sorted pairs into two separate lists
-        hours_tuple, counts_tuple = zip(*sorted_pairs)
-        hours = list(hours_tuple)
-        counts = list(counts_tuple)
-
-        # Convert the counts to percentages
-        sum_counts = sum(counts) / 100
-        counts_percent = [count / sum_counts for count in counts]
-
-        # Plotting the distribution
-        plt.figure(figsize=(10, 5))
-        plt.bar(hours, counts_percent)
-        plt.xlabel('Hours')
-        plt.ylabel('Frequency(%)')
-        plt.title('Distribution of Hours')
-        plt.xticks(rotation=45)
-        plt.show()
-
-    def plot_distributions_for_all_entries(self) -> None:
-        """
-        A method that plots, for all the entries, both the distribution based on the day of the week and the
-        distribution based on the hour of the day
-        """
-        self.plot_distribution_week_days(self.get_all_documents())
-        self.plot_distribution_hourly(self.get_all_documents())
-
-    def plot_distributions_for_power_sensor_entries(self) -> None:
-        """
-        A method that plots, for the power sensors entries, both the distribution based on the day of the week and the
-        distribution based on the hour of the day
-        """
-        self.plot_distribution_week_days(self.get_power_sensors())
-        self.plot_distribution_hourly(self.get_power_sensors())
-
-    def plot_distributions_for_pir_sensor_entries(self) -> None:
-        """
-        A method that plots, for the PIR sensors entries, both the distribution based on the day of the week and the
-        distribution based on the hour of the day
-        """
-        self.plot_distribution_week_days(self.get_pir_sensors())
-        self.plot_distribution_hourly(self.get_pir_sensors())
-
-    def plot_distributions_for_contact_sensor_entries(self) -> None:
-        """
-        A method that plots, for the contact sensors entries, both the distribution based on the day of the week and
-        the distribution based on the hour of the day
-        """
-        self.plot_distribution_week_days(self.get_contact_sensors())
-        self.plot_distribution_hourly(self.get_contact_sensors())
-
-    def plot_distributions_for_button_sensor_entries(self) -> None:
-        """
-        A method that plots, for the button sensors entries, both the distribution based on the day of the week and
-        the distribution based on the hour of the day
-        """
-        self.plot_distribution_week_days(self.get_button_sensors())
