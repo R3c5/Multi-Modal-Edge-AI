@@ -21,7 +21,8 @@ def update_adl_model() -> Response | tuple[Response, int]:
             return jsonify({'message': 'ADL model file not provided'}), 400
 
         file = request.files.get('adl_model_file')
-        save_path = './adl_inference/adl_model'
+        save_path = 'multi_modal_edge_ai/client/adl_inference/test_adl'
+        # save_path = './adl_inference/adl_model'
 
         response = save_file(file, save_path)
         adl_keeper.load_model()
@@ -45,13 +46,15 @@ def update_anomaly_detection_model() -> Response | tuple[Response, int]:
             return jsonify({'message': 'Anomaly detection model file not provided'}), 400
 
         file = request.files.get('anomaly_detection_model_file')
-        save_path = './anomaly_detection/anomaly_detection_model'
+        save_path = 'multi_modal_edge_ai/client/anomaly_detection/test_anomaly_detection'
+        # save_path = './anomaly_detection/anomaly_detection_model'
 
         response = save_file(file, save_path)
         anomaly_detection_keeper.load_model()
 
         return response
     except Exception as e:
+        print(e)
         logging.error('An error occurred when updating the anomaly detection model: %s', str(e))
         return jsonify({'message': 'Error occurred when updating the anomaly detection model'}), 500
 

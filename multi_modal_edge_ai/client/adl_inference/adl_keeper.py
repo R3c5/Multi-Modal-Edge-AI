@@ -13,12 +13,12 @@ class ADLKeeper:
         self.adl_model = adl_model
 
         # For automatic tests use this
-        # self.adl_path = adl_path if adl_path is not None \
-        #     else 'multi_modal_edge_ai/client/adl_inference/adl_model'
+        self.adl_path = adl_path if adl_path is not None \
+            else 'multi_modal_edge_ai/client/adl_inference/adl_model'
 
         # # For manual testing use this
-        self.adl_path = adl_path if adl_path is not None \
-            else './adl_inference/adl_model'
+        # self.adl_path = adl_path if adl_path is not None \
+        #     else './adl_inference/adl_model'
 
     def load_model(self) -> None:
         """

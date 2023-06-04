@@ -13,12 +13,12 @@ class AnomalyDetectionKeeper:
         self.anomaly_detection_model = anomaly_detection_model
 
         # For automatic tests use this
-        # self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
-        #     else 'multi_modal_edge_ai/clients/anomaly_detection/anomaly_detection_model'
+        self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
+            else 'multi_modal_edge_ai/client/anomaly_detection/anomaly_detection_model'
 
         # # For manual testing use this
-        self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
-            else './anomaly_detection/anomaly_detection_model'
+        # self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
+        #     else './anomaly_detection/anomaly_detection_model'
 
     def load_model(self) -> None:
         """
