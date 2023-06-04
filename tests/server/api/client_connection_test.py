@@ -1,11 +1,5 @@
-import logging
-from unittest.mock import patch
-
-import pandas as pd
 import pytest
 from datetime import datetime
-
-from pandas._testing import assert_frame_equal
 
 from multi_modal_edge_ai.server.main import app, get_connected_clients
 
@@ -23,13 +17,13 @@ def test_set_up_connection(client):
     assert response.get_json() == {'message': 'Connection set up successfully'}
 
     expected_data = {
-        'ip': ['0.0.0.0'],
-        'status': ['Connected'],
-        'num_adls': [0],
-        'num_anomalies': [0]
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 0,
+                    'num_anomalies': 0
+                    }
     }
-    expected_df = pd.DataFrame(expected_data)
-    assert_connected_clients_with_expected(expected_df)
+    assert_connected_clients_with_expected(expected_data)
+
 
 
 def test_heartbeat_seen_client(client):
@@ -42,13 +36,14 @@ def test_heartbeat_seen_client(client):
     assert response.get_json() == {'message': 'Heartbeat received'}
 
     expected_data = {
-        'ip': ['0.0.0.0'],
-        'status': ['Connected'],
-        'num_adls': [5],
-        'num_anomalies': [5]
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 5,
+                    'num_anomalies': 5
+                    }
     }
-    expected_df = pd.DataFrame(expected_data)
-    assert_connected_clients_with_expected(expected_df)
+    assert_connected_clients_with_expected(expected_data)
+
+
 
 def test_heartbeat_extra_adls(client):
     payload = {
@@ -60,13 +55,14 @@ def test_heartbeat_extra_adls(client):
     assert response.get_json() == {'message': 'Heartbeat received'}
 
     expected_data = {
-        'ip': ['0.0.0.0'],
-        'status': ['Connected'],
-        'num_adls': [10],
-        'num_anomalies': [5]
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 10,
+                    'num_anomalies': 5
+                    }
     }
-    expected_df = pd.DataFrame(expected_data)
-    assert_connected_clients_with_expected(expected_df)
+    assert_connected_clients_with_expected(expected_data)
+
+
 
 def test_heartbeat_bad_payload(client):
     payload = {
@@ -77,13 +73,13 @@ def test_heartbeat_bad_payload(client):
     assert response.get_json() == {'message': 'Invalid JSON payload'}
 
     expected_data = {
-        'ip': ['0.0.0.0'],
-        'status': ['Connected'],
-        'num_adls': [10],
-        'num_anomalies': [5]
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 10,
+                    'num_anomalies': 5
+                    }
     }
-    expected_df = pd.DataFrame(expected_data)
-    assert_connected_clients_with_expected(expected_df)
+    assert_connected_clients_with_expected(expected_data)
+
 
 
 def test_heartbeat_unseen_client():
@@ -98,19 +94,22 @@ def test_heartbeat_unseen_client():
     assert response.get_json() == {'message': 'Client not found'}
 
     expected_data = {
-        'ip': ['0.0.0.0'],
-        'status': ['Connected'],
-        'num_adls': [10],
-        'num_anomalies': [5]
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 10,
+                    'num_anomalies': 5
+                    }
     }
-    expected_df = pd.DataFrame(expected_data)
-    assert_connected_clients_with_expected(expected_df)
+    assert_connected_clients_with_expected(expected_data)
 
 
 def assert_connected_clients_with_expected(expected):
     connected_clients = get_connected_clients()
-    connected_clients_without_last_seen = connected_clients.drop('last_seen', axis=1)
-    assert_frame_equal(connected_clients_without_last_seen, expected)
+
+    assert len(connected_clients) == 1
+    ip = list(expected.keys())[0]
+    assert connected_clients[ip]['status'] == expected[ip]['status']
+    assert connected_clients[ip]['num_adls'] == expected[ip]['num_adls']
+    assert connected_clients[ip]['num_anomalies'] == expected[ip]['num_anomalies']
 
     # Assert last_seen column is datetime
-    assert isinstance(connected_clients['last_seen'].iloc[0], datetime)
+    assert isinstance(connected_clients[ip]['last_seen'], datetime)

@@ -1,5 +1,4 @@
 import datetime
-import pandas as pd
 from multi_modal_edge_ai.server.clients_keeper import ClientsKeeper
 
 
@@ -13,11 +12,10 @@ def test_add_client():
 
     # Assert that the client is added correctly
     assert len(keeper.connected_clients) == 1
-    assert keeper.connected_clients.loc[0, 'ip'] == ip
-    assert keeper.connected_clients.loc[0, 'status'] == status
-    assert keeper.connected_clients.loc[0, 'last_seen'] == last_seen
-    assert keeper.connected_clients.loc[0, 'num_adls'] == 0
-    assert keeper.connected_clients.loc[0, 'num_anomalies'] == 0
+    assert keeper.connected_clients[ip]['status'] == status
+    assert keeper.connected_clients[ip]['last_seen'] == last_seen
+    assert keeper.connected_clients[ip]['num_adls'] == 0
+    assert keeper.connected_clients[ip]['num_anomalies'] == 0
 
 
 def test_update_client():
@@ -32,8 +30,8 @@ def test_update_client():
     keeper.update_client(ip, status, last_seen, num_adls, num_anomalies)
 
     # Assert that the client is updated correctly
-    assert keeper.connected_clients.loc[0, 'num_adls'] == num_adls
-    assert keeper.connected_clients.loc[0, 'num_anomalies'] == num_anomalies
+    assert keeper.connected_clients[ip]['num_adls'] == num_adls
+    assert keeper.connected_clients[ip]['num_anomalies'] == num_anomalies
 
 
 def test_update_clients_statuses():
@@ -50,5 +48,5 @@ def test_update_clients_statuses():
     keeper.update_clients_statuses()
 
     # Assert that the statuses are updated correctly
-    assert keeper.connected_clients.loc[0, 'status'] == 'Connected'
-    assert keeper.connected_clients.loc[1, 'status'] == 'Disconnected'
+    assert keeper.connected_clients[ip1]['status'] == 'Connected'
+    assert keeper.connected_clients[ip2]['status'] == 'Disconnected'
