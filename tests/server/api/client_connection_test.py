@@ -25,7 +25,6 @@ def test_set_up_connection(client):
     assert_connected_clients_with_expected(expected_data)
 
 
-
 def test_heartbeat_seen_client(client):
     payload = {
         'recent_adls': 5,
@@ -42,7 +41,6 @@ def test_heartbeat_seen_client(client):
                     }
     }
     assert_connected_clients_with_expected(expected_data)
-
 
 
 def test_heartbeat_extra_adls(client):
@@ -63,7 +61,6 @@ def test_heartbeat_extra_adls(client):
     assert_connected_clients_with_expected(expected_data)
 
 
-
 def test_heartbeat_bad_payload(client):
     payload = {
         'other_data': 42
@@ -79,7 +76,6 @@ def test_heartbeat_bad_payload(client):
                     }
     }
     assert_connected_clients_with_expected(expected_data)
-
 
 
 def test_heartbeat_unseen_client():

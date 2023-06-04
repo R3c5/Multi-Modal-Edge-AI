@@ -3,14 +3,16 @@ import logging
 from typing import Dict, cast
 
 import pandas as pd
+import requests
 from flask import request, jsonify, Blueprint, Response
+
 
 client_connection_blueprint = Blueprint('client_connection', __name__)
 
 
 @client_connection_blueprint.route('/api/set_up_connection', methods=['GET'])
 def set_up_connection() -> Response | tuple[Response, int]:
-    from multi_modal_edge_ai.server.main import client_keeper
+    from multi_modal_edge_ai.server.main import client_keeper, models_keeper
     """
     Set up the first time connection. Stores the IPs and the date when they connected in a dictionary.
     :return: Connection successful message
@@ -26,11 +28,21 @@ def set_up_connection() -> Response | tuple[Response, int]:
         # Store the new client
         client_keeper.add_client(client_ip, 'Connected', timestamp)
 
-        # Return a response
-        # TODO: Send models to API on client side
-        # It will be something like this
-        # with open(file_path, 'rb') as file:
-        #     response = requests.post(api_endpoint, files={'file': file})
+        # Send ADL model file to the client
+        adl_model_file_path = models_keeper.adl_path
+        adl_model_api_endpoint = 'http://' + client_ip + ':5001/api/update_adl_model'
+
+        with open(adl_model_file_path, 'rb') as file:
+            response = requests.post(adl_model_api_endpoint, files={'adl_model_file': file})
+            assert response.status_code == 200, f'ADL model update failed for client {client_ip}'
+
+        # Send anomaly detection model file to the client
+        anomaly_detection_model_file_path = models_keeper.anomaly_detection_path
+        anomaly_detection_model_api_endpoint = 'http://' + client_ip + ':5001/api/update_anomaly_detection_model'
+
+        with open(anomaly_detection_model_file_path, 'rb') as file:
+            response = requests.post(anomaly_detection_model_api_endpoint, files={'anomaly_detection_model_file': file})
+            assert response.status_code == 200, f'Anomaly detection model update failed for client {client_ip}'
 
         return jsonify({'message': 'Connection set up successfully'})
 

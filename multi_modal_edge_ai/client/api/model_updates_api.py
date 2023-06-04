@@ -16,6 +16,7 @@ def update_adl_model() -> Response | tuple[Response, int]:
     :return: ok message if update was successful, or 400 no file was provided
     """
     from multi_modal_edge_ai.client.main import adl_keeper
+
     try:
         if 'adl_model_file' not in request.files:
             return jsonify({'message': 'ADL model file not provided'}), 400
