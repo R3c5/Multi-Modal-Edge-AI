@@ -134,8 +134,8 @@ def clean_windows(data: pd.DataFrame, windows: pd.DataFrame, whisker: float = 1.
     """
     normal_windows: List[pd.DataFrame] = []
     anomalous_windows: List[pd.DataFrame] = []
-    data = convert_time_and_calculate_duration(data)
-    activity_stats = get_activity_stats(data, whisker)
+    new_data = convert_time_and_calculate_duration(data)
+    activity_stats = get_activity_stats(new_data, whisker)
 
     for i in range(len(windows)):
         is_anomalous = False
@@ -237,13 +237,14 @@ def convert_time_and_calculate_duration(data: pd.DataFrame) -> pd.DataFrame:
     :return: prepared data
     """
     # Convert start_time and end_time columns to datetime objects
-    data['Start_Time'] = pd.to_datetime(data['Start_Time'])
-    data['End_Time'] = pd.to_datetime(data['End_Time'])
-    data['Activity'] = data['Activity'].astype(str)
+    new_data = pd.DataFrame(columns=['Start_Time', 'End_Time', 'Activity'])
+    new_data['Start_Time'] = pd.to_datetime(data['Start_Time'])
+    new_data['End_Time'] = pd.to_datetime(data['End_Time'])
+    new_data['Activity'] = data['Activity'].astype(str)
 
     # Calculate the duration of each activity
-    data['duration'] = data['End_Time'] - data['Start_Time']
-    return data
+    new_data['duration'] = data['End_Time'] - data['Start_Time']
+    return new_data
 
 
 def get_activity_stats(data: pd.DataFrame, whisker: float) -> Any:
