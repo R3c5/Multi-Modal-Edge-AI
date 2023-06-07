@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any
 
-from flask import request, jsonify, Blueprint, Response
+from flask import request, jsonify, Blueprint, Response, send_file
 
 dashboard_connection_blueprint = Blueprint('dashboard_connection', __name__)
 
