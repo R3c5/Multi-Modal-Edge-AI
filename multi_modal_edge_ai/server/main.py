@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from typing import Dict
 
 from flask import Flask
 # This should be changed to import the respective packages
@@ -11,6 +10,7 @@ from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
 from multi_modal_edge_ai.server.api.client_connection import client_connection_blueprint
 from multi_modal_edge_ai.server.api.dashboard_connection import dashboard_connection_blueprint
 from multi_modal_edge_ai.server.models_keeper import ModelsKeeper
+from multi_modal_edge_ai.server.clients_keeper import ClientsKeeper
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -29,8 +29,8 @@ anomaly_detection_model = IForest()
 models_keeper = ModelsKeeper(adl_model, anomaly_detection_model)
 models_keeper.load_models()
 
-# initialize connected clients dictionary
-connected_clients: Dict[str, datetime] = {}
+# initialize clients keeper
+client_keeper = ClientsKeeper()
 
 # Register blueprints
 app.register_blueprint(client_connection_blueprint)
@@ -41,9 +41,9 @@ if __name__ == '__main__':
     app.run()
 
 
-def get_connected_clients() -> dict:
+def get_connected_clients() -> dict[str, dict[str, str | datetime | int]]:
     """
     Get the connected_clients dictionary. This method was used for automated testing
     :return: the connected_clients dictionary
     """
-    return connected_clients
+    return client_keeper.connected_clients
