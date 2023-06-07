@@ -41,12 +41,11 @@ class RNNModel(Model):
         """
         method to train the RNN model on a data, with any hyperparams needed
         :param data: A list of windows as described in window_splitter.py. A window should be in the following format:
-        A list of tuples, where a tuple has:
             * dataframe containing the sensor data with the following columns ('Sensor', 'Start_Time', 'End_Time')
             * corresponding activity
             * start time of the window
             * end time of the window
-        :param hyperparams: training hyperparameters: epochs, learning_rate, loss_function
+        :param hyperparams: training hyperparameters: epochs, learning_rate, loss_function, verbose
         :return: the trained model
         """
         if not isinstance(data, List):
@@ -54,15 +53,17 @@ class RNNModel(Model):
 
         dataset = window_list_to_nn_dataset(data, self.num_sensors, self.window_length, self.sensor_encoder)
 
-        epochs = hyperparams.get("epochs", 10)
+        epochs = hyperparams.get("epochs", 1)
         learning_rate = hyperparams.get("learning_rate", 0.001)
+        verbose = hyperparams.get("verbose", True)
 
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
 
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
 
-        print('\n')
-        print('Training RNN model...')
+        if verbose:
+            print('\n')
+            print('Training RNN model...')
         self.model.train()
 
         for epoch in range(epochs):
@@ -83,10 +84,12 @@ class RNNModel(Model):
                 running_loss += loss.item()
 
             # Print training loss for each epoch
-            print(f"Epoch {epoch + 1}/{epochs} | Loss: {running_loss}")
+            if verbose:
+                print(f"Epoch {epoch + 1}/{epochs} | Loss: {running_loss}")
 
-        print('\n')
-        print('Finished training RNN model.')
+        if verbose:
+            print('\n')
+            print('Finished training RNN model.')
 
         # Return the trained model
         return self.model

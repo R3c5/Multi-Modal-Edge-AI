@@ -24,11 +24,11 @@ class Autoencoder(Model):
         :param hidden_activation_fun: The activation function to be used for the hidden layers, most likely ReLu
         :param output_activation_fun: The activation function to be used for the hidden layers, most likely Sigmoid
         """
+        self.loss_function = torch.nn.MSELoss()
         self.model = TorchAutoencoder(encoder_dimensions, decoder_dimensions, hidden_activation_fun,
                                       output_activation_fun)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = self.model.to(self.device)
-        self.loss_function = torch.nn.MSELoss()
         self.reconstruction_errors: list[float] = []
         self.reconstruction_loss_threshold = -1.0
 
@@ -41,13 +41,14 @@ class Autoencoder(Model):
         """
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the Autoencoder model"
 
-        self.loss_function = hyperparams.get('loss_function', self.loss_function)
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams.get('learning_rate', 0.1),
-                                     weight_decay=1e-8)
+        self.loss_function = hyperparams['loss_function']
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"], weight_decay=1e-8)
+        verbose = hyperparams["verbose"]
+
         curr_reconstruction_errors = []
         avg_training_loss = []
 
-        for epoch in range(hyperparams.get('epochs', 10)):
+        for epoch in range(hyperparams['n_epochs']):
             epoch_training_loss = []
             for windows in data:
                 windows = windows.to(self.device).float()
@@ -61,6 +62,9 @@ class Autoencoder(Model):
                 epoch_training_loss.append(loss)
             curr_reconstruction_errors += epoch_training_loss
             avg_training_loss.append(sum(epoch_training_loss) / len(epoch_training_loss))
+
+            if verbose:
+                print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
 
         self.reconstruction_errors += torch.tensor(curr_reconstruction_errors, device='cpu').tolist()
         return avg_training_loss
@@ -85,8 +89,7 @@ class Autoencoder(Model):
         self.model.eval()  # turn the model into evaluation mode
         instance = instance.to(self.device)  # send device to gpu if needed
 
-        if self.reconstruction_loss_threshold == -1:
-            raise NotImplementedError("You must set the reconstruction error before using prediction")
+        assert self.reconstruction_loss_threshold != -1, "You must set the reconstruction error before using prediction"
 
         with torch.no_grad():  # no need to construct the computation graph
             reconstructed = self.model(instance)

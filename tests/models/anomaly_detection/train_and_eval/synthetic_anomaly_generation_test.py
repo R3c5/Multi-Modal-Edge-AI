@@ -1,6 +1,6 @@
 from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import *
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.window_splitter import *
-from multi_modal_edge_ai.models.anomaly_detection.synthetic_anomaly_generator import *
+from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.synthetic_anomaly_generator import *
 
 
 def test_statistics():
@@ -17,7 +17,7 @@ def test_synthetic_anomaly_generator():
     (normal_windows, anomalous_windows) = clean_windows(df, windows)
     synthetic_data = synthetic_anomaly_generator(anomalous_windows, 1)
 
-    # Check if the synthetic data is correct (i.e. data is choronologically ordered in a particular window)
+    # Check if the synthetic data is correct (i.e. data is chronologically ordered in a particular window)
     for i in range(len(synthetic_data)):
         assert synthetic_data.loc[i, 1] <= synthetic_data.loc[i, 3]
         assert synthetic_data.loc[i, 4] <= synthetic_data.loc[i, 6]

@@ -48,8 +48,12 @@ class CNNModel(Model):
     def train(self, data: Union[DataLoader[Any], List], **hyperparams: Any) -> Any:
         """
         This function will perform the entire training procedure on the CNN model with the data provided
-        :param data: A list of windows as described in window_splitter.py
-        :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, etc...
+        :param data: A list of windows which should have the following format:
+            * dataframe containing the sensor data with the following columns ('Sensor', 'Start_Time', 'End_Time')
+            * corresponding activity
+            * start time of the window
+            * end time of the window
+        :param hyperparams: The training hyperparameters: loss_function/learning_rate/epochs, verbose etc...
         """
         if not isinstance(data, List):
             raise TypeError("Training dataset is supposed to be a list of windows.")
@@ -58,14 +62,16 @@ class CNNModel(Model):
 
         learning_rate = hyperparams.get("learning_rate", 0.001)
         num_epochs = hyperparams.get("num_epochs", 10)
+        verbose = hyperparams.get("verbose", True)
 
         self.loss_function = hyperparams.get('loss_function', self.loss_function)
 
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate,
                                      weight_decay=1e-8)
 
-        print('\n')
-        print("Training started....")
+        if verbose:
+            print('\n')
+            print("Training started....")
         self.model.train()
         for epoch in range(num_epochs):
             running_loss = 0.0
@@ -80,16 +86,19 @@ class CNNModel(Model):
                 optimizer.step()
                 running_loss += loss.item()
 
-            print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss}")
+            if verbose:
+                print(f"Epoch {epoch + 1}/{num_epochs}, Loss: {running_loss}")
 
-        print('\n')
-        print("Training completed.")
+        if verbose:
+            print('\n')
+            print("Training completed.")
 
     def predict(self, instance: Union[Tensor, DataFrame], window_start=None, window_end=None) -> Any:
         """
         This function will perform a forward pass on the instance provided and return the class with the highest
         probability
-        :param instance: The instance on which to perform the forward pass
+        :param instance: The instance on which to perform the forward pass. The columns of the dataframe should be:
+        Sensor, Start_Time and End_Time.
         :param window_start: datetime representing the start time of the window,
         if None, the earliest sensor start time will be taken
         :param window_end: datetime representing the end time of the window,
