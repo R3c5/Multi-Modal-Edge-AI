@@ -59,7 +59,7 @@ def get_past_x_activities(collection: Collection, x: int) -> List[Tuple[pd.Times
 
 def get_past_x_minutes(collection: Collection, x: int) -> List[Tuple[pd.Timestamp, pd.Timestamp, str]]:
     """
-    Get the activities with start time within the past X minutes from the specified collection.
+    Get the activities with end time within the past X minutes from the specified collection.
     :param collection: The collection to retrieve the past X activities from.
     :param x: The number of past minutes to retrieve activities for.
     :return: The activities with a start time within the past X minutes.
@@ -67,10 +67,9 @@ def get_past_x_minutes(collection: Collection, x: int) -> List[Tuple[pd.Timestam
     try:
         # Calculate the timestamp for X minutes ago
         x_minutes_ago = (pd.Timestamp.now() - pd.Timedelta(minutes=x)).strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
-        print(x_minutes_ago)
         # Find the activities with start time within the past X minutes
         past_minutes_activities = collection. \
-            find({"start_time": {"$gte": datetime.strptime(x_minutes_ago, '%Y-%m-%dT%H:%M:%S.000+00:00')}})
+            find({"end_time": {"$gte": datetime.strptime(x_minutes_ago, '%Y-%m-%dT%H:%M:%S.000+00:00')}})
 
         # Convert activities to a list of tuples
         activity_list = [(pd.Timestamp(activity["start_time"]), pd.Timestamp(activity["end_time"]),

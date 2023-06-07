@@ -22,6 +22,6 @@ It contains the following methods:
 
 - ```add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.Timestamp, activity: str)```: Adds an activity to the specified collection. If the last activity in the collection is the same as the one being added, the entries are concatenated.
 - ```get_past_x_activities(collection: Collection, x: int)```: Gets the last x activities from the specified collection.
-- ```get_past_x_minutes(collection: Collection, x: int)```: Gets all activities from the specified collection that have a start time that occurred in the last x minutes.
+- ```get_past_x_minutes(collection: Collection, x: int)```: Gets all activities from the specified collection that have a end time that occurred in the last x minutes.
 - ```delete_all_activities(collection: Collection)```: Deletes all activities from the specified collection.
 - ```delete_last_x_activities(collection: Collection, x: int)```: Deletes the last x activities from the specified collection.
