@@ -1,6 +1,5 @@
-import os
+import io
 import zipfile
-from unittest.mock import patch
 
 import pytest
 from datetime import datetime
@@ -16,34 +15,25 @@ def client():
 
 
 def test_set_up_connection(client):
-        response = client.get('/api/set_up_connection')
-        assert response.status_code == 200
-        assert response.headers['Content-Type'] == 'application/zip'
+    response = client.get('/api/set_up_connection')
+    assert response.status_code == 200
+    assert response.headers['Content-Type'] == 'application/zip'
 
-        # Save the received ZIP file locally
-        zip_filename = 'Models.zip'
-        with open(zip_filename, 'wb') as f:
-            f.write(response.data)
+    with zipfile.ZipFile(io.BytesIO(response.data), 'r') as zipfolder:
+        # Check if the ADL model file exists in the ZIP
+        assert 'adl_model' in zipfolder.namelist()
 
-        # Extract the files from the ZIP
-        with zipfile.ZipFile(zip_filename, 'r') as zipfolder:
-            # Check if the ADL model file exists in the ZIP
-            assert 'adl_model' in zipfolder.namelist()
+        # Check if the anomaly detection model file exists in the ZIP
+        assert 'anomaly_detection_model' in zipfolder.namelist()
 
-            # Check if the anomaly detection model file exists in the ZIP
-            assert 'anomaly_detection_model' in zipfolder.namelist()
-
-        # Clean up the ZIP file
-        os.remove(zip_filename)
-
-        expected_data = {
-            '0.0.0.0': {
-                'status': 'Connected',
-                'num_adls': 0,
-                'num_anomalies': 0
-            }
+    expected_data = {
+        '0.0.0.0': {
+            'status': 'Connected',
+            'num_adls': 0,
+            'num_anomalies': 0
         }
-        assert_connected_clients_with_expected(expected_data)
+    }
+    assert_connected_clients_with_expected(expected_data)
 
 
 def test_heartbeat_seen_client(client):
