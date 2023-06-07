@@ -22,15 +22,16 @@ log_handler.setLevel(logging.INFO)
 app.logger.addHandler(log_handler)
 
 # Comment the first one when running manually and the second one for automatic testing
-# dashboard_token_path = 'multi_modal_edge_ai/server/developer_dashboard/token.txt'
-dashboard_token_path = './developer_dashboard/token.txt'
+dashboard_token_path = 'multi_modal_edge_ai/server/developer_dashboard/token.txt'
+# dashboard_token_path = './developer_dashboard/token.txt'
 
-adl_model_path = None
-anomaly_detection_model_path = None
+# Uncomment this for automatic testing
+adl_model_path = 'multi_modal_edge_ai/server/models/adl_model'
+anomaly_detection_model_path = 'multi_modal_edge_ai/server/models/anomaly_detection_model'
 
-# Comment this out when running the server manually
-# adl_model_path = 'multi_modal_edge_ai/server/models/adl_model'
-# anomaly_detection_model_path = 'multi_modal_edge_ai/server/models/anomaly_detection_model'
+# Uncomment this for manual testing
+# adl_model_path = './models/adl_model'
+# anomaly_detection_model_path = './models/anomaly_detection_model'
 
 # Chosen models for ADL inference and Anomaly Detection
 adl_model = SVMModel()

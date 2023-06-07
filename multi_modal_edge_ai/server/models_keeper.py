@@ -1,11 +1,14 @@
+from datetime import datetime
 from typing import Union
+
+import pandas as pd
 
 from multi_modal_edge_ai.commons.model import Model
 
 
 class ModelsKeeper:
-    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_model_path: Union[str, None] = None,
-                 anomaly_detection_model_path: Union[str, None] = None) -> None:
+    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_model_path: str,
+                 anomaly_detection_model_path: str) -> None:
         """
         Instantiate the models
         :param adl_model: Model representing the model used on ADL inference
@@ -16,10 +19,11 @@ class ModelsKeeper:
         self.adl_model = adl_model
         self.anomaly_detection_model = anomaly_detection_model
 
-        self.adl_model_path = adl_model_path if adl_model_path is not None \
-            else './models/adl_model'
-        self.anomaly_detection_model_path = anomaly_detection_model_path if anomaly_detection_model_path is not None \
-            else './models/anomaly_detection_model'
+        self.adl_model_path = adl_model_path
+        self.anomaly_detection_model_path = anomaly_detection_model_path
+
+        # self.anomaly_detection_model_update_time = pd.Timestamp('2024-01-01')
+        self.anomaly_detection_model_update_time = datetime.now()
 
     def load_models(self) -> None:
         """

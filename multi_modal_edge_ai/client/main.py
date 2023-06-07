@@ -1,6 +1,6 @@
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 
-from multi_modal_edge_ai.client.controllers.server_controller import send_set_up_connection_request
+from multi_modal_edge_ai.client.controllers.server_controller import send_set_up_connection_request, send_heartbeat
 
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
@@ -21,3 +21,5 @@ anomaly_detection_model_keeper = ModelKeeper(anomaly_detection_model, anomaly_de
 
 if __name__ == '__main__':
     send_set_up_connection_request()
+
+    send_heartbeat()

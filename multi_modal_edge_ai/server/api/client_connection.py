@@ -50,7 +50,7 @@ def set_up_connection() -> Response | Tuple[Response, int]:
 
 @client_connection_blueprint.route('/api/heartbeat', methods=['POST'])
 def heartbeat() -> Response | tuple[Response, int]:
-    from multi_modal_edge_ai.server.main import client_keeper
+    from multi_modal_edge_ai.server.main import client_keeper, models_keeper
     """
     Update the last seen field of the client to know if they are still connected.
     :return: ok message if client was connected, or 404 if the set_up_connection was never called before
@@ -72,10 +72,18 @@ def heartbeat() -> Response | tuple[Response, int]:
         recent_adls = data['recent_adls']
         recent_anomalies = data['recent_anomalies']
 
-        if not client_keeper.update_client(client_ip, 'Connected', timestamp, recent_adls, recent_anomalies):
+        client_last_seen = client_keeper.get_last_seen(client_ip)
+
+        if client_last_seen is None:
             return jsonify({'message': 'Client not found'}), 404
 
-        return jsonify({'message': 'Heartbeat received'})
+        client_keeper.update_client(client_ip, 'Connected', timestamp, recent_adls, recent_anomalies)
+
+        if client_last_seen < models_keeper.anomaly_detection_model_update_time:
+            return send_file(models_keeper.anomaly_detection_model_path, as_attachment=True,
+                             download_name="anomaly_detection_model")
+        else:
+            return jsonify({'message': 'No new model updates'})
 
     except Exception as e:
         logging.error('An error occurred in heartbeat: %s', str(e))

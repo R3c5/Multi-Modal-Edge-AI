@@ -1,11 +1,22 @@
 import logging
 import zipfile
-from io import BytesIO
 
+from io import BytesIO
 import requests
+
 from werkzeug.datastructures import FileStorage
 
 server_url = 'http://127.0.0.1:5000'
+
+
+def save_anomaly_detection_file_contents(content: bytes) -> None:
+    """
+    Save the contents to the anomaly detection model file
+    :param content: content to be saved
+    """
+    from multi_modal_edge_ai.client.main import anomaly_detection_model_keeper
+    with open(anomaly_detection_model_keeper.model_path, 'wb') as file:
+        file.write(content)
 
 
 def save_model_file(model_file: str, keeper_type: str) -> None:
@@ -30,11 +41,10 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
         dest_file.write(src_file.read())
 
 
-def send_set_up_connection_request():
+def send_set_up_connection_request() -> None:
     """
     Send a set_up_connection request to the server
     """
-
     try:
         response = requests.get(server_url + '/api/set_up_connection')
         if response.status_code == 200:
@@ -48,7 +58,7 @@ def send_set_up_connection_request():
                 anomaly_detection_model_file = zipfolder.extract('anomaly_detection_model', path='./model_zip')
 
                 save_model_file(adl_model_file, "ADL")
-                save_model_file(anomaly_detection_model_file, "AnDet")
+                # save_model_file(anomaly_detection_model_file, "AnDet")
             print("Connection set up successfully")
         else:
             error_message = response.text
@@ -56,3 +66,33 @@ def send_set_up_connection_request():
             raise Exception(error_message)
     except Exception as e:
         logging.error('An error occurred during set up with server: %s', str(e))
+
+
+def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
+    """
+    Send a heartbeat to the server
+    """
+    try:
+        payload = {
+            'recent_adls': num_adls,
+            'recent_anomalies': num_anomalies
+        }
+        response = requests.post(server_url + '/api/heartbeat', json=payload)
+        if response.status_code == 200:
+            content_type = response.headers.get('Content-Type')
+            if content_type == 'application/octet-stream':
+                save_anomaly_detection_file_contents(response.content)
+                print("Model update received")
+            elif content_type == 'application/json':
+                message = response.json().get('message')
+                print(message)
+
+        elif response.status_code == 404:
+            print("Client not found")
+
+        else:
+            error_message = response.text
+            print("Error sending heartbeat:", error_message)
+            raise Exception(error_message)
+    except Exception as e:
+        logging.error('An error occurred during heartbeat with server: %s', str(e))
