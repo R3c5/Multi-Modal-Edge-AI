@@ -7,10 +7,7 @@ This module incorporates all functionality required to interact with the MongoDB
 This file contains all function required to connect to the database and obtain the databases and the collections.
 
 It contains 3 methods:
-- ```get_database_client(username, password)```: This function creates and returns a MongoDB client with the specified username, password. Do not forget to make sure that the SSH Tunnel is running:
-    - Open WSL
-    - Run ```ssh ***REMOVED*** -N -L 27017:localhost:27018```
-    - Input this password: ***REMOVED***
+- ```get_database_client(username, password)```: This function creates and returns a MongoDB client with the specified username, password. Do not forget to make sure that the SSH Tunnel is running.
 - ```get_database(client, database_name)```: This function retrieves and returns a specific database from the MongoDB client.
 - ```get_collection(database, collection_name)```: This function retrieves and returns a specific collection from the MongoDB database. If the collection does not exist, it creates it.
 

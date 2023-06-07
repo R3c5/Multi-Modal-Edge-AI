@@ -3,10 +3,7 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 
 
-# Before running this script, make sure that the SSH tunnel is running:
-# 1. Open WSL
-# 2. Run the following command: ```ssh ***REMOVED*** -N -L 27017:localhost:27018```
-# 3. Input this password: ***REMOVED***
+# Before running this script, make sure that the SSH tunnel is running.
 def get_database_client(username: str = 'coho-edge-ai', password: str = '***REMOVED***') -> MongoClient:
     """
     Get a MongoDB client
