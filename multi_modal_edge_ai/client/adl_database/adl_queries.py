@@ -57,7 +57,8 @@ def get_past_x_activities(collection: Collection, x: int) -> List[Tuple[pd.Times
         return []
 
 
-def get_past_x_minutes(collection: Collection, x: int, clip: bool = True) -> List[Tuple[pd.Timestamp, pd.Timestamp, str]]:
+def get_past_x_minutes(collection: Collection, x: int, clip: bool = True) -> \
+        List[Tuple[pd.Timestamp, pd.Timestamp, str]]:
     """
     Get the activities with end time within the past X minutes from the specified collection.
     :param clip: Whether to clip the start time of the activities to the current time - x minutes.
