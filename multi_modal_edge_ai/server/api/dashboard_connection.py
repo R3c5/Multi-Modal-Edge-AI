@@ -43,6 +43,7 @@ def get_clients_info() -> Response:
     clients = client_keeper.connected_clients
     return jsonify({'connected_clients': clients})
 
+
 @dashboard_connection_blueprint.route('/dashboard/get_error_log', methods=['GET'])
 @authenticate
 def get_error_log() -> Response:
