@@ -1,23 +1,20 @@
 import datetime
 import logging
-from typing import Dict, cast
+import zipfile
+from typing import Dict, cast, Tuple
 
-import pandas as pd
-import requests
-from flask import request, jsonify, Blueprint, Response
-
+from flask import request, jsonify, Blueprint, Response, send_file, make_response
 
 client_connection_blueprint = Blueprint('client_connection', __name__)
 
 
 @client_connection_blueprint.route('/api/set_up_connection', methods=['GET'])
-def set_up_connection() -> Response | tuple[Response, int]:
+def set_up_connection() -> Response | Tuple[Response, int]:
     from multi_modal_edge_ai.server.main import client_keeper, models_keeper
     """
     Set up the first time connection. Stores the IPs and the date when they connected in a dictionary.
     :return: Connection successful message
     """
-
     try:
         client_ip = request.remote_addr  # Get the IP address of the client
         timestamp = datetime.datetime.now()  # Get the current timestamp
@@ -28,23 +25,23 @@ def set_up_connection() -> Response | tuple[Response, int]:
         # Store the new client
         client_keeper.add_client(client_ip, 'Connected', timestamp)
 
-        # Send ADL model file to the client
-        adl_model_file_path = models_keeper.adl_path
-        adl_model_api_endpoint = 'http://' + client_ip + ':5001/api/update_adl_model'
+        adl_model_path = models_keeper.adl_model_path
+        adl_model_filename = 'adl_model'
+        anomaly_detection_model_path = models_keeper.anomaly_detection_model_path
+        anomaly_detection_model_filename = 'anomaly_detection_model'
 
-        with open(adl_model_file_path, 'rb') as file:
-            response = requests.post(adl_model_api_endpoint, files={'adl_model_file': file})
-            assert response.status_code == 200, f'ADL model update failed for client {client_ip}'
+        zip_filename = 'Models.zip'
 
-        # Send anomaly detection model file to the client
-        anomaly_detection_model_file_path = models_keeper.anomaly_detection_path
-        anomaly_detection_model_api_endpoint = 'http://' + client_ip + ':5001/api/update_anomaly_detection_model'
+        with zipfile.ZipFile(zip_filename, 'w', compression=zipfile.ZIP_STORED) as zipfolder:
+            # Add the ADL model file to the ZIP
+            zipfolder.write(adl_model_path, arcname=adl_model_filename)
 
-        with open(anomaly_detection_model_file_path, 'rb') as file:
-            response = requests.post(anomaly_detection_model_api_endpoint, files={'anomaly_detection_model_file': file})
-            assert response.status_code == 200, f'Anomaly detection model update failed for client {client_ip}'
+            # Add the anomaly detection model file to the ZIP
+            zipfolder.write(anomaly_detection_model_path, arcname=anomaly_detection_model_filename)
 
-        return jsonify({'message': 'Connection set up successfully'})
+        response = send_file(zip_filename, mimetype='application/zip', as_attachment=True)
+
+        return response
 
     except Exception as e:
         logging.error('An error occurred in set_up_connection: %s', str(e))

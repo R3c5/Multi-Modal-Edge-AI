@@ -1,18 +1,54 @@
 import logging
+import zipfile
+from io import BytesIO
 
 import requests
+from werkzeug.datastructures import FileStorage
 
 server_url = 'http://127.0.0.1:5000'
+
+
+def save_model_file(model_file: str, keeper_type: str) -> None:
+    """
+    Save the model file into the path from the model_keeper.
+    :param model_file: file that will be saved
+    :param keeper_type: "ADL" for using the adl_model_keeper, and "AnDet" for using the anomaly_detection_model_keeper
+    """
+    from multi_modal_edge_ai.client.main import adl_model_keeper, anomaly_detection_model_keeper
+
+    if model_file is None:
+        raise Exception("Empty Model file for: " + keeper_type)
+
+    if keeper_type == "ADL":
+        file_path = adl_model_keeper.model_path
+    elif keeper_type == "AnDet":
+        file_path = anomaly_detection_model_keeper.model_path
+    else:
+        raise Exception("Expected keeper_type to be either ADL or AnDet!")
+
+    with open(model_file, 'rb') as src_file, open(file_path, 'wb') as dest_file:
+        dest_file.write(src_file.read())
 
 
 def send_set_up_connection_request():
     """
     Send a set_up_connection request to the server
     """
+
     try:
         response = requests.get(server_url + '/api/set_up_connection')
         if response.status_code == 200:
-            # data = response.json()
+
+            # Save the ZIP file locally
+            zip_content = BytesIO(response.content)
+
+            # Extract the files from the ZIP
+            with zipfile.ZipFile(zip_content, 'r') as zipfolder:
+                adl_model_file = zipfolder.extract('adl_model', path='./model_zip')
+                anomaly_detection_model_file = zipfolder.extract('anomaly_detection_model', path='./model_zip')
+
+                save_model_file(adl_model_file, "ADL")
+                save_model_file(anomaly_detection_model_file, "AnDet")
             print("Connection set up successfully")
         else:
             error_message = response.text

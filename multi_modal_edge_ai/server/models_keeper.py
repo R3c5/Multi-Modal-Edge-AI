@@ -4,21 +4,21 @@ from multi_modal_edge_ai.commons.model import Model
 
 
 class ModelsKeeper:
-    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_path: Union[str, None] = None,
-                 anomaly_detection_path: Union[str, None] = None) -> None:
+    def __init__(self, adl_model: Model, anomaly_detection_model: Model, adl_model_path: Union[str, None] = None,
+                 anomaly_detection_model_path: Union[str, None] = None) -> None:
         """
         Instantiate the models
         :param adl_model: Model representing the model used on ADL inference
         :param anomaly_detection_model: Model representing the model used on Anomaly Detection
-        :param adl_path: Path to the file storing the ADL model
-        :param anomaly_detection_path: Path to the file storing the Anomaly detection model
+        :param adl_model_path: Path to the file storing the ADL model
+        :param anomaly_detection_model_path: Path to the file storing the Anomaly detection model
         """
         self.adl_model = adl_model
         self.anomaly_detection_model = anomaly_detection_model
 
-        self.adl_path = adl_path if adl_path is not None \
+        self.adl_model_path = adl_model_path if adl_model_path is not None \
             else './models/adl_model'
-        self.anomaly_detection_path = anomaly_detection_path if anomaly_detection_path is not None \
+        self.anomaly_detection_model_path = anomaly_detection_model_path if anomaly_detection_model_path is not None \
             else './models/anomaly_detection_model'
 
     def load_models(self) -> None:
@@ -32,13 +32,13 @@ class ModelsKeeper:
         """
         Load the **trained** version of the ADL model from the file with the path initialised
         """
-        self.adl_model.load(self.adl_path)
+        self.adl_model.load(self.adl_model_path)
 
     def load_anomaly_detection_model(self) -> None:
         """
         Load the **trained** version of the anomaly detection model from the file with the path initialised
         """
-        self.anomaly_detection_model.load(self.anomaly_detection_path)
+        self.anomaly_detection_model.load(self.anomaly_detection_model_path)
 
     def save_models(self) -> None:
         """
@@ -52,11 +52,11 @@ class ModelsKeeper:
         """
         Save the latest versions of the ADL model in the specified file.
         """
-        self.adl_model.save(self.adl_path)
+        self.adl_model.save(self.adl_model_path)
 
     def save_anomaly_detection_model(self) -> None:
         """
         Save the latest versions of the anomaly detection model in the specified file
         This shall be used in the federated process after the models are aggregated.
         """
-        self.anomaly_detection_model.save(self.anomaly_detection_path)
+        self.anomaly_detection_model.save(self.anomaly_detection_model_path)
