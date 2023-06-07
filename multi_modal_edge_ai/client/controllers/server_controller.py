@@ -4,7 +4,6 @@ import zipfile
 from io import BytesIO
 import requests
 
-from werkzeug.datastructures import FileStorage
 
 server_url = 'http://127.0.0.1:5000'
 
