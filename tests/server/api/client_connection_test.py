@@ -1,3 +1,5 @@
+import os
+import zipfile
 from unittest.mock import patch
 
 import pytest
@@ -14,13 +16,25 @@ def client():
 
 
 def test_set_up_connection(client):
-    with patch('multi_modal_edge_ai.server.api.client_connection.requests.post') as mock_post:
-        # Configure the mock response
-        mock_post.return_value.status_code = 200
-
         response = client.get('/api/set_up_connection')
         assert response.status_code == 200
-        assert response.get_json() == {'message': 'Connection set up successfully'}
+        assert response.headers['Content-Type'] == 'application/zip'
+
+        # Save the received ZIP file locally
+        zip_filename = 'Models.zip'
+        with open(zip_filename, 'wb') as f:
+            f.write(response.data)
+
+        # Extract the files from the ZIP
+        with zipfile.ZipFile(zip_filename, 'r') as zipfolder:
+            # Check if the ADL model file exists in the ZIP
+            assert 'adl_model' in zipfolder.namelist()
+
+            # Check if the anomaly detection model file exists in the ZIP
+            assert 'anomaly_detection_model' in zipfolder.namelist()
+
+        # Clean up the ZIP file
+        os.remove(zip_filename)
 
         expected_data = {
             '0.0.0.0': {
@@ -39,7 +53,7 @@ def test_heartbeat_seen_client(client):
     }
     response = client.post('api/heartbeat', json=payload)
     assert response.status_code == 200
-    assert response.get_json() == {'message': 'Heartbeat received'}
+    assert response.get_json() == {'message': 'No new model updates'}
 
     expected_data = {
         '0.0.0.0': {'status': 'Connected',
@@ -57,7 +71,7 @@ def test_heartbeat_extra_adls(client):
     }
     response = client.post('api/heartbeat', json=payload)
     assert response.status_code == 200
-    assert response.get_json() == {'message': 'Heartbeat received'}
+    assert response.get_json() == {'message': 'No new model updates'}
 
     expected_data = {
         '0.0.0.0': {'status': 'Connected',
