@@ -10,10 +10,8 @@ def authenticate(func):
     @wraps(func)
     def decorated_function(*args, **kwargs) -> tuple[Response, int] | Any:
         # Use this for automatic tests
-        file = open('multi_modal_edge_ai/server/developer_dashboard/token.txt', 'r')
-
-        # Use this for manual tests
-        # file = open('./developer_dashboard/token.txt', 'r')
+        from multi_modal_edge_ai.server.main import dashboard_token_path
+        file = open(dashboard_token_path, 'r')
 
         token = file.read().strip()
 
