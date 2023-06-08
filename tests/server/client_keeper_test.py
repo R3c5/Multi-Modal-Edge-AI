@@ -1,5 +1,5 @@
 import datetime
-from multi_modal_edge_ai.server.clients_keeper import ClientsKeeper
+from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
 
 
 def test_add_client():

@@ -9,8 +9,8 @@ from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
 
 from multi_modal_edge_ai.server.api.client_connection import client_connection_blueprint
 from multi_modal_edge_ai.server.api.dashboard_connection import dashboard_connection_blueprint
-from multi_modal_edge_ai.server.models_keeper import ModelsKeeper
-from multi_modal_edge_ai.server.clients_keeper import ClientsKeeper
+from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
+from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -51,7 +51,7 @@ app.register_blueprint(dashboard_connection_blueprint)
 
 # you can use this instead of the terminal to run the server
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000)
 
 
 def get_connected_clients() -> dict[str, dict[str, str | datetime | int]]:

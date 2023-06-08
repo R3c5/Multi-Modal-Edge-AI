@@ -57,7 +57,7 @@ def send_set_up_connection_request() -> None:
                 anomaly_detection_model_file = zipfolder.extract('anomaly_detection_model', path='./model_zip')
 
                 save_model_file(adl_model_file, "ADL")
-                # save_model_file(anomaly_detection_model_file, "AnDet")
+                save_model_file(anomaly_detection_model_file, "AnDet")
             print("Connection set up successfully")
         else:
             error_message = response.text
@@ -85,6 +85,9 @@ def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
             elif content_type == 'application/json':
                 message = response.json().get('message')
                 print(message)
+            else:
+                print("Unexpected response")
+                raise Exception("Unexpected response in heartbeat")
 
         elif response.status_code == 404:
             print("Client not found")

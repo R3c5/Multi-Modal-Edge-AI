@@ -5,7 +5,7 @@ class ModelKeeper:
     def __init__(self, model: Model, model_path: str) -> None:
         """
         Instantiate the models
-        :param model: Model representing the model used on inference
+        :param model: Model representing the model used for prediction
         :param model_path: Path to the file storing the model
         """
         self.model = model
