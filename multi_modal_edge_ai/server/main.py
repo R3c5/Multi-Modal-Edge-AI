@@ -60,3 +60,19 @@ def get_connected_clients() -> dict[str, dict[str, str | datetime | int]]:
     :return: the connected_clients dictionary
     """
     return client_keeper.connected_clients
+
+
+def update_anomaly_detection_model_update_time(time: datetime) -> None:
+    """
+    Save the anomaly_detection_model_update_time to the new time
+    :param time: datetime object
+    """
+    models_keeper.anomaly_detection_model_update_time = time
+
+
+def update_anomaly_detection_model_path(path: str) -> None:
+    """
+    Save the anomaly_detection_model_update_time to the new time
+    :param path: path to anomaly detection model
+    """
+    models_keeper.anomaly_detection_model_path = path
