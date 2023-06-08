@@ -5,6 +5,26 @@ import pandas as pd
 from pymongo.collection import Collection
 
 
+def get_all_activities(collection: Collection) -> List[Tuple[pd.Timestamp, pd.Timestamp, str]]:
+    """
+    Get all activities from the specified collection.
+    :param collection: The collection to retrieve all the activities from.
+    :return: A list with all the activities. Each tuple contains the start time, end time, and the activity name.
+    """
+    try:
+        # Find all activities
+        activities = collection.find()
+
+        # Convert activities to a list of tuples
+        activity_list = [(pd.Timestamp(activity["Start_Time"]), pd.Timestamp(activity["End_Time"]),
+                          activity["Activity"]) for activity in activities]
+
+        return activity_list
+    except Exception as e:
+        print(f"An error occurred while retrieving past activities: {str(e)}")
+        return []
+
+
 def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.Timestamp, activity: str) -> None:
     """
     Add an activity to the specified collection. If the previous activity is the same as the current activity, then

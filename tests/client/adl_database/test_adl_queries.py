@@ -33,6 +33,35 @@ def test_exception_get_past_x_activities():
     assert printed_output == expected_output
 
 
+def test_get_all_activities():
+    # Create a mock database client
+    mock_client = mongomock.MongoClient()
+    mock_collection = mock_client['test_db']['test_collection_1']
+
+    # Create test entries
+    entry1 = {'Start_Time': pd.Timestamp('2023-05-08 16:57:07'),
+              'End_Time': pd.Timestamp('2023-05-08 16:57:17'), 'Activity': 'activity1'}
+    entry2 = {'Start_Time': pd.Timestamp('2023-05-08 16:57:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:57:37'), 'Activity': 'activity2'}
+    entry3 = {'Start_Time': pd.Timestamp('2023-05-08 16:57:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:57:37'), 'Activity': 'activity3'}
+
+    # Insert test entries
+    mock_collection.insert_one(entry1)
+    mock_collection.insert_one(entry2)
+    mock_collection.insert_one(entry3)
+
+    # Create expected result
+    expected_result = [
+        (pd.Timestamp("2023-05-08 16:57:07"), pd.Timestamp("2023-05-08 16:57:17"), "activity1"),
+        (pd.Timestamp("2023-05-08 16:57:27"), pd.Timestamp("2023-05-08 16:57:37"), "activity2"),
+        (pd.Timestamp("2023-05-08 16:57:27"), pd.Timestamp("2023-05-08 16:57:37"), "activity3")
+    ]
+
+    result = module.get_all_activities(mock_collection)
+    assert expected_result == result
+
+
 def test_get_past_x_activities():
     # Create a mock database client
     mock_client = mongomock.MongoClient()
@@ -384,4 +413,28 @@ def test_exception_delete_last_x_activities():
     # Check the printed output
     printed_output = captured_output.getvalue().strip()
     expected_output = f"An error occurred while deleting the last 2 activities: Test Exception"
+    assert printed_output == expected_output
+
+
+def test_exception_get_all_activities():
+    # Create a mock database client
+    mock_client = mongomock.MongoClient()
+    mock_collection = mock_client['test_db']['test_collection_2']
+    mock_collection.find = mock.MagicMock(side_effect=Exception('Test Exception'))
+
+    # Capture printed output
+    captured_output = io.StringIO()
+    sys.stdout = captured_output
+
+    # Call the function and assert the exception is caught and printed
+    module.get_all_activities(mock_collection)
+
+    # Restore sys.stdout
+    sys.stdout = sys.__stdout__
+
+    # Check the printed output
+    printed_output = captured_output.getvalue().strip()
+    expected_output = f"An error occurred while retrieving past activities: Test Exception"
+    print(printed_output)
+    print(expected_output)
     assert printed_output == expected_output
