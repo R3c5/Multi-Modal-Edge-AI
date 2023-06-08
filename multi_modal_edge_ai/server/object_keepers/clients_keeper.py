@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 
 class ClientsKeeper:
@@ -39,7 +39,7 @@ class ClientsKeeper:
             self.connected_clients[ip] = new_client
 
     def update_client(self, ip: str, status: str, last_seen: datetime, num_adls: int = 0,
-                      num_anomalies: int = 0) -> bool:
+                      num_anomalies: int = 0) -> None:
         """
         Update the client in the connected_clients with the same ip as the one passed as a parameter
         :param ip: string representing the ip of the new client
@@ -47,18 +47,12 @@ class ClientsKeeper:
         :param last_seen: datetime of when the client last sent a message to the server
         :param num_adls: int representing the number of adls that will be added to this client
         :param num_anomalies: int representing the number of anomalies that will be added to this client
-        :return True if update was successful and False if no client with the expected ip was found
         """
-        if ip not in self.connected_clients:
-            return False
-
         client = self.connected_clients[ip]
         client['status'] = status
         client['last_seen'] = last_seen
         client['num_adls'] += num_adls
         client['num_anomalies'] += num_anomalies
-
-        return True
 
     def update_clients_statuses(self) -> None:
         """
@@ -73,3 +67,21 @@ class ClientsKeeper:
                 client['status'] = 'Disconnected'
             else:
                 client['status'] = 'Connected'
+
+    def get_last_seen(self, ip) -> Optional[datetime]:
+        """
+        Get the last seen of the client with the ip
+        :param ip: client ip
+        :return: datetime of the last seen
+        """
+        client = self.connected_clients.get(ip)
+        if client is not None:
+            return client['last_seen']
+        return None
+
+    def client_exists(self, ip) -> bool:
+        """
+        Return true iff ip is in connected clients
+        :param ip: IP to check existence of
+        """
+        return ip in self.connected_clients

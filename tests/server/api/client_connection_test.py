@@ -1,7 +1,11 @@
-import pytest
-from datetime import datetime
+import io
+import zipfile
 
-from multi_modal_edge_ai.server.main import app, get_connected_clients
+import pytest
+from datetime import datetime, timedelta
+
+from multi_modal_edge_ai.server.main import app, get_connected_clients, update_anomaly_detection_model_update_time, \
+    update_anomaly_detection_model_path
 
 
 @pytest.fixture
@@ -14,16 +18,23 @@ def client():
 def test_set_up_connection(client):
     response = client.get('/api/set_up_connection')
     assert response.status_code == 200
-    assert response.get_json() == {'message': 'Connection set up successfully'}
+    assert response.headers['Content-Type'] == 'application/zip'
+
+    with zipfile.ZipFile(io.BytesIO(response.data), 'r') as zipfolder:
+        # Check if the ADL model file exists in the ZIP
+        assert 'adl_model' in zipfolder.namelist()
+
+        # Check if the anomaly detection model file exists in the ZIP
+        assert 'anomaly_detection_model' in zipfolder.namelist()
 
     expected_data = {
-        '0.0.0.0': {'status': 'Connected',
-                    'num_adls': 0,
-                    'num_anomalies': 0
-                    }
+        '0.0.0.0': {
+            'status': 'Connected',
+            'num_adls': 0,
+            'num_anomalies': 0
+        }
     }
     assert_connected_clients_with_expected(expected_data)
-
 
 
 def test_heartbeat_seen_client(client):
@@ -33,7 +44,7 @@ def test_heartbeat_seen_client(client):
     }
     response = client.post('api/heartbeat', json=payload)
     assert response.status_code == 200
-    assert response.get_json() == {'message': 'Heartbeat received'}
+    assert response.get_json() == {'message': 'No new model updates'}
 
     expected_data = {
         '0.0.0.0': {'status': 'Connected',
@@ -44,15 +55,43 @@ def test_heartbeat_seen_client(client):
     assert_connected_clients_with_expected(expected_data)
 
 
+def test_heartbeat_with_file(client):
+    payload = {
+        'recent_adls': 0,
+        'recent_anomalies': 0
+    }
+
+    update_anomaly_detection_model_update_time(datetime.now() + timedelta(days=1))
+    update_anomaly_detection_model_path('./models/anomaly_detection_model')
+
+    response = client.post('/api/heartbeat', json=payload)
+    assert response.status_code == 200
+    assert 'Content-Disposition' in response.headers
+    assert response.headers['Content-Disposition'] == 'attachment; filename=anomaly_detection_model'
+
+    file_content = response.get_data()
+
+    assert len(file_content) > 0
+
+    expected_data = {
+        '0.0.0.0': {'status': 'Connected',
+                    'num_adls': 5,
+                    'num_anomalies': 5
+                    }
+    }
+    assert_connected_clients_with_expected(expected_data)
+
 
 def test_heartbeat_extra_adls(client):
     payload = {
         'recent_adls': 5,
         'recent_anomalies': 0
     }
+    update_anomaly_detection_model_update_time(datetime.now() - timedelta(days=2))
+    update_anomaly_detection_model_path('multi_modal_edge_ai/server/models/anomaly_detection_model')
     response = client.post('api/heartbeat', json=payload)
     assert response.status_code == 200
-    assert response.get_json() == {'message': 'Heartbeat received'}
+    assert response.get_json() == {'message': 'No new model updates'}
 
     expected_data = {
         '0.0.0.0': {'status': 'Connected',
@@ -61,7 +100,6 @@ def test_heartbeat_extra_adls(client):
                     }
     }
     assert_connected_clients_with_expected(expected_data)
-
 
 
 def test_heartbeat_bad_payload(client):
@@ -79,7 +117,6 @@ def test_heartbeat_bad_payload(client):
                     }
     }
     assert_connected_clients_with_expected(expected_data)
-
 
 
 def test_heartbeat_unseen_client():
