@@ -39,12 +39,12 @@ def test_get_past_x_activities():
     mock_collection = mock_client['test_db']['test_collection_1']
 
     # Create test entries
-    entry1 = {'start_time': pd.Timestamp('2023-05-08 16:57:07'),
-              'end_time': pd.Timestamp('2023-05-08 16:57:17'), 'activity': 'activity1'}
-    entry2 = {'start_time': pd.Timestamp('2023-05-08 16:57:27'),
-              'end_time': pd.Timestamp('2023-05-08 16:57:37'), 'activity': 'activity2'}
-    entry3 = {'start_time': pd.Timestamp('2023-05-08 16:57:27'),
-              'end_time': pd.Timestamp('2023-05-08 16:57:37'), 'activity': 'activity3'}
+    entry1 = {'Start_Time': pd.Timestamp('2023-05-08 16:57:07'),
+              'End_Time': pd.Timestamp('2023-05-08 16:57:17'), 'Activity': 'activity1'}
+    entry2 = {'Start_Time': pd.Timestamp('2023-05-08 16:57:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:57:37'), 'Activity': 'activity2'}
+    entry3 = {'Start_Time': pd.Timestamp('2023-05-08 16:57:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:57:37'), 'Activity': 'activity3'}
 
     # Insert test entries
     mock_collection.insert_one(entry1)
@@ -79,9 +79,9 @@ def test_add_activity():
 
     # Assertions
     expected_result = [{
-        "start_time": pd.Timestamp("2023-06-01 10:04:00"),
-        "end_time": pd.Timestamp("2023-06-01 10:10:00"),
-        "activity": 'Activity'
+        "Start_Time": pd.Timestamp("2023-06-01 10:04:00"),
+        "End_Time": pd.Timestamp("2023-06-01 10:10:00"),
+        "Activity": 'Activity'
     }]
 
     query_result = list(mock_collection.find({}))
@@ -99,8 +99,8 @@ def test_add_activity_without_merge():
     module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
 
     # Add the past activity to the collection
-    past_activity = {'start_time': pd.Timestamp("2023-06-01 10:00:00"),
-                     'end_time': pd.Timestamp("2023-06-01 10:05:00"), 'activity': 'ActivityAny'}
+    past_activity = {'Start_Time': pd.Timestamp("2023-06-01 10:00:00"),
+                     'End_Time': pd.Timestamp("2023-06-01 10:05:00"), 'Activity': 'ActivityAny'}
     mock_collection.insert_one(past_activity)
 
     # Call the function
@@ -112,14 +112,14 @@ def test_add_activity_without_merge():
     # Assertions
     expected_result = [
         {
-            "start_time": pd.Timestamp("2023-06-01 10:00:00"),
-            "end_time": pd.Timestamp("2023-06-01 10:05:00"),
-            "activity": 'ActivityAny'
+            "Start_Time": pd.Timestamp("2023-06-01 10:00:00"),
+            "End_Time": pd.Timestamp("2023-06-01 10:05:00"),
+            "Activity": 'ActivityAny'
         },
         {
-            "start_time": pd.Timestamp("2023-06-01 10:04:00"),
-            "end_time": pd.Timestamp("2023-06-01 10:10:00"),
-            "activity": 'Activity'
+            "Start_Time": pd.Timestamp("2023-06-01 10:04:00"),
+            "End_Time": pd.Timestamp("2023-06-01 10:10:00"),
+            "Activity": 'Activity'
         }
     ]
 
@@ -138,8 +138,8 @@ def test_add_activity_with_merge():
     module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
 
     # Add the past activity to the collection
-    past_activity = {'start_time': pd.Timestamp("2023-06-01 10:00:00"),
-                     'end_time': pd.Timestamp("2023-06-01 10:05:00"), 'activity': 'Activity'}
+    past_activity = {'Start_Time': pd.Timestamp("2023-06-01 10:00:00"),
+                     'End_Time': pd.Timestamp("2023-06-01 10:05:00"), 'Activity': 'Activity'}
     mock_collection.insert_one(past_activity)
 
     # Call the function
@@ -151,9 +151,9 @@ def test_add_activity_with_merge():
     # Assertions
     expected_result = [
         {
-            "start_time": pd.Timestamp("2023-06-01 10:00:00"),
-            "end_time": pd.Timestamp("2023-06-01 10:10:00"),
-            "activity": 'Activity'
+            "Start_Time": pd.Timestamp("2023-06-01 10:00:00"),
+            "End_Time": pd.Timestamp("2023-06-01 10:10:00"),
+            "Activity": 'Activity'
         }
     ]
 
@@ -175,12 +175,12 @@ def test_get_past_x_minutes():
         mock_collection = mock_client['test_db']['test_collection']
 
         # Create test entries
-        entry1 = {'start_time': pd.Timestamp('2023-05-08 14:57:07'),
-                  'end_time': pd.Timestamp('2023-05-08 14:57:17'), 'activity': 'activity1'}
-        entry2 = {'start_time': pd.Timestamp('2023-05-08 16:50:27'),
-                  'end_time': pd.Timestamp('2023-05-08 16:54:38'), 'activity': 'activity2'}
-        entry3 = {'start_time': pd.Timestamp('2023-05-08 16:56:27'),
-                  'end_time': pd.Timestamp('2023-05-08 16:56:37'), 'activity': 'activity3'}
+        entry1 = {'Start_Time': pd.Timestamp('2023-05-08 14:57:07'),
+                  'End_Time': pd.Timestamp('2023-05-08 14:57:17'), 'Activity': 'activity1'}
+        entry2 = {'Start_Time': pd.Timestamp('2023-05-08 16:50:27'),
+                  'End_Time': pd.Timestamp('2023-05-08 16:54:38'), 'Activity': 'activity2'}
+        entry3 = {'Start_Time': pd.Timestamp('2023-05-08 16:56:27'),
+                  'End_Time': pd.Timestamp('2023-05-08 16:56:37'), 'Activity': 'activity3'}
 
         # Insert test entries
         mock_collection.insert_one(entry1)
@@ -210,12 +210,12 @@ def test_get_past_x_minutes_no_clip():
         mock_collection = mock_client['test_db']['test_collection']
 
         # Create test entries
-        entry1 = {'start_time': pd.Timestamp('2023-05-08 14:57:07'),
-                  'end_time': pd.Timestamp('2023-05-08 14:57:17'), 'activity': 'activity1'}
-        entry2 = {'start_time': pd.Timestamp('2023-05-08 16:53:27'),
-                  'end_time': pd.Timestamp('2023-05-08 16:54:37'), 'activity': 'activity2'}
-        entry3 = {'start_time': pd.Timestamp('2023-05-08 16:56:27'),
-                  'end_time': pd.Timestamp('2023-05-08 16:56:37'), 'activity': 'activity3'}
+        entry1 = {'Start_Time': pd.Timestamp('2023-05-08 14:57:07'),
+                  'End_Time': pd.Timestamp('2023-05-08 14:57:17'), 'Activity': 'activity1'}
+        entry2 = {'Start_Time': pd.Timestamp('2023-05-08 16:53:27'),
+                  'End_Time': pd.Timestamp('2023-05-08 16:54:37'), 'Activity': 'activity2'}
+        entry3 = {'Start_Time': pd.Timestamp('2023-05-08 16:56:27'),
+                  'End_Time': pd.Timestamp('2023-05-08 16:56:37'), 'Activity': 'activity3'}
 
         # Insert test entries
         mock_collection.insert_one(entry1)
@@ -239,12 +239,12 @@ def test_delete_all_activities():
     mock_collection = mock_client['test_db']['test_collection']
 
     # Create test entries
-    entry1 = {'start_time': pd.Timestamp('2023-05-08 14:57:07'),
-              'end_time': pd.Timestamp('2023-05-08 14:57:17'), 'activity': 'activity1'}
-    entry2 = {'start_time': pd.Timestamp('2023-05-08 16:53:27'),
-              'end_time': pd.Timestamp('2023-05-08 16:54:37'), 'activity': 'activity2'}
-    entry3 = {'start_time': pd.Timestamp('2023-05-08 16:56:27'),
-              'end_time': pd.Timestamp('2023-05-08 16:56:37'), 'activity': 'activity3'}
+    entry1 = {'Start_Time': pd.Timestamp('2023-05-08 14:57:07'),
+              'End_Time': pd.Timestamp('2023-05-08 14:57:17'), 'Activity': 'activity1'}
+    entry2 = {'Start_Time': pd.Timestamp('2023-05-08 16:53:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:54:37'), 'Activity': 'activity2'}
+    entry3 = {'Start_Time': pd.Timestamp('2023-05-08 16:56:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:56:37'), 'Activity': 'activity3'}
 
     # Insert test entries
     mock_collection.insert_one(entry1)
@@ -265,12 +265,12 @@ def test_delete_last_x_activities():
     mock_collection = mock_client['test_db']['test_collection']
 
     # Create test entries
-    entry1 = {'start_time': pd.Timestamp('2023-05-08 14:57:07'),
-              'end_time': pd.Timestamp('2023-05-08 14:57:17'), 'activity': 'activity1'}
-    entry2 = {'start_time': pd.Timestamp('2023-05-08 16:53:27'),
-              'end_time': pd.Timestamp('2023-05-08 16:54:37'), 'activity': 'activity2'}
-    entry3 = {'start_time': pd.Timestamp('2023-05-08 16:56:27'),
-              'end_time': pd.Timestamp('2023-05-08 16:56:37'), 'activity': 'activity3'}
+    entry1 = {'Start_Time': pd.Timestamp('2023-05-08 14:57:07'),
+              'End_Time': pd.Timestamp('2023-05-08 14:57:17'), 'Activity': 'activity1'}
+    entry2 = {'Start_Time': pd.Timestamp('2023-05-08 16:53:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:54:37'), 'Activity': 'activity2'}
+    entry3 = {'Start_Time': pd.Timestamp('2023-05-08 16:56:27'),
+              'End_Time': pd.Timestamp('2023-05-08 16:56:37'), 'Activity': 'activity3'}
 
     # Insert test entries
     mock_collection.insert_one(entry1)
@@ -279,9 +279,9 @@ def test_delete_last_x_activities():
 
     # Create expected result
     expected_result = [
-        {'activity': 'activity1',
-         'end_time': pd.Timestamp('2023-05-08 14:57:17'),
-         'start_time': pd.Timestamp('2023-05-08 14:57:07')}
+        {'Activity': 'activity1',
+         'End_Time': pd.Timestamp('2023-05-08 14:57:17'),
+         'Start_Time': pd.Timestamp('2023-05-08 14:57:07')}
     ]
 
     # Call the function

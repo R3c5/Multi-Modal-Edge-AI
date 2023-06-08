@@ -17,18 +17,18 @@ def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.
     try:
         # Create a dictionary representing the activity
         activity_dict = {
-            "start_time": start_time,
-            "end_time": end_time,
-            "activity": activity
+            "Start_Time": start_time,
+            "End_Time": end_time,
+            "Activity": activity
         }
         past_activity_list = get_past_x_activities(collection, 1)
         past_activity = past_activity_list[0] if len(past_activity_list) > 0 else None
 
         if past_activity is not None and past_activity[2] == activity:
-            activity_dict["start_time"] = past_activity[0]
+            activity_dict["Start_Time"] = past_activity[0]
             delete_last_x_activities(collection, 1)
             if end_time < past_activity[1]:
-                activity_dict["end_time"] = past_activity[1]
+                activity_dict["End_Time"] = past_activity[1]
         # Insert the activity into the collection
         collection.insert_one(activity_dict)
     except Exception as e:
@@ -45,11 +45,11 @@ def get_past_x_activities(collection: Collection, x: int) -> List[Tuple[pd.Times
     """
     try:
         # Find the past X activities
-        past_activities = collection.find().sort([("start_time", -1), ("_id", -1)]).limit(x)
+        past_activities = collection.find().sort([("Start_Time", -1), ("_id", -1)]).limit(x)
 
         # Convert activities to a list of tuples
-        activity_list = [(pd.Timestamp(activity["start_time"]), pd.Timestamp(activity["end_time"]),
-                          activity["activity"]) for activity in past_activities]
+        activity_list = [(pd.Timestamp(activity["Start_Time"]), pd.Timestamp(activity["End_Time"]),
+                          activity["Activity"]) for activity in past_activities]
 
         return activity_list
     except Exception as e:
@@ -72,11 +72,11 @@ def get_past_x_minutes(collection: Collection, x: int, clip: bool = True) -> \
         x_minutes_ago = (time_now - pd.Timedelta(minutes=x)).strftime('%Y-%m-%dT%H:%M:%S.000+00:00')
         # Find the activities with start time within the past X minutes
         past_minutes_activities = collection. \
-            find({"end_time": {"$gte": datetime.strptime(x_minutes_ago, '%Y-%m-%dT%H:%M:%S.000+00:00')}})
+            find({"End_Time": {"$gte": datetime.strptime(x_minutes_ago, '%Y-%m-%dT%H:%M:%S.000+00:00')}})
 
         # Convert activities to a list of tuples
-        activity_list = [(pd.Timestamp(activity["start_time"]), pd.Timestamp(activity["end_time"]),
-                          activity["activity"]) for activity in past_minutes_activities]
+        activity_list = [(pd.Timestamp(activity["Start_Time"]), pd.Timestamp(activity["End_Time"]),
+                          activity["Activity"]) for activity in past_minutes_activities]
 
         if clip:
             # Clip the start time of the activities to the current time - x minutes
@@ -110,7 +110,7 @@ def delete_last_x_activities(collection: Collection, x: int) -> None:
     """
     try:
         # Find the last X activities
-        last_x_activities = collection.find().sort([("start_time", -1), ("_id", -1)]).limit(x)
+        last_x_activities = collection.find().sort([("Start_Time", -1), ("_id", -1)]).limit(x)
 
         # Get the IDs of the last X activities
         activity_ids = [activity["_id"] for activity in last_x_activities]
