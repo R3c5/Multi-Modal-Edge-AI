@@ -38,7 +38,6 @@ def model_train_eval(model: Model, data: pd.DataFrame, hparams: HyperparameterCo
     distinct_adl_list = pd.unique(window_df.iloc[:, 2::3].values.ravel('K'))
 
     clean_df, anomalous_df = clean_windows(data, window_df, hparams.anomaly_whisker)
-
     clean_df = shuffle(clean_df)
     split_index = int(len(clean_df) * hparams.clean_test_data_ratio)
     testing_df = clean_df[:split_index]
