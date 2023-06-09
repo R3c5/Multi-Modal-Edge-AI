@@ -288,7 +288,7 @@ class TestDatabaseTunnel(unittest.TestCase):
         self.assertEqual(len(result), 1)
 
     @patch.object(DatabaseTunnel, 'create_mongo_client', return_value=mongomock.MongoClient())
-    def test_get_sensor_data_from_x_minutes_ago(self, mock_create_mongo_client):
+    def test_get_past_x_seconds_of_all_sensor_entries(self, mock_create_mongo_client):
         # Create an instance of DatabaseTunnel
         db_tunnel = DatabaseTunnel('mydatabase')
 
@@ -309,11 +309,11 @@ class TestDatabaseTunnel(unittest.TestCase):
 
         # last seen is 4 minutes ago
         entry3 = {
-            'device': {'friendlyName': 'contact_bathroom'}, 'contact': True, 'last_seen': last_seen3,
+            'device': {'friendlyName': 'contact_bathroom1'}, 'contact': False, 'last_seen': last_seen3,
             'linkquality': 150}
         # last seen is 3 minutes ago
         entry4 = {
-            'device': {'friendlyName': 'motion_bedroom'}, '_id': 'Object3', 'battery': 100,
+            'device': {'friendlyName': 'motion_bedroom1'}, '_id': 'Object3', 'battery': 100,
             'detection_interval': 30, 'illuminance': 155, 'last_seen': last_seen4, 'linkquality': 126,
             'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
             'voltage': 3000
@@ -325,7 +325,7 @@ class TestDatabaseTunnel(unittest.TestCase):
         db_tunnel.collection.insert_many([entry1, entry2, entry3, entry4])
 
         # Call get_sensor_data_from_x_minutes_ago and check its result
-        result = db_tunnel.get_sensor_data_from_x_minutes_ago(5)
+        result = db_tunnel.get_past_x_seconds_of_all_sensor_entries(5*60)
         self.assertEqual(len(result), 2)
 
     @patch.object(DatabaseTunnel, 'create_mongo_client', return_value=mongomock.MongoClient())
