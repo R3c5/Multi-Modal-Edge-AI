@@ -2,18 +2,16 @@ from collections import OrderedDict
 
 import flwr as fl
 import torch.nn
-from pymongo.collection import Collection
 
+from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
 from multi_modal_edge_ai.commons.model import Model
 
 
 class FlowerClient(fl.client.NumPyClient):
 
-    def __init__(self, model: Model, database_collection: Collection, train_fun, evaluate_fun):
+    def __init__(self, model: Model, train_eval: TrainEval):
         self.model = model
-        self.database_collection = database_collection
-        self.train_fun = train_fun
-        self.evaluate_fun = evaluate_fun
+        self.train_eval = train_eval
 
     def get_parameters(self, config):
         if isinstance(self.model.model, torch.nn.Module):
@@ -34,10 +32,10 @@ class FlowerClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         self.set_parameters(parameters)
-        training_stats = self.train_fun(self.model, self.database_collection, config)
+        training_stats = self.train_eval.train(self.model, config)
         return self.get_parameters(config={}), *training_stats
 
     def evaluate(self, parameters, config):
         self.set_parameters(parameters)
-        loss, evaluation_stats = self.evaluate_fun(self.model, self.database_collection, config)
-        return loss, *evaluation_stats
+        loss, df_size, evaluation_stats = self.train_eval.evaluate(self.model, config)
+        return loss, df_size, evaluation_stats
