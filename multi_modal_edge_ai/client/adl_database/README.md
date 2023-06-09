@@ -17,6 +17,7 @@ This file contains all functions required to query the database.
 
 It contains the following methods:
 
+- ```get_all_activities(collection: Collection)```: Gets all activities from the specified collection.
 - ```add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.Timestamp, activity: str)```: Adds an activity to the specified collection. If the last activity in the collection is the same as the one being added, the entries are concatenated.
 - ```get_past_x_activities(collection: Collection, x: int)```: Gets the last x activities from the specified collection.
 - ```get_past_x_minutes(collection: Collection, x: int, clip: bool)```: Gets all activities from the specified collection that have an end time that occurred in the last x minutes.
