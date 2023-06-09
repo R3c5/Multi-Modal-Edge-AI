@@ -70,6 +70,7 @@ def send_set_up_connection_request() -> None:
     try:
         response = requests.get(server_url + '/api/set_up_connection')
         if response.status_code == 200:
+            save_models_zip_file(response)
             print("Connection set up successfully")
         else:
             error_message = response.text

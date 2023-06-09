@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 import zipfile
 from typing import Dict, cast, Tuple
 
@@ -25,8 +26,7 @@ def set_up_connection() -> Response | Tuple[Response, int]:
         # Store the new client
         client_keeper.add_client(client_ip, 'Connected', timestamp)
 
-        response = send_models_zip(datetime.datetime.min)
-        return response
+        return send_models_zip(datetime.datetime.min)
 
     except Exception as e:
         logging.error('An error occurred in set_up_connection: %s', str(e))
@@ -59,8 +59,7 @@ def heartbeat() -> Response | tuple[Response, int]:
 
         client_keeper.update_client(client_ip, 'Connected', datetime.datetime.now(), recent_adls, recent_anomalies)
 
-        response = send_models_zip(client_last_seen)
-        return response
+        return send_models_zip(client_last_seen)
 
     except Exception as e:
         logging.error('An error occurred in heartbeat: %s', str(e))
@@ -79,8 +78,11 @@ def send_models_zip(client_last_seen: datetime.datetime) -> Response:
     anomaly_detection_model_path = models_keeper.anomaly_detection_model_path
     anomaly_detection_model_filename = 'anomaly_detection_model'
 
-    zip_filename = 'Models.zip'
+    root_directory = os.path.abspath(os.path.dirname(__file__))
+    zip_filename = os.path.join(root_directory, '../Models.zip')
+
     with zipfile.ZipFile(zip_filename, 'w', compression=zipfile.ZIP_STORED) as zipfolder:
+
         # Add the ADL model file to the ZIP
         if client_last_seen < models_keeper.adl_model_update_time:
             zipfolder.write(adl_model_path, arcname=adl_model_filename)
