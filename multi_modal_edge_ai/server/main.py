@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
@@ -12,22 +13,25 @@ from multi_modal_edge_ai.server.api.dashboard_connection import dashboard_connec
 from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
 
+
+# Get the root directory of the project
+root_directory = os.path.abspath(os.path.dirname(__file__))
+
 # Initialize Flask application
 app = Flask(__name__)
 
 # Configure logging
-log_filename = 'app.log'
+log_filename = os.path.join(root_directory, 'app.log')
 log_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
 log_handler.setLevel(logging.INFO)
 app.logger.addHandler(log_handler)
 
 # Comment the first one when running manually and the second one for automatic testing
-dashboard_token_path = 'multi_modal_edge_ai/server/developer_dashboard/token.txt'
-# dashboard_token_path = './developer_dashboard/token.txt'
+dashboard_token_path = os.path.join(root_directory, 'developer_dashboard', 'token.txt')
 
 # Uncomment this for automatic testing
-adl_model_path = 'multi_modal_edge_ai/server/models/adl_model'
-anomaly_detection_model_path = 'multi_modal_edge_ai/server/models/anomaly_detection_model'
+adl_model_path = os.path.join(root_directory, 'models', 'adl_model')
+anomaly_detection_model_path = os.path.join(root_directory, 'models', 'anomaly_detection_model')
 
 # Uncomment this for manual testing
 # adl_model_path = './models/adl_model'
@@ -68,11 +72,3 @@ def update_anomaly_detection_model_update_time(time: datetime) -> None:
     :param time: datetime object
     """
     models_keeper.anomaly_detection_model_update_time = time
-
-
-def update_anomaly_detection_model_path(path: str) -> None:
-    """
-    Save the anomaly_detection_model_update_time to the new time
-    :param path: path to anomaly detection model
-    """
-    models_keeper.anomaly_detection_model_path = path

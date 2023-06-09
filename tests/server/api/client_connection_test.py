@@ -4,9 +4,7 @@ import zipfile
 import pytest
 from datetime import datetime, timedelta
 
-from multi_modal_edge_ai.server.main import app, get_connected_clients, update_anomaly_detection_model_update_time, \
-    update_anomaly_detection_model_path
-
+from multi_modal_edge_ai.server.main import app, get_connected_clients, update_anomaly_detection_model_update_time
 
 @pytest.fixture
 def client():
@@ -62,7 +60,6 @@ def test_heartbeat_with_file(client):
     }
 
     update_anomaly_detection_model_update_time(datetime.now() + timedelta(days=1))
-    update_anomaly_detection_model_path('./models/anomaly_detection_model')
 
     response = client.post('/api/heartbeat', json=payload)
     assert response.status_code == 200
@@ -88,7 +85,7 @@ def test_heartbeat_extra_adls(client):
         'recent_anomalies': 0
     }
     update_anomaly_detection_model_update_time(datetime.now() - timedelta(days=2))
-    update_anomaly_detection_model_path('multi_modal_edge_ai/server/models/anomaly_detection_model')
+
     response = client.post('api/heartbeat', json=payload)
     assert response.status_code == 200
     assert response.get_json() == {'message': 'No new model updates'}

@@ -1,4 +1,5 @@
 import logging
+import os
 
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 
@@ -7,6 +8,8 @@ from multi_modal_edge_ai.client.controllers.client_controller import send_set_up
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
 
+root_directory = os.path.abspath(os.path.dirname(__file__))
+
 # Activate logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -14,8 +17,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 adl_model = SVMModel()
 anomaly_detection_model = IForest()
 
-adl_model_path = 'adl_inference/adl_model'
-anomaly_detection_model_path = 'anomaly_detection/anomaly_detection_model'
+# Construct the model paths based on the root directory
+adl_model_path = os.path.join(root_directory, 'adl_inference', 'adl_model')
+anomaly_detection_model_path = os.path.join(root_directory, 'anomaly_detection', 'anomaly_detection_model')
 
 adl_model_keeper = ModelKeeper(adl_model, adl_model_path)
 anomaly_detection_model_keeper = ModelKeeper(anomaly_detection_model, anomaly_detection_model_path)
