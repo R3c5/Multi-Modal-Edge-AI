@@ -1,20 +1,10 @@
 import logging
 import zipfile
-
 from io import BytesIO
+
 import requests
 
 server_url = 'http://127.0.0.1:5000'
-
-
-def save_anomaly_detection_file_contents(content: bytes) -> None:
-    """
-    Save the contents to the anomaly detection model file
-    :param content: content to be saved
-    """
-    from multi_modal_edge_ai.client.main import anomaly_detection_model_keeper
-    with open(anomaly_detection_model_keeper.model_path, 'wb') as file:
-        file.write(content)
 
 
 def save_model_file(model_file: str, keeper_type: str) -> None:
@@ -42,8 +32,7 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
 def save_models_zip_file(response: requests.Response) -> None:
     """
     Save the adl and anomaly detection model files received in the zip from the response
-    :param response:
-    :return:
+    :param response: requests.Response from server containing the zip file
     """
     # Save the ZIP file locally
     zip_content = BytesIO(response.content)
@@ -83,6 +72,8 @@ def send_set_up_connection_request() -> None:
 def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
     """
     Send a heartbeat to the server
+    :param num_adls: int representing the number of adls detected since last heartbeat
+    :param num_anomalies: int representing the number of anomalies detected since last heartbeat
     """
     try:
         payload = {
