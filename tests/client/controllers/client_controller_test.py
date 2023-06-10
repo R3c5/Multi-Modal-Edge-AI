@@ -1,6 +1,7 @@
 from unittest import mock
 from unittest.mock import patch, mock_open
 
+import pytest
 import requests
 
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat, \
@@ -143,10 +144,10 @@ def test_save_no_models_zip_file():
         assert mock_save_model_file.call_count == 0
 
 
-def test_save_model_file():
-    model_file = 'tests/client/controllers/models_test_files/adl_test_model_source'
+def test_save_model_file_adl():
+    model_file = 'tests/client/controllers/models_test_files/test_model_source'
     keeper_type = 'ADL'
-    adl_model_keeper_path = 'tests/client/controllers/models_test_files/adl_test_model_dest'
+    adl_model_keeper_path = 'tests/client/controllers/models_test_files/test_model_dest'
 
     # Empty the destination file after the test
     with open(adl_model_keeper_path, 'w') as file:
@@ -155,8 +156,8 @@ def test_save_model_file():
     with open(model_file, 'rb') as original_file:
         original_content = original_file.read()
 
-    with patch('multi_modal_edge_ai.client.main.adl_model_keeper') as mock_adl_model_keeper:
-        mock_adl_model_keeper.model_path = adl_model_keeper_path
+    with patch('multi_modal_edge_ai.client.main.adl_model_keeper') as mock_model_keeper:
+        mock_model_keeper.model_path = adl_model_keeper_path
         save_model_file(model_file, keeper_type)
 
         # Assert the saved file content matches the original file content
@@ -167,6 +168,33 @@ def test_save_model_file():
 
         # Empty the destination file after the test
         with open(adl_model_keeper_path, 'w') as file:
+            file.truncate(0)
+
+
+def test_save_model_file_andet():
+    model_file = 'tests/client/controllers/models_test_files/test_model_source'
+    keeper_type = 'AnDet'
+    anomaly_det_model_keeper_path = 'tests/client/controllers/models_test_files/test_model_dest'
+
+    # Empty the destination file after the test
+    with open(anomaly_det_model_keeper_path, 'w') as file:
+        file.truncate(0)
+
+    with open(model_file, 'rb') as original_file:
+        original_content = original_file.read()
+
+    with patch('multi_modal_edge_ai.client.main.anomaly_detection_model_keeper') as mock_model_keeper:
+        mock_model_keeper.model_path = anomaly_det_model_keeper_path
+        save_model_file(model_file, keeper_type)
+
+        # Assert the saved file content matches the original file content
+        with open(anomaly_det_model_keeper_path, 'rb') as saved_file:
+            saved_content = saved_file.read()
+
+        assert saved_content == original_content, "Saved file content does not match the original file content"
+
+        # Empty the destination file after the test
+        with open(anomaly_det_model_keeper_path, 'w') as file:
             file.truncate(0)
 
 
@@ -183,3 +211,14 @@ def test_save_model_file_invalid_keeper_type():
         except Exception as e:
             assert str(e) == "Expected keeper_type to be either ADL or AnDet!", \
                 "Exception message does not match the expected value"
+
+
+def test_save_model_file_invalid_path():
+    model_file = 'invalid/path/to/model_file'
+    keeper_type = 'ADL'
+
+    with pytest.raises(Exception) as exc_info:
+        save_model_file(model_file, keeper_type)
+
+    assert str(exc_info.value) == "Error occurred while saving the model file:" +\
+                                  " [Errno 2] No such file or directory: 'invalid/path/to/model_file'"

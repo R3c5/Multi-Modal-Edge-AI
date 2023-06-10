@@ -15,9 +15,6 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
     """
     from multi_modal_edge_ai.client.main import adl_model_keeper, anomaly_detection_model_keeper
 
-    if model_file is None:
-        raise Exception("Empty Model file for: " + keeper_type)
-
     if keeper_type == "ADL":
         file_path = adl_model_keeper.model_path
     elif keeper_type == "AnDet":
@@ -25,8 +22,11 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
     else:
         raise Exception("Expected keeper_type to be either ADL or AnDet!")
 
-    with open(model_file, 'rb') as src_file, open(file_path, 'wb') as dest_file:
-        dest_file.write(src_file.read())
+    try:
+        with open(model_file, 'rb') as src_file, open(file_path, 'wb') as dest_file:
+            dest_file.write(src_file.read())
+    except (IOError, OSError) as e:
+        raise Exception("Error occurred while saving the model file: " + str(e))
 
 
 def save_models_zip_file(response: requests.Response) -> None:
