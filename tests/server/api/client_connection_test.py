@@ -1,8 +1,10 @@
 import io
+import time
 import zipfile
+from datetime import datetime, timedelta
+from multiprocessing import Process
 
 import pytest
-from datetime import datetime, timedelta
 
 from multi_modal_edge_ai.server.main import app, get_connected_clients, update_anomaly_detection_model_update_time, \
     update_adl_model_update_time
@@ -13,6 +15,30 @@ def client():
     with app.test_client() as client:
         client.environ_base['REMOTE_ADDR'] = '0.0.0.0'
         yield client
+
+
+@pytest.fixture
+def client1():
+    with app.test_client() as client:
+        client.environ_base['REMOTE_ADDR'] = '0.0.0.1'
+        yield client
+
+
+def start_server():
+    app.run(port=5000)
+
+
+@pytest.fixture(scope="function", autouse=True)
+def run_server():
+    server_process = Process(target=start_server)
+    server_process.start()
+
+    time.sleep(2)
+
+    yield
+
+    server_process.terminate()
+    server_process.join()
 
 
 def test_set_up_connection(client):
@@ -123,14 +149,12 @@ def test_heartbeat_bad_payload(client):
     assert_connected_clients_with_expected(expected_data)
 
 
-def test_heartbeat_unseen_client():
-    with app.test_client() as unseen_client:
-        unseen_client.environ_base['REMOTE_ADDR'] = '0.0.0.1'
+def test_heartbeat_unseen_client(client1):
     payload = {
         'recent_adls': 10,
         'recent_anomalies': 5
     }
-    response = unseen_client.post('api/heartbeat', json=payload)
+    response = client1.post('api/heartbeat', json=payload)
     assert response.status_code == 404
     assert response.get_json() == {'message': 'Client not found'}
 

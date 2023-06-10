@@ -1,13 +1,11 @@
 from unittest import mock
-from unittest.mock import patch
 
 import requests
 
-from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat, \
-    save_model_file
+from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat
 
 
-def test_send_set_up_connection_request_success():
+def test_send_set_up_connection_request_success(capsys):
     with mock.patch.object(requests, 'get') as mock_get:
         mock_response = mock.Mock()
         mock_response.status_code = 200
@@ -19,6 +17,9 @@ def test_send_set_up_connection_request_success():
             send_set_up_connection_request()
             # Assert that the appropriate functions were called
             mock_save_zip.assert_called_with(mock_get.return_value)
+
+            captured = capsys.readouterr()
+            assert 'Connection set up successfully' in captured.out
 
 
 def test_send_set_up_connection_request_fail(capsys, caplog):
