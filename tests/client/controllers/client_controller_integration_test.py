@@ -24,7 +24,7 @@ def run_server():
     server_process = Process(target=start_server)
     server_process.start()
 
-    time.sleep(2)
+    time.sleep(3)
 
     yield
 

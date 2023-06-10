@@ -1,10 +1,10 @@
 from unittest import mock
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 
 import requests
 
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat, \
-    save_models_zip_file
+    save_models_zip_file, save_model_file
 
 
 def test_send_set_up_connection_request_success(capsys):
@@ -88,7 +88,7 @@ def test_send_heartbeat_fail(capsys, caplog):
 
 
 def test_save_both_models_zip_file():
-    zip_file_path = 'tests/client/controllers/models_zip/test_both_models.zip'
+    zip_file_path = 'tests/client/controllers/models_test_files/test_both_models.zip'
     with open(zip_file_path, 'rb') as file:
         zip_content = file.read()
 
@@ -102,7 +102,7 @@ def test_save_both_models_zip_file():
 
 
 def test_save_adl_models_zip_file():
-    zip_file_path = 'tests/client/controllers/models_zip/test_adl_model.zip'
+    zip_file_path = 'tests/client/controllers/models_test_files/test_adl_model.zip'
     with open(zip_file_path, 'rb') as file:
         zip_content = file.read()
 
@@ -116,7 +116,7 @@ def test_save_adl_models_zip_file():
 
 
 def test_save_andet_models_zip_file():
-    zip_file_path = 'tests/client/controllers/models_zip/test_anomaly_detection_model.zip'
+    zip_file_path = 'tests/client/controllers/models_test_files/test_anomaly_detection_model.zip'
     with open(zip_file_path, 'rb') as file:
         zip_content = file.read()
 
@@ -130,7 +130,7 @@ def test_save_andet_models_zip_file():
 
 
 def test_save_no_models_zip_file():
-    zip_file_path = 'tests/client/controllers/models_zip/test_no_models.zip'
+    zip_file_path = 'tests/client/controllers/models_test_files/test_no_models.zip'
     with open(zip_file_path, 'rb') as file:
         zip_content = file.read()
 
@@ -141,3 +141,45 @@ def test_save_no_models_zip_file():
         save_models_zip_file(response)
 
         assert mock_save_model_file.call_count == 0
+
+
+def test_save_model_file():
+    model_file = 'tests/client/controllers/models_test_files/adl_test_model_source'
+    keeper_type = 'ADL'
+    adl_model_keeper_path = 'tests/client/controllers/models_test_files/adl_test_model_dest'
+
+    # Empty the destination file after the test
+    with open(adl_model_keeper_path, 'w') as file:
+        file.truncate(0)
+
+    with open(model_file, 'rb') as original_file:
+        original_content = original_file.read()
+
+    with patch('multi_modal_edge_ai.client.main.adl_model_keeper') as mock_adl_model_keeper:
+        mock_adl_model_keeper.model_path = adl_model_keeper_path
+        save_model_file(model_file, keeper_type)
+
+        # Assert the saved file content matches the original file content
+        with open(adl_model_keeper_path, 'rb') as saved_file:
+            saved_content = saved_file.read()
+
+        assert saved_content == original_content, "Saved file content does not match the original file content"
+
+        # Empty the destination file after the test
+        with open(adl_model_keeper_path, 'w') as file:
+            file.truncate(0)
+
+
+def test_save_model_file_invalid_keeper_type():
+    model_file = 'adl_test_model'
+    invalid_keeper_type = 'InvalidKeeperType'
+
+    with patch('multi_modal_edge_ai.client.main.adl_model_keeper'), \
+            patch('multi_modal_edge_ai.client.main.anomaly_detection_model_keeper'):
+
+        try:
+            save_model_file(model_file, invalid_keeper_type)
+            assert False, "Expected an exception to be raised for invalid keeper_type"
+        except Exception as e:
+            assert str(e) == "Expected keeper_type to be either ADL or AnDet!", \
+                "Exception message does not match the expected value"
