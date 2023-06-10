@@ -1,8 +1,10 @@
 from unittest import mock
+from unittest.mock import patch
 
 import requests
 
-from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat
+from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat, \
+    save_models_zip_file
 
 
 def test_send_set_up_connection_request_success(capsys):
@@ -83,3 +85,59 @@ def test_send_heartbeat_fail(capsys, caplog):
         assert "Error sending heartbeat: " in captured.out
         # Check the log
         assert "An error occurred during heartbeat with server: " in caplog.text
+
+
+def test_save_both_models_zip_file():
+    zip_file_path = 'tests/client/controllers/models_zip/test_both_models.zip'
+    with open(zip_file_path, 'rb') as file:
+        zip_content = file.read()
+
+    response = requests.Response()
+    response._content = zip_content
+
+    with patch('multi_modal_edge_ai.client.controllers.client_controller.save_model_file') as mock_save_model_file:
+        save_models_zip_file(response)
+
+        assert mock_save_model_file.call_count == 2
+
+
+def test_save_adl_models_zip_file():
+    zip_file_path = 'tests/client/controllers/models_zip/test_adl_model.zip'
+    with open(zip_file_path, 'rb') as file:
+        zip_content = file.read()
+
+    response = requests.Response()
+    response._content = zip_content
+
+    with patch('multi_modal_edge_ai.client.controllers.client_controller.save_model_file') as mock_save_model_file:
+        save_models_zip_file(response)
+        mock_save_model_file.assert_any_call(mock.ANY, "ADL")
+        assert mock_save_model_file.call_count == 1
+
+
+def test_save_andet_models_zip_file():
+    zip_file_path = 'tests/client/controllers/models_zip/test_anomaly_detection_model.zip'
+    with open(zip_file_path, 'rb') as file:
+        zip_content = file.read()
+
+    response = requests.Response()
+    response._content = zip_content
+
+    with patch('multi_modal_edge_ai.client.controllers.client_controller.save_model_file') as mock_save_model_file:
+        save_models_zip_file(response)
+        mock_save_model_file.assert_any_call(mock.ANY, "AnDet")
+        assert mock_save_model_file.call_count == 1
+
+
+def test_save_no_models_zip_file():
+    zip_file_path = 'tests/client/controllers/models_zip/test_no_models.zip'
+    with open(zip_file_path, 'rb') as file:
+        zip_content = file.read()
+
+    response = requests.Response()
+    response._content = zip_content
+
+    with patch('multi_modal_edge_ai.client.controllers.client_controller.save_model_file') as mock_save_model_file:
+        save_models_zip_file(response)
+
+        assert mock_save_model_file.call_count == 0
