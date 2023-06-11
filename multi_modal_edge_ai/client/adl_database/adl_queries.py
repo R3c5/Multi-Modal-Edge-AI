@@ -28,7 +28,9 @@ def get_all_activities(collection: Collection) -> List[Tuple[pd.Timestamp, pd.Ti
 def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.Timestamp, activity: str) -> None:
     """
     Add an activity to the specified collection. If the previous activity is the same as the current activity, then
-    merge the two activities into one.
+    merge the two activities into one. If the previous activity is different from the current activity, then check if
+    the end time of the previous activity is after the start time of the current activity. If so, the start time of the
+    current activity is set to the end time of the previous activity.
     :param collection: The collection to add the activity to.
     :param start_time: The start time of the activity.
     :param end_time: The end time of the activity.
@@ -49,6 +51,10 @@ def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.
             delete_last_x_activities(collection, 1)
             if end_time < past_activity[1]:
                 activity_dict["End_Time"] = past_activity[1]
+        elif past_activity is not None and past_activity[2] != activity:
+            end_past_activity = past_activity[1]
+            if end_past_activity > start_time:
+                activity_dict["Start_Time"] = end_past_activity
         # Insert the activity into the collection
         collection.insert_one(activity_dict)
     except Exception as e:

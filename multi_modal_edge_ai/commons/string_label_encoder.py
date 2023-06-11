@@ -1,4 +1,5 @@
 from sklearn.preprocessing import LabelEncoder
+import pickle
 
 
 class StringLabelEncoder:
@@ -25,3 +26,20 @@ class StringLabelEncoder:
         :return: the string version of the decoded label
         """
         return self.label_encoder.inverse_transform([label])[0]
+
+    def save_to_file(self, file_path: str) -> None:
+        """
+        Save the instance of StringLabelEncoder to a file
+        :param file_path: Path to the file where the instance will be saved
+        """
+        with open(file_path, 'wb') as file:
+            pickle.dump(self, file)
+
+    def load_from_file(self, file_path: str) -> None:
+        """
+        Load a StringLabelEncoder instance from a file and update the current instance
+        :param file_path: Path to the file containing the saved instance
+        """
+        with open(file_path, 'rb') as file:
+            loaded_encoder = pickle.load(file)
+        self.__dict__.update(loaded_encoder.__dict__)
