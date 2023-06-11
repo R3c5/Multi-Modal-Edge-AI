@@ -266,3 +266,4 @@ class DatabaseTunnel:
                                                                 'device.friendlyName': 1}).sort(
             'last_seen', 1)
         return group_sensors_on_friendly_names_and_aggregate_entries(self.get_data_from_cursor(cursor, 'Power'), 60)
+    
