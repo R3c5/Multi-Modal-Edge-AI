@@ -11,7 +11,7 @@ def test_statistics():
 
 
 def test_synthetic_anomaly_generator():
-    df = parse_file_without_idle("/home/rafael/TUDelft/cse/year2/q4/software-project/multi-modal-edge-ai/tests/models/anomaly_detection/dummy_datasets/dummy_aruba.csv")
+    df = parse_file_without_idle("tests/models/anomaly_detection/dummy_datasets/dummy_aruba.csv")
     windows = split_into_windows(df, 3, 2)
 
     (normal_windows, anomalous_windows) = clean_windows(df, windows)
