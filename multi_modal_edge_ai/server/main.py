@@ -3,6 +3,7 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask
+from flask_cors import CORS
 # This should be changed to import the respective packages
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
@@ -14,6 +15,7 @@ from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeep
 
 # Initialize Flask application
 app = Flask(__name__)
+CORS(app)
 
 # Configure logging
 log_filename = 'app.log'
