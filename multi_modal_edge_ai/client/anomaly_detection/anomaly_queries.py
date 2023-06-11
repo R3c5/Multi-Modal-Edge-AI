@@ -11,12 +11,14 @@ def add_anomaly(anomaly: pd.Series, collection: Collection) -> None:
     :param collection: The collection to retrieve.
     """
     try:
+        if len(anomaly) % 3 != 0:
+            raise Exception("The anomaly data is not in the correct format")
         anom_dict = dict()
         index: int = 0
         while index < len(anomaly):
-            anom_dict["Start_Time " + str(index / 3)] = anomaly.index[index]
-            anom_dict["End_time " + str(index / 3)] = anomaly[index + 1]
-            anom_dict["Activity " + str(index / 3)] = anomaly[index + 2]
+            anom_dict["Start_Time " + str(int(index / 3))] = anomaly.index[index]
+            anom_dict["End_time " + str(int(index / 3))] = anomaly[index + 1]
+            anom_dict["Activity " + str(int(index / 3))] = anomaly[index + 2]
             index += 3
         collection.insert_one(anom_dict)
 
@@ -46,4 +48,19 @@ def get_all_anomalies(collection: Collection) -> list[pd.Series]:
         return anomaly_list
     except Exception as e:
         print(f"An error occurred while retrieving the anomalies: {str(e)}")
+        return []
+
+
+def get_past_x_anomalies(collection: Collection, x: int) -> list[pd.Series]:
+    """
+    Gets the past X anomalies from the database
+    :param collection: The collection to retrieve.
+    :param x: The number of anomalies to retrieve.
+    """
+    try:
+        anomalies = collection.find().sort("Start_Time", -1).limit(x)
+        anomaly_list = [pd.Series([anomaly]) for anomaly in anomalies]
+        return anomaly_list
+    except Exception as e:
+        print(f"An error occurred while retrieving the past {x} anomalies: {str(e)}")
         return []
