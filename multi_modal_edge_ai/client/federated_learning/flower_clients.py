@@ -1,7 +1,9 @@
 from collections import OrderedDict
+from typing import Any, Dict
 
 import flwr as fl
 import torch.nn
+from flwr.common import Scalar
 
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
 from multi_modal_edge_ai.commons.model import Model
@@ -9,7 +11,7 @@ from multi_modal_edge_ai.commons.model import Model
 
 class FlowerClient(fl.client.NumPyClient):
 
-    def __init__(self, model: Model, train_eval: TrainEval):
+    def __init__(self, model, train_eval: TrainEval):
         """
         Constructor for the flower client
         :param model: The machine learning model to perform anomaly detection
@@ -18,11 +20,11 @@ class FlowerClient(fl.client.NumPyClient):
         self.model = model
         self.train_eval = train_eval
 
-    def get_parameters(self, config):
+    def get_parameters(self, config: dict[str, Scalar]) -> Any:
         """
         This function will get the parameters of the current model
         :param config: The config with which get the parameters
-        :return:
+        :return: The parameters
         """
         if isinstance(self.model.model, torch.nn.Module):
             return [val.cpu().numpy() for _, val in self.model.model.state_dict().items()]
@@ -30,7 +32,7 @@ class FlowerClient(fl.client.NumPyClient):
             params = self.model.model.get_params()
             return params
 
-    def set_parameters(self, parameters):
+    def set_parameters(self, parameters) -> None:
         """
         This function will override the parameters of the current model
         :param parameters: The parameters to override
@@ -45,8 +47,8 @@ class FlowerClient(fl.client.NumPyClient):
 
         self.model.save("multi_modal_edge_ai/client/anomaly_detection/anomaly_detection_model")
 
-    def fit(self, parameters, config):
-        """
+    def fit(self, parameters, config: dict[str, Scalar]) -> tuple[Any, int, dict[str, Scalar]]:
+        """Any
         This function will fit the model on the local data
         :param parameters: The parameters on which to start training
         :param config: The config of the training procedure
@@ -54,9 +56,9 @@ class FlowerClient(fl.client.NumPyClient):
         """
         self.set_parameters(parameters)
         training_stats = self.train_eval.train(self.model, config)
-        return self.get_parameters(config={}), *training_stats
+        return self.get_parameters(config={}), training_stats[0], training_stats[1]
 
-    def evaluate(self, parameters, config):
+    def evaluate(self, parameters, config: dict[str, Scalar]) -> tuple[float, int, Dict[str, Scalar]]:
         """
         This function will evaluate a model on the local data
         :param parameters: The parameters of the model to evaluate
