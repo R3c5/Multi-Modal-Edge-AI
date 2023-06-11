@@ -96,6 +96,9 @@ def test_add_activity():
     mock_client = mongomock.MongoClient()
     mock_collection = mock_client['test_db']['test_collection']
 
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
+
     # Mock the past_activity_list
     past_activity_list = []
     module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
@@ -118,10 +121,16 @@ def test_add_activity():
         del result['_id']
     assert expected_result == query_result
 
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
+
 
 def test_add_activity_without_merge():
     mock_client = mongomock.MongoClient()
     mock_collection = mock_client['test_db']['test_collection']
+
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
 
     # Mock the past_activity_list
     past_activity_list = [(pd.Timestamp("2023-06-01 10:00:00"), pd.Timestamp("2023-06-01 10:05:00"), 'ActivityAny')]
@@ -157,10 +166,16 @@ def test_add_activity_without_merge():
         del result['_id']
     assert expected_result == query_result
 
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
+
 
 def test_add_activity_with_merge():
     mock_client = mongomock.MongoClient()
     mock_collection = mock_client['test_db']['test_collection']
+
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
 
     # Mock the past_activity_list
     past_activity_list = [(pd.Timestamp("2023-06-01 10:00:00"), pd.Timestamp("2023-06-01 10:05:00"), 'Activity')]
@@ -190,6 +205,9 @@ def test_add_activity_with_merge():
     for result in query_result:
         del result['_id']
     assert expected_result == query_result
+
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
 
 
 def test_get_past_x_minutes():
@@ -327,6 +345,9 @@ def test_exception_add_activity():
     mock_collection = mock_client['test_db']['test_collection_1']
     mock_collection.insert_one = mock.MagicMock(side_effect=Exception('Test Exception'))
 
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
+
     # Mock the past_activity_list
     past_activity_list = []
     module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
@@ -348,6 +369,9 @@ def test_exception_add_activity():
     printed_output = captured_output.getvalue().strip()
     expected_output = f"An error occurred while adding the activity: Test Exception"
     assert printed_output == expected_output
+
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
 
 
 def test_exception_get_past_x_minutes():

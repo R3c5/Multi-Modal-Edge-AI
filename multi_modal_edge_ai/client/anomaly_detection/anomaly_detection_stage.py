@@ -24,23 +24,27 @@ def check_window_for_anomaly(window_size: int, anomaly_model: ModelKeeper, anoma
     :param adl_collection: The collection to get the ADLs from
     :return: the prediction of the anomaly detection model: 0 if the window is anomalous, 1 if it is not
     """
+    try:
+        # Get the last #window_size number of ADLs from the adl_database collection
+        adl_list = module.get_past_x_activities(adl_collection, window_size)
 
-    # Get the last #window_size number of ADLs from the adl_database collection
-    adl_list = module.get_past_x_activities(adl_collection, window_size)
+        # Create a window based on the last #window_size number of ADLs
+        window = pd.Series(item for sublist in adl_list for item in sublist)
 
-    # Create a window based on the last #window_size number of ADLs
-    window = pd.Series(adl_list, index=range(len(adl_list))).transpose()
+        # Convert the categorical data in the window to numeric data
+        transformed_window = window_categorical_to_numeric(window, window_size, adl_encoding, one_hot)
+        transformed_window = scaler.transform(transformed_window)
 
-    # Convert the categorical data in the window to numeric data
-    transformed_window = window_categorical_to_numeric(window, window_size, adl_encoding, one_hot)
-    transformed_window = scaler.transform(transformed_window)
+        # Use the model to predict if the window is anomalous
+        prediction = anomaly_model.model.predict(transformed_window)
 
-    # Use the model to predict if the window is anomalous
-    prediction = anomaly_model.model.predict(transformed_window)
-
-    # If the window is anomalous, add it to the anomaly_collection
-    if prediction == 0:
-        anomaly_collection.insert_one(pd.Series(adl_list, index=range(len(adl_list))))
-        return 0
-    else:
+        # If the window is anomalous, add it to the anomaly_collection
+        if prediction == 0:
+            anomaly_collection.insert_one({"Anomaly": adl_list})
+            # If the anomaly sourcing is done, then it could be added into the dictionary that is put into the database
+            return 0
+        else:
+            return 1
+    except Exception as e:
+        print(f"An error occurred while checking the window for anomalies: {str(e)}")
         return 1

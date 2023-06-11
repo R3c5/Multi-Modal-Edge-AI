@@ -1,16 +1,12 @@
 from unittest.mock import Mock, patch
 import pandas as pd
 import mongomock
-
-from multi_modal_edge_ai.client.adl_database.adl_queries import get_past_x_activities
 from multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage import check_window_for_anomaly
-from multi_modal_edge_ai.commons.model import Model
-from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
-import multi_modal_edge_ai.client.adl_database.adl_queries as module
+import multi_modal_edge_ai.client.adl_database.adl_queries as mod
 
 
 def test_check_window_for_anomaly():
@@ -38,7 +34,7 @@ def test_check_window_for_anomaly():
     mock_adl_collection.insert_one(entry3)
 
     assert mock_adl_collection.count_documents({}) == 3
-    assert len(module.get_past_x_activities(mock_adl_collection, 2)) == 2
+    assert len(mod.get_past_x_activities(mock_adl_collection, 2)) == 2
 
     # Create Anomaly Detection ModelKeeper object
     anomaly_detection_model = IForest()
@@ -50,19 +46,23 @@ def test_check_window_for_anomaly():
     mock_scaler.transform.return_value = [[0, 1, 1]]  # Add your expected return value here
 
     # Create a mock encoder
-    mock_encoder = Mock(spec=OneHotEncoder)
+    distinct_adl_list = ['Toilet', 'Relax', 'Kitchen_Usage', 'Sleeping', 'Idle', 'Meal_Preparation', 'Outside']
+    encoding_function = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    encoding_function.fit([[i] for i in distinct_adl_list])
 
     # Set window_size to the number of entries you want to get
     window_size = 2
 
-    # This will be uncommented after dev is merged into branch
-    # # We will use patching to replace the actual functions with our mocks during the test
-    # with patch('multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing.'
-    #            'window_categorical_to_numeric', return_value=[[1, 1, 0]]), \
-    #         patch.object(anomaly_detection_model.model, 'predict', return_value=0):
-    #     prediction = check_window_for_anomaly(window_size, anomaly_detection_model_keeper, mock_anomaly_collection,
-    #                                           mock_scaler, mock_encoder, True, mock_adl_collection)
-    #
-    # # Add assertions to check the behavior of the function
-    # assert prediction == 0, "Prediction should be 0 (anomalous)"
-    # assert mock_anomaly_collection.count_documents({}) == 1, "Anomalous window should be added to the collection"
+    # We will use patching to replace the actual functions with our mocks during the test
+    anomaly_detection_model_keeper.model.predict = Mock(return_value=0)
+    prediction = check_window_for_anomaly(window_size, anomaly_detection_model_keeper, mock_anomaly_collection,
+                                          mock_scaler, encoding_function, True, mock_adl_collection)
+
+    # Add assertions to check the behavior of the function
+    assert prediction == 0, "Prediction should be 0 (anomalous)"
+    assert mock_anomaly_collection.count_documents({}) == 1, "Anomalous window should be added to the collection"
+
+    # Deleting the mocks
+    del mock_client
+    del mock_adl_collection
+    del mock_anomaly_collection
