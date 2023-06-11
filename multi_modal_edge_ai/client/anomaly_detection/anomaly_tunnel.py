@@ -1,4 +1,3 @@
-import pandas as pd
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
@@ -52,34 +51,3 @@ class AnomalyDetectionDBTunnel:
         # Access the specified collection
         collection = self.database[collection_name]
         return collection
-
-    def add_anomaly(self, anomaly: pd.Series, collection_name: str = 'anomaly-test') -> None:
-        """
-        Adds an anomaly to the database
-        :param anomaly: A pandas DataFrame containing the anomaly data
-        :param collection_name: The name of the collection to retrieve.
-        """
-        try:
-            collection = self.get_collection(collection_name)
-            anom_dict = dict()
-            index: int = 0
-            while index < len(anomaly):
-                anom_dict["Start_Time " + str(index / 3)] = anomaly.index[index]
-                anom_dict["End_time " + str(index / 3)] = anomaly[index + 1]
-                anom_dict["Activity " + str(index / 3)] = anomaly[index + 2]
-                index += 3
-            collection.insert_one(anom_dict)
-
-        except Exception as e:
-            print(f"An error occurred while adding the activity: {str(e)}")
-
-    def delete_all_anomalies(self, collection_name: str = 'anomaly-test') -> None:
-        """
-        Deletes all anomalies from the database
-        :param collection_name: The name of the collection to retrieve.
-        """
-        try:
-            collection = self.get_collection(collection_name)
-            collection.delete_many({})
-        except Exception as e:
-            print(f"An error occurred while deleting the anomalies: {str(e)}")
