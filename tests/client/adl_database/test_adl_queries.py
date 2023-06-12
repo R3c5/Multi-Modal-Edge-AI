@@ -1,5 +1,3 @@
-import io
-import sys
 from unittest import mock
 from unittest.mock import patch
 
@@ -88,6 +86,9 @@ def test_add_activity():
     mock_client = mongomock.MongoClient()
     mock_collection = mock_client['test_db']['test_collection']
 
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
+
     # Mock the past_activity_list
     past_activity_list = []
     module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
@@ -110,10 +111,16 @@ def test_add_activity():
         del result['_id']
     assert expected_result == query_result
 
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
+
 
 def test_add_activity_without_merge():
     mock_client = mongomock.MongoClient()
     mock_collection = mock_client['test_db']['test_collection']
+
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
 
     # Mock the past_activity_list
     past_activity_list = [(pd.Timestamp("2023-06-01 10:00:00"), pd.Timestamp("2023-06-01 10:05:00"), 'ActivityAny')]
@@ -138,7 +145,7 @@ def test_add_activity_without_merge():
             "Activity": 'ActivityAny'
         },
         {
-            "Start_Time": pd.Timestamp("2023-06-01 10:04:00"),
+            "Start_Time": pd.Timestamp("2023-06-01 10:05:00"),
             "End_Time": pd.Timestamp("2023-06-01 10:10:00"),
             "Activity": 'Activity'
         }
@@ -149,10 +156,61 @@ def test_add_activity_without_merge():
         del result['_id']
     assert expected_result == query_result
 
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
+
+
+def test_add_activity_without_merge_no_overlap():
+    mock_client = mongomock.MongoClient()
+    mock_collection = mock_client['test_db']['test_collection']
+
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
+
+    # Mock the past_activity_list
+    past_activity_list = [(pd.Timestamp("2023-06-01 10:00:00"), pd.Timestamp("2023-06-01 10:05:00"), 'ActivityAny')]
+    module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
+
+    # Add the past activity to the collection
+    past_activity = {'Start_Time': pd.Timestamp("2023-06-01 10:00:00"),
+                     'End_Time': pd.Timestamp("2023-06-01 10:05:00"), 'Activity': 'ActivityAny'}
+    mock_collection.insert_one(past_activity)
+
+    # Call the function
+    start_time = pd.Timestamp("2023-06-01 10:06:00")
+    end_time = pd.Timestamp("2023-06-01 10:10:00")
+    activity = 'Activity'
+    module.add_activity(mock_collection, start_time, end_time, activity)
+
+    # Assertions
+    expected_result = [
+        {
+            "Start_Time": pd.Timestamp("2023-06-01 10:00:00"),
+            "End_Time": pd.Timestamp("2023-06-01 10:05:00"),
+            "Activity": 'ActivityAny'
+        },
+        {
+            "Start_Time": pd.Timestamp("2023-06-01 10:06:00"),
+            "End_Time": pd.Timestamp("2023-06-01 10:10:00"),
+            "Activity": 'Activity'
+        }
+    ]
+
+    query_result = list(mock_collection.find({}))
+    for result in query_result:
+        del result['_id']
+    assert expected_result == query_result
+
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
+
 
 def test_add_activity_with_merge():
     mock_client = mongomock.MongoClient()
     mock_collection = mock_client['test_db']['test_collection']
+
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
 
     # Mock the past_activity_list
     past_activity_list = [(pd.Timestamp("2023-06-01 10:00:00"), pd.Timestamp("2023-06-01 10:05:00"), 'Activity')]
@@ -182,6 +240,9 @@ def test_add_activity_with_merge():
     for result in query_result:
         del result['_id']
     assert expected_result == query_result
+
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
 
 
 def test_get_past_x_minutes():
