@@ -24,13 +24,13 @@ def test_save_and_load_from_file():
     root_directory = os.path.abspath(os.path.dirname(__file__))
 
     label_encoder = StringLabelEncoder(['label1', 'label2', 'label3'])
-    label_encoder.save_to_file(os.path.join(root_directory, 'encoder'))
+    label_encoder.save(os.path.join(root_directory, 'encoder'))
 
     # Create a new encoder instance
     new_encoder = StringLabelEncoder([])
 
     # Load the encoder from the file
-    new_encoder.load_from_file(os.path.join(root_directory, 'encoder'))
+    new_encoder.load(os.path.join(root_directory, 'encoder'))
 
     # Test if the loaded encoder has the same attributes as the original encoder
     assert label_encoder.label_encoder.classes_.tolist() == new_encoder.label_encoder.classes_.tolist()

@@ -27,7 +27,7 @@ class StringLabelEncoder:
         """
         return self.label_encoder.inverse_transform([label])[0]
 
-    def save_to_file(self, file_path: str) -> None:
+    def save(self, file_path: str) -> None:
         """
         Save the instance of StringLabelEncoder to a file
         :param file_path: Path to the file where the instance will be saved
@@ -35,7 +35,7 @@ class StringLabelEncoder:
         with open(file_path, 'wb') as file:
             pickle.dump(self, file)
 
-    def load_from_file(self, file_path: str) -> None:
+    def load(self, file_path: str) -> None:
         """
         Load a StringLabelEncoder instance from a file and update the current instance
         :param file_path: Path to the file containing the saved instance

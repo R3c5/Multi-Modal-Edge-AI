@@ -1,5 +1,3 @@
-import pickle
-
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.commons.model import Model
 from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
@@ -23,10 +21,10 @@ class ADLModelKeeper(ModelKeeper):
         """
         Save the StringLabelEncoder instance to a file
         """
-        self.adl_encoder.save_to_file(self.encoder_path)
+        self.adl_encoder.save(self.encoder_path)
 
     def load_encoder(self) -> None:
         """
         Load a StringLabelEncoder instance from a file
         """
-        self.adl_encoder.load_from_file(self.encoder_path)
+        self.adl_encoder.load(self.encoder_path)
