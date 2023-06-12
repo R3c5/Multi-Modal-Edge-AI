@@ -1,3 +1,4 @@
+import sys
 from typing import Any, Union, List
 
 import numpy as np
@@ -41,7 +42,7 @@ class Autoencoder(Model):
         """
         assert isinstance(data, DataLoader), "Data must be of type DataLoader for the Autoencoder model"
 
-        self.loss_function = hyperparams['loss_function']
+        self.loss_function = hyperparams.get('loss_function', torch.nn.MSELoss())
         optimizer = torch.optim.Adam(self.model.parameters(), lr=hyperparams["learning_rate"], weight_decay=1e-8)
         verbose = hyperparams["verbose"]
 
@@ -72,11 +73,13 @@ class Autoencoder(Model):
     def set_reconstruction_error_threshold(self, quantile: float = 0.99) -> None:
         """
         This function will set the reconstruction error threshold, which is used on prediction time, according to the
-        specified quantile on the errors seen in training
+        specified quantile on the errors seen in training. If there haven't been any reconstruction error observed, the
+        reconstruction threshold will be the system maxsize
         :param quantile: The quantile of the threshold, e.g., 0.99
         """
-        quantile_value = np.quantile(self.reconstruction_errors, quantile)
-        self.reconstruction_loss_threshold = float(quantile_value)
+        quantile_value = float(np.quantile(self.reconstruction_errors, quantile)) if len(
+            self.reconstruction_errors) != 0 else sys.float_info.max
+        self.reconstruction_loss_threshold = quantile_value
 
     def predict(self, instance: Union[Tensor, DataFrame]) -> int:
         """

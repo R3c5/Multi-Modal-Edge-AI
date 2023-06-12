@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any
 
-from flask import request, jsonify, Blueprint, Response
+from flask import request, jsonify, Blueprint, Response, send_file
 
 dashboard_connection_blueprint = Blueprint('dashboard_connection', __name__)
 
@@ -40,3 +40,10 @@ def get_clients_info() -> Response:
 
     clients = client_keeper.connected_clients
     return jsonify({'connected_clients': clients})
+
+
+@dashboard_connection_blueprint.route('/dashboard/get_error_log', methods=['GET'])
+@authenticate
+def get_error_log() -> Response:
+    error_log_path = './app.log'
+    return send_file(error_log_path)

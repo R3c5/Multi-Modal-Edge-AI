@@ -46,6 +46,8 @@ def synthetic_anomaly_generator(anomalous_windows: pd.DataFrame, anomaly_generat
 
             synthetic_anomalies.append(new_anomalous_window)
             index_anomalies += 1
+            if index_anomalies >= number_of_synthetic_anomalies:
+                break
 
     synthetic_anomalies_df = pd.concat(synthetic_anomalies, ignore_index=True)
     return synthetic_anomalies_df
