@@ -46,15 +46,16 @@ def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.
         past_activity_list = get_past_x_activities(collection, 1)
         past_activity = past_activity_list[0] if len(past_activity_list) > 0 else None
 
-        if past_activity is not None and past_activity[2] == activity:
-            activity_dict["Start_Time"] = past_activity[0]
-            delete_last_x_activities(collection, 1)
-            if end_time < past_activity[1]:
-                activity_dict["End_Time"] = past_activity[1]
-        elif past_activity is not None and past_activity[2] != activity:
-            end_past_activity = past_activity[1]
-            if end_past_activity > start_time:
-                activity_dict["Start_Time"] = end_past_activity
+        if past_activity is not None:
+            if past_activity[2] == activity:
+                activity_dict["Start_Time"] = past_activity[0]
+                delete_last_x_activities(collection, 1)
+                if end_time < past_activity[1]:
+                    activity_dict["End_Time"] = past_activity[1]
+            else:
+                end_past_activity = past_activity[1]
+                if end_past_activity > start_time:
+                    activity_dict["Start_Time"] = end_past_activity
         # Insert the activity into the collection
         collection.insert_one(activity_dict)
     except Exception as e:
