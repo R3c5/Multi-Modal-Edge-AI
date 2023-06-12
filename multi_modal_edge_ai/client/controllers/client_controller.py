@@ -1,21 +1,10 @@
 import logging
 import zipfile
-
 from io import BytesIO
+
 import requests
 
-
 server_url = 'http://127.0.0.1:5000'
-
-
-def save_anomaly_detection_file_contents(content: bytes) -> None:
-    """
-    Save the contents to the anomaly detection model file
-    :param content: content to be saved
-    """
-    from multi_modal_edge_ai.client.main import anomaly_detection_model_keeper
-    with open(anomaly_detection_model_keeper.model_path, 'wb') as file:
-        file.write(content)
 
 
 def save_model_file(model_file: str, keeper_type: str) -> None:
@@ -26,9 +15,6 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
     """
     from multi_modal_edge_ai.client.main import adl_model_keeper, anomaly_detection_model_keeper
 
-    if model_file is None:
-        raise Exception("Empty Model file for: " + keeper_type)
-
     if keeper_type == "ADL":
         file_path = adl_model_keeper.model_path
     elif keeper_type == "AnDet":
@@ -36,8 +22,34 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
     else:
         raise Exception("Expected keeper_type to be either ADL or AnDet!")
 
-    with open(model_file, 'rb') as src_file, open(file_path, 'wb') as dest_file:
-        dest_file.write(src_file.read())
+    try:
+        with open(model_file, 'rb') as src_file, open(file_path, 'wb') as dest_file:
+            dest_file.write(src_file.read())
+    except (IOError, OSError) as e:
+        raise Exception("Error occurred while saving the model file: " + str(e))
+
+
+def save_models_zip_file(response: requests.Response) -> None:
+    """
+    Save the adl and anomaly detection model files received in the zip from the response
+    :param response: requests.Response from server containing the zip file
+    """
+    # Save the ZIP file locally
+    zip_content = BytesIO(response.content)
+    # Extract the files from the ZIP
+    with zipfile.ZipFile(zip_content, 'r') as zipfolder:
+        zip_files = zipfolder.namelist()
+
+        adl_model_file = 'adl_model'
+        anomaly_detection_model_file = 'anomaly_detection_model'
+
+        if adl_model_file in zip_files:
+            adl_model_path = zipfolder.extract(adl_model_file, path='./model_zip')
+            save_model_file(adl_model_path, "ADL")
+
+        if anomaly_detection_model_file in zip_files:
+            anomaly_detection_model_path = zipfolder.extract(anomaly_detection_model_file, path='./model_zip')
+            save_model_file(anomaly_detection_model_path, "AnDet")
 
 
 def send_set_up_connection_request() -> None:
@@ -47,17 +59,7 @@ def send_set_up_connection_request() -> None:
     try:
         response = requests.get(server_url + '/api/set_up_connection')
         if response.status_code == 200:
-
-            # Save the ZIP file locally
-            zip_content = BytesIO(response.content)
-
-            # Extract the files from the ZIP
-            with zipfile.ZipFile(zip_content, 'r') as zipfolder:
-                adl_model_file = zipfolder.extract('adl_model', path='./model_zip')
-                anomaly_detection_model_file = zipfolder.extract('anomaly_detection_model', path='./model_zip')
-
-                save_model_file(adl_model_file, "ADL")
-                save_model_file(anomaly_detection_model_file, "AnDet")
+            save_models_zip_file(response)
             print("Connection set up successfully")
         else:
             error_message = response.text
@@ -70,6 +72,8 @@ def send_set_up_connection_request() -> None:
 def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
     """
     Send a heartbeat to the server
+    :param num_adls: int representing the number of adls detected since last heartbeat
+    :param num_anomalies: int representing the number of anomalies detected since last heartbeat
     """
     try:
         payload = {
@@ -78,23 +82,13 @@ def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
         }
         response = requests.post(server_url + '/api/heartbeat', json=payload)
         if response.status_code == 200:
-            content_type = response.headers.get('Content-Type')
-            if content_type == 'application/octet-stream':
-                save_anomaly_detection_file_contents(response.content)
-                print("Model update received")
-            elif content_type == 'application/json':
-                message = response.json().get('message')
-                print(message)
-            else:
-                print("Unexpected response")
-                raise Exception("Unexpected response in heartbeat")
-
+            save_models_zip_file(response)
+            print("Heartbeat successful")
         elif response.status_code == 404:
             print("Client not found")
-
+            send_set_up_connection_request()
         else:
-            error_message = response.text
-            print("Error sending heartbeat:", error_message)
-            raise Exception(error_message)
+            print("Error sending heartbeat:", response)
+            raise Exception(response)
     except Exception as e:
         logging.error('An error occurred during heartbeat with server: %s', str(e))
