@@ -380,6 +380,9 @@ def test_exception_add_activity(capsys):
     mock_collection = mock_client['test_db']['test_collection_1']
     mock_collection.insert_one = mock.MagicMock(side_effect=Exception('Test Exception'))
 
+    # Store the original method
+    original_get_past_x_activities = module.get_past_x_activities
+
     # Mock the past_activity_list
     past_activity_list = []
     module.get_past_x_activities = mock.MagicMock(return_value=past_activity_list)
@@ -395,6 +398,9 @@ def test_exception_add_activity(capsys):
     printed_output = captured.out.strip()
     expected_output = "An error occurred while adding the activity: Test Exception"
     assert printed_output == expected_output
+
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
 
 
 def test_exception_get_past_x_minutes(capsys):
