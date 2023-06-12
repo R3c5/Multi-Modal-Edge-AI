@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from typing import Union
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
@@ -33,7 +34,7 @@ def check_window_for_anomaly(window_size: int, anomaly_model: ModelKeeper, anoma
             raise Exception("Not enough ADLs to create a window!")
 
         # Create a window based on the last #window_size number of ADLs
-        window = pd.Series(item for sublist in adl_list for item in sublist)
+        window = pd.Series(np.array(adl_list).flatten().tolist())
 
         # Convert the categorical data in the window to numeric data
         transformed_window = window_categorical_to_numeric(window, window_size, adl_encoding, one_hot)
