@@ -5,19 +5,20 @@ import flwr as fl
 import torch.nn
 from flwr.common import Scalar
 
+from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
 from multi_modal_edge_ai.commons.model import Model
 
 
 class FlowerClient(fl.client.NumPyClient):
 
-    def __init__(self, model, train_eval: TrainEval):
+    def __init__(self, model_keeper, train_eval: TrainEval):
         """
         Constructor for the flower client
-        :param model: The machine learning model to perform anomaly detection
+        :param model_keeper: The model keeper which holds the machine learning model
         :param train_eval: The train eval object with the training, evaluation and other data
         """
-        self.model = model
+        self.model_keeper = model_keeper
         self.train_eval = train_eval
 
     def get_parameters(self, config: dict[str, Scalar]) -> Any:
@@ -26,10 +27,10 @@ class FlowerClient(fl.client.NumPyClient):
         :param config: The config with which get the parameters
         :return: The parameters
         """
-        if isinstance(self.model.model, torch.nn.Module):
-            return [val.cpu().numpy() for _, val in self.model.model.state_dict().items()]
+        if isinstance(self.model_keeper.model.model, torch.nn.Module):
+            return [val.cpu().numpy() for _, val in self.model_keeper.model.model.state_dict().items()]
         else:
-            params = self.model.model.get_params()
+            params = self.model_keeper.model.model.get_params()
             return params
 
     def set_parameters(self, parameters) -> None:
@@ -38,14 +39,14 @@ class FlowerClient(fl.client.NumPyClient):
         :param parameters: The parameters to override
         :return:
         """
-        if isinstance(self.model.model, torch.nn.Module):
-            params_dict = zip(self.model.model.state_dict().keys(), parameters)
+        if isinstance(self.model_keeper.model.model, torch.nn.Module):
+            params_dict = zip(self.model_keeper.model.model.state_dict().keys(), parameters)
             state_dict = OrderedDict({k: torch.tensor(v) for k, v in params_dict})
-            self.model.model.load_state_dict(state_dict, strict=True)
+            self.model_keeper.model.model.load_state_dict(state_dict, strict=True)
         else:
-            self.model.model.set_params(**parameters)
+            self.model_keeper.model.model.set_params(**parameters)
 
-        self.model.save("multi_modal_edge_ai/client/anomaly_detection/anomaly_detection_model")
+        self.model_keeper.save_model()
 
     def fit(self, parameters, config: dict[str, Scalar]) -> tuple[Any, int, dict[str, Scalar]]:
         """Any
@@ -55,7 +56,7 @@ class FlowerClient(fl.client.NumPyClient):
         :return: The model parameters and the training stats
         """
         self.set_parameters(parameters)
-        training_stats = self.train_eval.train(self.model, config)
+        training_stats = self.train_eval.train(self.model_keeper.model, config)
         return self.get_parameters(config={}), training_stats[0], training_stats[1]
 
     def evaluate(self, parameters, config: dict[str, Scalar]) -> tuple[float, int, Dict[str, Scalar]]:
@@ -66,5 +67,5 @@ class FlowerClient(fl.client.NumPyClient):
         :return: The loss, size of evaluation dataset and other stats
         """
         self.set_parameters(parameters)
-        loss, df_size, evaluation_stats = self.train_eval.evaluate(self.model, config)
+        loss, df_size, evaluation_stats = self.train_eval.evaluate(self.model_keeper.model, config)
         return loss, df_size, evaluation_stats

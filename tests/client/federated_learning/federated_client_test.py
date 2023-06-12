@@ -2,6 +2,7 @@ from unittest.mock import Mock, patch
 
 import torch.nn
 
+from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.federated_client import FederatedClient
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 
@@ -10,7 +11,8 @@ from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 def test_start_client(start_numpy_client_mock):
     model = Autoencoder([3, 2], [2, 3], torch.nn.ReLU(), torch.nn.Sigmoid())
     train_eval = Mock()
-    fed_client = FederatedClient(model, train_eval)
+    model_keeper = ModelKeeper(model, "")
+    fed_client = FederatedClient(model_keeper, train_eval)
 
     fed_client.start_numpy_client("address")
 
