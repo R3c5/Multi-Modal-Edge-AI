@@ -8,7 +8,7 @@ from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 class ADLModelKeeper(ModelKeeper):
     def __init__(self, model: Model, model_path: str, adl_encoder: StringLabelEncoder, encoder_path: str) -> None:
         """
-        Instantiate the ADLInferenceModelKeeper
+        Instantiate the ADLModelKeeper
         :param model: Model representing the model used for prediction
         :param model_path: Path to the file storing the model
         :param adl_encoder: Instance of StringLabelEncoder used to decode the labels of
