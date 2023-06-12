@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import logging
 import pandas as pd
 from pandas import DataFrame
 
@@ -86,27 +87,25 @@ def adl_inference_stage(sensor_database: str, seconds: int,
     :param collection_name: The collection of the ADL Database to add the result to.
     :param database_name: The database of the ADL Database to add the result to.
     """
+    try:
+        # Retrieve the past X seconds of entries from the Sensor Database
+        dbt = DatabaseTunnel(sensor_database)
+        current_time = datetime.now()
+        entries = dbt.get_past_x_seconds_of_all_sensor_entries(seconds)
+        parsed_sensor_entries = transform_client_db_entries_to_activity_entries(entries)
 
-    # Retrieve the past X seconds of entries from the Sensor Database
-    dbt = DatabaseTunnel(sensor_database)
-    current_time = datetime.now()
-    entries = dbt.get_past_x_seconds_of_all_sensor_entries(seconds)
-    parsed_sensor_entries = transform_client_db_entries_to_activity_entries(entries)
+        # Predict the ADL
+        result = adl_model_keeper.model.predict(parsed_sensor_entries)
+        result = adl_model_keeper.adl_encoder.decode_label(result[0])
 
-    # Load the model and encoder
-    adl_model_keeper.load_model()
-    adl_model_keeper.load_encoder()
+        # Get start and end time of the ADL
+        start_time = pd.Timestamp((current_time - timedelta(seconds=seconds)).strftime('%Y-%m-%d %H:%M:%S'))
+        end_time = pd.Timestamp(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
-    # Predict the ADL
-    result = adl_model_keeper.model.predict(parsed_sensor_entries)
-    result = adl_model_keeper.adl_encoder.decode_label(result[0])
-
-    # Get start and end time of the ADL
-    start_time = pd.Timestamp((current_time - timedelta(seconds=seconds)).strftime('%Y-%m-%d %H:%M:%S'))
-    end_time = pd.Timestamp(current_time.strftime('%Y-%m-%d %H:%M:%S'))
-
-    # Add the result to the ADL Database
-    adl_db_client = get_database_client()
-    adl_db_database = get_database(adl_db_client, database_name)
-    adl_db_collection = get_collection(adl_db_database, collection_name)
-    add_activity(adl_db_collection, start_time, end_time, result)
+        # Add the result to the ADL Database
+        adl_db_client = get_database_client()
+        adl_db_database = get_database(adl_db_client, database_name)
+        adl_db_collection = get_collection(adl_db_database, collection_name)
+        add_activity(adl_db_collection, start_time, end_time, result)
+    except Exception as e:
+        logging.error('An error occurred during the ADL inference stage', str(e))
