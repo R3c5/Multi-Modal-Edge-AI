@@ -12,13 +12,14 @@ def add_anomaly(anomaly: pd.Series, collection: Collection) -> None:
     """
     try:
         if len(anomaly) % 3 != 0:
-            raise Exception("The anomaly data is not in the correct format")
+            raise Exception("The anomaly data is not in the correct format!")
         anom_dict = dict()
         index: int = 0
         while index < len(anomaly):
-            anom_dict["Start_Time " + str(int(index / 3))] = anomaly.index[index]
-            anom_dict["End_time " + str(int(index / 3))] = anomaly[index + 1]
-            anom_dict["Activity " + str(int(index / 3))] = anomaly[index + 2]
+            position = str(int(index / 3))
+            anom_dict["Start_Time " + position] = anomaly.index[index]
+            anom_dict["End_time " + position] = anomaly[index + 1]
+            anom_dict["Activity " + position] = anomaly[index + 2]
             index += 3
         collection.insert_one(anom_dict)
 
@@ -35,6 +36,20 @@ def delete_all_anomalies(collection: Collection) -> None:
         collection.delete_many({})
     except Exception as e:
         print(f"An error occurred while deleting the anomalies: {str(e)}")
+
+
+def delete_past_x_anomalies(collection: Collection, x: int) -> None:
+    """
+    Deletes the past X anomalies from the database
+    :param collection: The collection to retrieve.
+    :param x: The number of anomalies to delete.
+    """
+    try:
+        anomalies = collection.find().sort("Start_Time", -1).limit(x)
+        for anomaly in anomalies:
+            collection.delete_one(anomaly)
+    except Exception as e:
+        print(f"An error occurred while deleting the past {x} anomalies: {str(e)}")
 
 
 def get_all_anomalies(collection: Collection) -> list[pd.Series]:

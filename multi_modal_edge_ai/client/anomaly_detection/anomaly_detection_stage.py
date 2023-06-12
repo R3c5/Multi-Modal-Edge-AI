@@ -28,6 +28,10 @@ def check_window_for_anomaly(window_size: int, anomaly_model: ModelKeeper, anoma
         # Get the last #window_size number of ADLs from the adl_database collection
         adl_list = module.get_past_x_activities(adl_collection, window_size)
 
+        # Check if the adl_list has enough ADLs to create a window
+        if len(adl_list) < window_size:
+            raise Exception("Not enough ADLs to create a window!")
+
         # Create a window based on the last #window_size number of ADLs
         window = pd.Series(item for sublist in adl_list for item in sublist)
 
