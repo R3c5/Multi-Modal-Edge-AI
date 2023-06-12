@@ -5,10 +5,6 @@ from pymongo.database import Database
 
 class AnomalyDetectionDBTunnel:
 
-    # Before running this script, make sure that the SSH tunnel is running:
-    # 1. Open WSL
-    # 2. Run the following command: ```ssh ***REMOVED*** -N -L 27017:localhost:27018```
-    # 3. Input this password: ***REMOVED***
     def __init__(self, database_name: str, username: str = 'coho-edge-ai', password: str = '***REMOVED***') -> None:
         """
         This method connects to the remote MongoDB instance and establishes a tunnel to it.
