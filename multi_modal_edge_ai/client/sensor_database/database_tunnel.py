@@ -1,6 +1,7 @@
-from typing import Any
-import pymongo
 import datetime
+from typing import Any
+
+import pymongo
 
 
 def is_time_difference_smaller_than_x_seconds(time1: str, time2: str, x_seconds: int) -> bool:
@@ -138,20 +139,27 @@ class DatabaseTunnel:
         """
         return pymongo.MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
 
-    def get_sensor_data_from_x_minutes_ago(self, xminutes: int) -> list[dict[Any, Any]]:
+    def get_past_x_seconds_of_all_sensor_entries(self, x: int) -> list[dict[Any, Any]]:
         """
-        A method to get all sensor entries from the collection that are not older than x minutes
-        :param xminutes: the amount of minutes that are maximally allowed to be between two sensor entries that will be
-        aggregated
-        :return: a list of sensor entries
+        A method that retrieves all sensor entries from the local collection using a local method. It then returns
+        the entries that have a start_time no longer than x seconds ago.
+        :param x: the amount of seconds of sensor date to be returned
+        :return: all the entries that have a start_time no longer than x seconds ago
         """
-        collection = self.collection
-        time = (datetime.datetime.now().timestamp() - xminutes * 60) * 1000
-        cursor = collection.find({'last_seen': {'$gt': time}})
-        data = []
-        for document in cursor:
-            data.append(document)
-        return data
+        current_time = datetime.datetime.now()
+        data = self.get_all_documents()
+        new_data = []
+
+        for entry in data:
+            entry_date = datetime.datetime.strptime(entry['date'], '%Y-%m-%d')
+            entry_time = datetime.datetime.strptime(entry['start_time'], '%H:%M:%S').time()
+            entry_datetime = datetime.datetime.combine(entry_date, entry_time)
+
+            time_difference = current_time - entry_datetime
+
+            if time_difference.total_seconds() <= x:
+                new_data.append(entry)
+        return new_data
 
     def get_all_documents_all_fields(self) -> list[dict[Any, Any]]:
         """
@@ -223,12 +231,11 @@ class DatabaseTunnel:
         :return: a list of dictionaries
         """
         collection = self.collection
-        print(collection)
         cursor = collection.find({'motion_sensitivity': {'$exists': True},
                                   'occupancy': True}, {'_id': 0,
                                                        'last_seen': 1,
                                                        'device.friendlyName': 1,
-                                                       'occupancy': 1})\
+                                                       'occupancy': 1}) \
             .sort('last_seen', 1)
         return aggregate_similar_entries(self.get_data_from_cursor(cursor, 'PIR'), 60)
 

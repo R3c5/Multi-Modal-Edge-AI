@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any
 
-from flask import request, jsonify, Blueprint, Response
+from flask import request, jsonify, Blueprint, Response, send_file
 
 dashboard_connection_blueprint = Blueprint('dashboard_connection', __name__)
 
@@ -10,10 +10,8 @@ def authenticate(func):
     @wraps(func)
     def decorated_function(*args, **kwargs) -> tuple[Response, int] | Any:
         # Use this for automatic tests
-        file = open('multi_modal_edge_ai/server/developer_dashboard/token.txt', 'r')
-
-        # Use this for manual tests
-        # file = open('./developer_dashboard/token.txt', 'r')
+        from multi_modal_edge_ai.server.main import dashboard_token_path
+        file = open(dashboard_token_path, 'r')
 
         token = file.read().strip()
 
@@ -42,3 +40,10 @@ def get_clients_info() -> Response:
 
     clients = client_keeper.connected_clients
     return jsonify({'connected_clients': clients})
+
+
+@dashboard_connection_blueprint.route('/dashboard/get_error_log', methods=['GET'])
+@authenticate
+def get_error_log() -> Response:
+    error_log_path = './app.log'
+    return send_file(error_log_path)
