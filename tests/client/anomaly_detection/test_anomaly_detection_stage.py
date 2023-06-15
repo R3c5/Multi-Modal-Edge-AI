@@ -58,7 +58,7 @@ def test_check_window_for_anomaly_prediction_zero():
     # We will use patching to replace the actual functions with our mocks during the test
     anomaly_detection_model_keeper.model.predict = Mock(return_value=0)
     prediction = check_window_for_anomaly(window_size, anomaly_detection_model_keeper, mock_anomaly_collection,
-                                          mock_scaler, encoding_function, True, mock_adl_collection)
+                                          mock_scaler, encoding_function, True, mock_adl_collection, 2)
 
     # Add assertions to check the behavior of the function
     assert prediction == 0, "Prediction should be 0 (anomalous)"
@@ -117,7 +117,7 @@ def test_check_window_for_anomaly_prediction_one():
     # We will use patching to replace the actual functions with our mocks during the test
     anomaly_detection_model_keeper.model.predict = Mock(return_value=1)
     prediction = check_window_for_anomaly(window_size, anomaly_detection_model_keeper, mock_anomaly_collection,
-                                          mock_scaler, encoding_function, True, mock_adl_collection)
+                                          mock_scaler, encoding_function, True, mock_adl_collection, 11)
 
     # Add assertions to check the behavior of the function
     assert prediction == 1, "Prediction should be 1 (normal)"
@@ -179,7 +179,7 @@ def test_check_window_for_anomaly_prediction_exception():
     # We will use patching to replace the actual functions with our mocks during the test
     anomaly_detection_model_keeper.model.predict = Mock(return_value=1)
     prediction = check_window_for_anomaly(window_size, anomaly_detection_model_keeper, mock_anomaly_collection,
-                                          mock_scaler, encoding_function, True, mock_adl_collection)
+                                          mock_scaler, encoding_function, True, mock_adl_collection, 11)
 
     # Restore sys.stdout
     sys.stdout = sys.__stdout__

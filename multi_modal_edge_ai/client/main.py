@@ -30,7 +30,7 @@ with open(scaler_path, 'rb') as file:
 
 sensor_db = 'sensor_data_AB123456789C'
 client_db = 'coho-edge-ai'
-adl_collection_name = 'adl_test'
+adl_collection_name = 'adl_db'
 anomaly_collection_name = 'anomaly_db'
 adl_window_size = 300
 anomaly_detection_window_size = 8

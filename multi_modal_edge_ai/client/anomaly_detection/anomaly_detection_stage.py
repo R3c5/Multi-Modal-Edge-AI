@@ -20,6 +20,7 @@ def scale_transformed_window(scaler: MinMaxScaler, num_adl_features: int, data: 
     scaled_data = scaler.transform(reshaped_data)
     return scaled_data
 
+
 def check_window_for_anomaly(window_size: int, anomaly_model_keeper: ModelKeeper, anomaly_collection: Collection,
                              scaler: MinMaxScaler, adl_encoding: Union[LabelEncoder | OneHotEncoder], one_hot: bool,
                              adl_collection: Collection, num_adl_features) -> int:
@@ -48,8 +49,10 @@ def check_window_for_anomaly(window_size: int, anomaly_model_keeper: ModelKeeper
         # Convert the categorical data in the window to numeric data
         transformed_window = window_categorical_to_numeric(window, window_size, adl_encoding, one_hot)
         transformed_window = scale_transformed_window(scaler, num_adl_features, transformed_window)
+        if not isinstance(transformed_window, list):
+            transformed_window = transformed_window.flatten()
         # Use the model to predict if the window is anomalous
-        prediction = anomaly_model_keeper.model.predict(torch.Tensor(transformed_window.flatten()))
+        prediction = anomaly_model_keeper.model.predict(torch.Tensor(transformed_window))
 
         # If the window is anomalous, add it to the anomaly_collection
         if prediction == 0:
@@ -86,4 +89,3 @@ def anomaly_detection_stage(database_name: str = 'coho-edge-ai', adl_collection_
     check_window_for_anomaly(anomaly_detection_window_size, anomaly_detection_model_keeper, anomaly_db_collection,
                              andet_scaler, adl_onehot_encoder, True, adl_db_collection, num_adl_features)
     print('anomaly detection stage complete')
-

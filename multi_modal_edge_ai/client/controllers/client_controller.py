@@ -22,6 +22,7 @@ def load_model_from_keeper(keeper_type: str):
     else:
         raise Exception("Expected keeper_type to be either ADL or AnDet!")
 
+
 def save_model_file(model_file: str, keeper_type: str) -> None:
     """
     Save the model file into the path from the model_keeper.
