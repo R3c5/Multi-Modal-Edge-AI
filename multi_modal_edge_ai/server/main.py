@@ -5,9 +5,11 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from flask_cors import CORS
+from torch import nn
+
 # This should be changed to import the respective packages
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
-from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
+from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 
 from multi_modal_edge_ai.server.api.client_connection import client_connection_blueprint
 from multi_modal_edge_ai.server.api.dashboard_connection import dashboard_connection_blueprint
@@ -35,13 +37,9 @@ dashboard_token_path = os.path.join(root_directory, 'developer_dashboard', 'toke
 adl_model_path = os.path.join(root_directory, 'models', 'adl_model')
 anomaly_detection_model_path = os.path.join(root_directory, 'models', 'anomaly_detection_model')
 
-# Uncomment this for manual testing
-# adl_model_path = './models/adl_model'
-# anomaly_detection_model_path = './models/anomaly_detection_model'
-
 # Chosen models for ADL inference and Anomaly Detection
 adl_model = SVMModel()
-anomaly_detection_model = IForest()
+anomaly_detection_model = Autoencoder([96, 64, 32, 24, 16, 8], [8, 16, 24, 32, 64, 96], nn.ReLU(), nn.Sigmoid())
 
 
 # Instantiate ModelsKeeper and load models

@@ -33,6 +33,9 @@ def aggregate_similar_entries(data: list[dict[Any, Any]], seconds_difference: in
     :param data: a list of dictionaries
     :return: a list of dictionaries
     """
+    if len(data) == 0:
+        return data
+
     # Initialize the new data list
     new_data = []
     # Take the first dictionary from the list and store the time and date in variables

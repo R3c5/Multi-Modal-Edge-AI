@@ -88,6 +88,7 @@ def adl_inference_stage(sensor_database: str, seconds: int,
     :param database_name: The database of the ADL Database to add the result to.
     """
     try:
+        print('inferring ADLs...')
         # Retrieve the past X seconds of entries from the Sensor Database
         dbt = DatabaseTunnel(sensor_database)
         current_time = datetime.now()
@@ -106,6 +107,8 @@ def adl_inference_stage(sensor_database: str, seconds: int,
         adl_db_client = get_database_client()
         adl_db_database = get_database(adl_db_client, database_name)
         adl_db_collection = get_collection(adl_db_database, collection_name)
+        print('ADL inference comeplete')
+
         add_activity(adl_db_collection, start_time, end_time, result)
     except Exception as e:
         logging.error('An error occurred during the ADL inference stage', str(e))

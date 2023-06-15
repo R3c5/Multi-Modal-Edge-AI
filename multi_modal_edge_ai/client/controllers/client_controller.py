@@ -7,6 +7,21 @@ import requests
 server_url = 'http://127.0.0.1:5000'
 
 
+def load_model_from_keeper(keeper_type: str):
+    """
+    Load model from the keeper provided
+    :param keeper_type: "ADL" for using the adl_model_keeper, and "AnDet" for using the anomaly_detection_model_keeper
+    :return:
+    """
+    if keeper_type == 'ADL':
+        from multi_modal_edge_ai.client.main import adl_model_keeper
+        adl_model_keeper.load_model()
+    elif keeper_type == 'AnDet':
+        from multi_modal_edge_ai.client.main import anomaly_detection_model_keeper
+        anomaly_detection_model_keeper.load_model()
+    else:
+        raise Exception("Expected keeper_type to be either ADL or AnDet!")
+
 def save_model_file(model_file: str, keeper_type: str) -> None:
     """
     Save the model file into the path from the model_keeper.
@@ -25,6 +40,9 @@ def save_model_file(model_file: str, keeper_type: str) -> None:
     try:
         with open(model_file, 'rb') as src_file, open(file_path, 'wb') as dest_file:
             dest_file.write(src_file.read())
+
+        load_model_from_keeper(keeper_type)
+
     except (IOError, OSError) as e:
         raise Exception("Error occurred while saving the model file: " + str(e))
 
