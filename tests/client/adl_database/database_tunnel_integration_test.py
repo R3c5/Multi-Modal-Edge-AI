@@ -25,6 +25,7 @@ class DatabaseTunnelTest(unittest.TestCase):
         # Check that the activity was added
         self.assertEqual(self.collection.count_documents({}), 1)
 
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_add_activity_with_start_time_lower_prev_end_time(self):
@@ -56,6 +57,8 @@ class DatabaseTunnelTest(unittest.TestCase):
         self.assertEqual(adl_list[1][0], pd.Timestamp("2021-02-01 00:00:00"))
         self.assertEqual(adl_list[1][1], pd.Timestamp("2021-02-01 00:08:00"))
         self.assertEqual(adl_list[1][2], "Sleep")
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_add_activity_with_start_time_lower_prev_start_time(self):
@@ -74,6 +77,8 @@ class DatabaseTunnelTest(unittest.TestCase):
 
         # Check that the activity was added
         self.assertEqual(self.collection.count_documents({}), 1)
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_add_activity_with_start_time_higher_prev_start_time_end_time_lower_prev_end_time(self):
@@ -92,6 +97,8 @@ class DatabaseTunnelTest(unittest.TestCase):
 
         # Check that the activity was added
         self.assertEqual(self.collection.count_documents({}), 1)
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_get_all_activities(self):
@@ -118,6 +125,8 @@ class DatabaseTunnelTest(unittest.TestCase):
         self.assertEqual(self.collection.count_documents({}), 2)
         self.assertEqual(module.get_all_activities(self.collection), [(start1, end1, activity1),
                                                                       (start2, end2, activity2)])
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_get_past_x_activities_with_x_activities_in_collection(self):
@@ -142,6 +151,8 @@ class DatabaseTunnelTest(unittest.TestCase):
         self.assertEqual(self.collection.count_documents({}), 2)
         self.assertEqual(module.get_past_x_activities(self.collection, 2), [(start2, end2, activity2),
                                                                             (start1, end1, activity1)])
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_get_past_x_activities_with_x_activities_not_in_collection(self):
@@ -155,6 +166,8 @@ class DatabaseTunnelTest(unittest.TestCase):
         # Check that the activity was added
         self.assertEqual(self.collection.count_documents({}), 1)
         # self.assertEqual(module.get_past_x_activities(self.collection, 2), [(start1, end1, activity1)])
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_get_past_x_minutes_with_no_clip(self):
@@ -170,6 +183,8 @@ class DatabaseTunnelTest(unittest.TestCase):
         # Check that the activity was added
         self.assertEqual(self.collection.count_documents({}), 1)
         # self.assertEqual(module.get_past_x_minutes(self.collection, 50, False), [(start1, end1, activity1)])
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_get_past_x_minutes_with_clip(self):
@@ -184,10 +199,13 @@ class DatabaseTunnelTest(unittest.TestCase):
 
         # Check that the activity was added
         self.assertEqual(self.collection.count_documents({}), 1)
+
         # adl_list = module.get_past_x_minutes(self.collection, 50)
         # self.assertEqual([(pd.Timestamp(adl_list[0][0].strftime('%Y-%m-%dT%H:%M:%S')),
         #                   pd.Timestamp(adl_list[0][1].strftime('%Y-%m-%dT%H:%M:%S')), adl_list[0][2])],
         #                  [(start1 + pd.Timedelta(minutes=10), end1, activity1)])
+
+        # Clear the collection
         self.collection.delete_many({})
 
     def test_delete_all_activities(self):
@@ -238,4 +256,6 @@ class DatabaseTunnelTest(unittest.TestCase):
         # Check if the activities were deleted
         self.assertEqual(self.collection.count_documents({}), 1)
         self.assertEqual(module.get_all_activities(self.collection), [(start1, end1, activity1)])
+
+        # Clear the collection
         self.collection.delete_many({})
