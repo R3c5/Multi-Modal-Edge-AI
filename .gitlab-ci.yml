@@ -19,7 +19,6 @@ test:
   script:
     - echo "Running tests"
     - pip install coverage pytest pytest-cov
-    - python -m pytest --cov=multi_modal_edge_ai --cov-report term --cov-report xml:coverage.xml
     - python -m pytest --cov=multi_modal_edge_ai --cov-report term --cov-report xml:coverage.xml -k "not integration"
     - coverage report -m
     - coverage html
