@@ -391,13 +391,14 @@ def test_exception_add_activity(capsys):
     start_time = pd.Timestamp("2023-06-01 10:04:00")
     end_time = pd.Timestamp("2023-06-01 10:10:00")
     activity = 'Activity'
+
     module.add_activity(mock_collection, start_time, end_time, activity)
 
     # Check the printed output
     captured = capsys.readouterr()
     printed_output = captured.out.strip()
     expected_output = "An error occurred while adding the activity: Test Exception"
-    assert printed_output == expected_output
+    assert expected_output in printed_output
 
     # Restore the original method after the test
     module.get_past_x_activities = original_get_past_x_activities

@@ -10,6 +10,7 @@ class ModelKeeper:
         """
         self.model = model
         self.model_path = model_path
+        self.num_predictions = 0
 
     def load_model(self) -> None:
         """
@@ -22,3 +23,15 @@ class ModelKeeper:
         Save the latest versions of the model in the specified file.
         """
         self.model.save(self.model_path)
+
+    def increase_predictions(self) -> None:
+        """
+        Increase the number of predictions by 1
+        """
+        self.num_predictions += 1
+
+    def reset_predictions(self) -> None:
+        """
+        Reset the number of predictions to 0
+        """
+        self.num_predictions = 0
