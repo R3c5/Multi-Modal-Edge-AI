@@ -59,6 +59,7 @@ class ModelsKeeper:
         Save the latest versions of the ADL model in the specified file.
         """
         self.adl_model.save(self.adl_model_path)
+        self.adl_model_update_time = datetime.now()
 
     def save_anomaly_detection_model(self) -> None:
         """
