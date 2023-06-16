@@ -1,9 +1,14 @@
 import flwr as fl
+import pandas as pd
+import torch.nn
+from sklearn.preprocessing import MinMaxScaler
 
+from multi_modal_edge_ai.client.adl_database.adl_database import get_database_client, get_database, get_collection
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.flower_clients import FlowerClient
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
-from multi_modal_edge_ai.commons.model import Model
+from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import parse_file_with_idle
+from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 
 
 class FederatedClient:
@@ -27,3 +32,17 @@ class FederatedClient:
             server_address=server_address,
             client=self.flower_client
         )
+
+
+# This piece of code was used in order to test the interaction between federated client and server
+# if __name__ == "__main__":
+#     adl_df = parse_file_with_idle(
+#         "multi-modal-edge-ai/tests/models/anomaly_detection/dummy_datasets/dummy_aruba.csv")
+#     distinct_adl_list = pd.unique(adl_df.iloc[:, 2::3].values.ravel('K'))
+#     model_keepr = ModelKeeper(Autoencoder([120, 80], [80, 120], torch.nn.ReLU(), torch.nn.Sigmoid()),
+#                               "multi-modal-edge-ai/multi_modal_edge_ai/client/anomaly_detection/anomaly_detection_model"
+#                               )
+#     collection = get_collection(get_database(get_database_client(), "coho-edge-ai"), "adl_test")
+#     train_eva = TrainEval(collection, distinct_adl_list, MinMaxScaler().fit([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]))
+#     fc = FederatedClient(model_keepr, train_eva)
+#     fc.start_numpy_client("127.0.0.1:8080")

@@ -119,6 +119,7 @@ class TrainEval:
         :return: None
         """
         data = pd.DataFrame(get_all_activities(self.database_collection))
+        data.columns = ["Start_Time", "End_Time", "Activity"]
 
         window_df = split_into_windows(data, float(config["window_size"]), float(config["window_slide"]),
                                        bool(config["event_based"]))
@@ -146,7 +147,7 @@ def transform_with_scaler(scaler, windowed_adl_df, n_features):
     reshaped_df = pd.DataFrame(windowed_adl_df.values.reshape((-1, n_features)))
     rescaled_df = scaler.transform(reshaped_df)
 
-    rescaled_array = rescaled_df.to_numpy().reshape(original_shape)
+    rescaled_array = rescaled_df.values.reshape(original_shape)
 
     return pd.DataFrame(rescaled_array, columns=windowed_adl_df.columns,
                         index=windowed_adl_df.index)

@@ -157,4 +157,6 @@ multi_modal_edge_ai/adl_inference/server_database/output.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
 /multi_modal_edge_ai/client/model_zip/
+/multi_modal_edge_ai/server/federated_learning/server_log
