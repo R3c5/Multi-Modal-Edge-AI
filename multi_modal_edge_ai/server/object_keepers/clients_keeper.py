@@ -12,6 +12,7 @@ class ClientsKeeper:
             'last_seen': datetime,
             'num_adls': int,
             'num_anomalies': int
+            'last_model_aggregation': datetime
         },
         ...
     }
@@ -33,6 +34,7 @@ class ClientsKeeper:
             new_client = {
                 'status': status,
                 'last_seen': last_seen,
+                'last_model_aggregation': datetime.min,
                 'num_adls': 0,
                 'num_anomalies': 0
             }
@@ -67,6 +69,15 @@ class ClientsKeeper:
                 client['status'] = 'Disconnected'
             else:
                 client['status'] = 'Connected'
+
+    def update_last_model_aggregation(self, ip: str, date: datetime) -> None:
+        """
+        This function will override the last_model_aggregation field
+        :param ip: The ip of the client on which to override the last_model_aggregation field
+        :param date: The datetime object to which override
+        :return:
+        """
+        self.connected_clients[ip]["last_model_aggregation"] = date
 
     def get_last_seen(self, ip) -> Optional[datetime]:
         """
