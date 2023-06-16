@@ -1,7 +1,6 @@
 import logging
 import os
 import pickle
-import threading
 
 from sklearn.preprocessing import OneHotEncoder
 from torch import nn
@@ -51,5 +50,4 @@ anomaly_detection_model_keeper = ModelKeeper(anomaly_detection_model, anomaly_de
 if __name__ == '__main__':
     from multi_modal_edge_ai.client.orchestrator import run_schedule
 
-    thread_internal = threading.Thread(target=run_schedule)
-    thread_internal.start()
+    run_schedule()

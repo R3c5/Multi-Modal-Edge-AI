@@ -35,7 +35,7 @@ def set_up_connection() -> Response | Tuple[Response, int]:
 
 @client_connection_blueprint.route('/api/heartbeat', methods=['POST'])
 def heartbeat() -> Response | tuple[Response, int]:
-    from multi_modal_edge_ai.server.main import client_keeper
+    from multi_modal_edge_ai.server.main import client_keeper, start_federation_flag
     """
     Update the last seen field of the client to know if they are still connected.
     :return: ok message if client was connected, or 404 if the set_up_connection was never called before
@@ -59,8 +59,10 @@ def heartbeat() -> Response | tuple[Response, int]:
 
         client_keeper.update_client(client_ip, 'Connected', datetime.datetime.now(), recent_adls, recent_anomalies)
 
-        return send_models_zip(client_last_seen)
+        response = send_models_zip(client_last_seen)
+        response.headers['start_federation_client_flag'] = str(start_federation_flag)
 
+        return response
     except Exception as e:
         logging.error('An error occurred in heartbeat: %s', str(e))
         return jsonify({'message': 'Error occurred during heartbeat'}), 500

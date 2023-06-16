@@ -1,3 +1,4 @@
+import ast
 import logging
 import zipfile
 from io import BytesIO
@@ -90,7 +91,7 @@ def send_set_up_connection_request() -> None:
 
 def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
     """
-    Send a heartbeat to the server
+    Send a heartbeat to the server, save the files it sends and if federation flag is active, start the federated client
     :param num_adls: int representing the number of adls detected since last heartbeat
     :param num_anomalies: int representing the number of anomalies detected since last heartbeat
     """
@@ -102,7 +103,12 @@ def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
         response = requests.post(server_url + '/api/heartbeat', json=payload)
         if response.status_code == 200:
             save_models_zip_file(response)
+            start_federation_client_flag = ast.literal_eval(
+                response.headers.get('start_federation_client_flag', 'False'))
             print("Heartbeat successful")
+            if start_federation_client_flag:
+                from multi_modal_edge_ai.client.orchestrator import run_federation_stage
+                run_federation_stage()
         elif response.status_code == 404:
             print("Client not found")
             send_set_up_connection_request()
