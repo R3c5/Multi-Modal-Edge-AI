@@ -69,6 +69,7 @@ def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.
                 end_past_activity = past_activity[1]
                 if end_past_activity > start_time:
                     activity_dict["Start_Time"] = end_past_activity
+
         # Insert the activity into the collection
         collection.insert_one(activity_dict)
     except Exception as e:

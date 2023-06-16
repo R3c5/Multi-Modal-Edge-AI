@@ -1,11 +1,10 @@
-from datetime import datetime, timedelta
-
 import logging
+from datetime import datetime, timedelta
+from typing import Dict
+
 import pandas as pd
 from pandas import DataFrame
 
-from multi_modal_edge_ai.client.adl_database.adl_database import get_database_client, get_database, get_collection
-from multi_modal_edge_ai.client.adl_database.adl_queries import add_activity
 from multi_modal_edge_ai.client.main import adl_model_keeper
 from multi_modal_edge_ai.client.sensor_database.database_tunnel import DatabaseTunnel
 
@@ -76,16 +75,14 @@ def modify_sensor_name(sensor_name):
         raise ValueError(f"Unrecognized sensor: {sensor_name}")
 
 
-def adl_inference_stage(sensor_database: str, seconds: int,
-                        collection_name: str = 'adl_test', database_name: str = 'coho-edge-ai') -> None:
+def adl_inference_stage(sensor_database: str, seconds: int) -> dict | None:
     """
     Run the inference stage of the ADL pipeline. This stage retrieves the past X seconds of entries from the Sensor
     Database, applies the preprocessing functions, predicts the ADL using the preprocessed data, and adds the result to
     the ADL Database.
     :param sensor_database: The name of the Sensor Database to retrieve the entries from.
     :param seconds: The number of seconds of entries from the Sensor Database to retrieve.
-    :param collection_name: The collection of the ADL Database to add the result to.
-    :param database_name: The database of the ADL Database to add the result to.
+    :return: dict containing the Start_Time, End_Time and Activity of the new prediction
     """
     try:
         # Retrieve the past X seconds of entries from the Sensor Database
@@ -102,10 +99,13 @@ def adl_inference_stage(sensor_database: str, seconds: int,
         start_time = pd.Timestamp((current_time - timedelta(seconds=seconds)).strftime('%Y-%m-%d %H:%M:%S'))
         end_time = pd.Timestamp(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
-        # Add the result to the ADL Database
-        adl_db_client = get_database_client()
-        adl_db_database = get_database(adl_db_client, database_name)
-        adl_db_collection = get_collection(adl_db_database, collection_name)
-        add_activity(adl_db_collection, start_time, end_time, result)
+        # Return a dict with the start_time, end_time and the resulted activity
+        return {
+            'Start_Time': start_time,
+            'End_Time': end_time,
+            'Activity': result
+        }
+
     except Exception as e:
         logging.error('An error occurred during the ADL inference stage', str(e))
+        return None

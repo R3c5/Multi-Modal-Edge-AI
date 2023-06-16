@@ -1,0 +1,24 @@
+server | INFO flwr 2023-06-15 15:08:12,146 | app.py:148 | Starting Flower server, config: ServerConfig(num_rounds=2, round_timeout=None)
+server | INFO flwr 2023-06-15 15:08:12,151 | app.py:168 | Flower ECE: gRPC server running (2 rounds), SSL is disabled
+server | INFO flwr 2023-06-15 15:08:12,151 | server.py:86 | Initializing global parameters
+server | INFO flwr 2023-06-15 15:08:12,151 | server.py:273 | Requesting initial parameters from one random client
+server | INFO flwr 2023-06-15 15:08:18,166 | server.py:277 | Received initial parameters from one random client
+server | INFO flwr 2023-06-15 15:08:18,167 | server.py:88 | Evaluating initial parameters
+server | INFO flwr 2023-06-15 15:08:18,167 | server.py:101 | FL starting
+server | DEBUG flwr 2023-06-15 15:08:19,577 | server.py:218 | fit_round 1: strategy sampled 2 clients (out of 2)
+server | DEBUG flwr 2023-06-15 15:08:24,778 | server.py:232 | fit_round 1 received 2 results and 0 failures
+server | WARNING flwr 2023-06-15 15:08:24,780 | fedavg.py:243 | No fit_metrics_aggregation_fn provided
+server | INFO flwr 2023-06-15 15:08:24,780 | SaveModelFedAvg.py:24 | aggregated 2 clients
+server | DEBUG flwr 2023-06-15 15:08:24,780 | server.py:168 | evaluate_round 1: strategy sampled 2 clients (out of 2)
+server | DEBUG flwr 2023-06-15 15:08:26,548 | server.py:182 | evaluate_round 1 received 2 results and 0 failures
+server | DEBUG flwr 2023-06-15 15:08:26,549 | server.py:218 | fit_round 2: strategy sampled 2 clients (out of 2)
+server | DEBUG flwr 2023-06-15 15:08:31,086 | server.py:232 | fit_round 2 received 2 results and 0 failures
+server | INFO flwr 2023-06-15 15:08:31,087 | SaveModelFedAvg.py:24 | aggregated 2 clients
+server | DEBUG flwr 2023-06-15 15:08:31,087 | server.py:168 | evaluate_round 2: strategy sampled 2 clients (out of 2)
+server | DEBUG flwr 2023-06-15 15:08:32,749 | server.py:182 | evaluate_round 2 received 2 results and 0 failures
+server | INFO flwr 2023-06-15 15:08:32,749 | server.py:147 | FL finished in 14.582428515001084
+server | INFO flwr 2023-06-15 15:08:32,749 | app.py:218 | app_fit: losses_distributed [(1, 16.6283860206604), (2, 16.53549098968506)]
+server | INFO flwr 2023-06-15 15:08:32,749 | app.py:219 | app_fit: metrics_distributed_fit {}
+server | INFO flwr 2023-06-15 15:08:32,749 | app.py:220 | app_fit: metrics_distributed {'accuracy': [(1, 0.538659793814433), (2, 0.5412371134020618)], 'recall': [(1, 0.8525641025641026), (2, 0.8589743589743589)], 'precision': [(1, 0.4605465004793864), (2, 0.4620909436834094)], 'f1_score': [(1, 0.597906478600008), (2, 0.6009089446589446)]}
+server | INFO flwr 2023-06-15 15:08:32,749 | app.py:221 | app_fit: losses_centralized []
+server | INFO flwr 2023-06-15 15:08:32,749 | app.py:222 | app_fit: metrics_centralized {}

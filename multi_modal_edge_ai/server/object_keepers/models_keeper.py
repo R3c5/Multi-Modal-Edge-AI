@@ -59,6 +59,7 @@ class ModelsKeeper:
         Save the latest versions of the ADL model in the specified file.
         """
         self.adl_model.save(self.adl_model_path)
+        self.adl_model_update_time = datetime.now()
 
     def save_anomaly_detection_model(self) -> None:
         """
@@ -66,3 +67,4 @@ class ModelsKeeper:
         This shall be used in the federated process after the models are aggregated.
         """
         self.anomaly_detection_model.save(self.anomaly_detection_model_path)
+        self.anomaly_detection_model_update_time = datetime.now()
