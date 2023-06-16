@@ -22,7 +22,9 @@ class ModelsKeeper:
         self.adl_model_path = adl_model_path
         self.anomaly_detection_model_path = anomaly_detection_model_path
 
+        # self.adl_model_update_time = pd.Timestamp('2024-01-01')
         # self.anomaly_detection_model_update_time = pd.Timestamp('2024-01-01')
+        self.adl_model_update_time = datetime.now()
         self.anomaly_detection_model_update_time = datetime.now()
 
     def load_models(self) -> None:

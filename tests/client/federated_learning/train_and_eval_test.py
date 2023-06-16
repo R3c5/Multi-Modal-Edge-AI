@@ -65,7 +65,7 @@ def test_evaluate_simple(get_all_activities_mock, transform_with_scaler_mock):
 
     loss, df_size, metrics = train_eval.evaluate(model, config)
 
-    assert df_size == 51  # TODO Change when synthetic anomaly generation is fixed
+    assert df_size == 36
     assert isinstance(loss, float)
 
     expected_keys = {"accuracy", "recall", "precision", "f1_score"}
