@@ -392,17 +392,16 @@ def test_exception_add_activity(capsys):
     end_time = pd.Timestamp("2023-06-01 10:10:00")
     activity = 'Activity'
 
-    with patch('multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage.anomaly_detection_stage'):
-        module.add_activity(mock_collection, start_time, end_time, activity)
+    module.add_activity(mock_collection, start_time, end_time, activity)
 
     # Check the printed output
-        captured = capsys.readouterr()
-        printed_output = captured.out.strip()
-        expected_output = "An error occurred while adding the activity: Test Exception"
-        assert expected_output in printed_output
+    captured = capsys.readouterr()
+    printed_output = captured.out.strip()
+    expected_output = "An error occurred while adding the activity: Test Exception"
+    assert expected_output in printed_output
 
-        # Restore the original method after the test
-        module.get_past_x_activities = original_get_past_x_activities
+    # Restore the original method after the test
+    module.get_past_x_activities = original_get_past_x_activities
 
 
 def test_exception_get_past_x_minutes(capsys):

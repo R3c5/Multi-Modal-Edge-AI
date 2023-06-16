@@ -1,21 +1,27 @@
-import pandas as pd
-import numpy as np
 from typing import Union
 
+import numpy as np
+import pandas as pd
 import torch
-
-from multi_modal_edge_ai.client.adl_database.adl_database import get_collection, get_database, get_database_client
-from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
-from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
-    window_categorical_to_numeric
 from pymongo.collection import Collection
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
+
 import multi_modal_edge_ai.client.adl_database.adl_queries as module
 import multi_modal_edge_ai.client.anomaly_detection.anomaly_queries as anomaly_module
+from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
+from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
+    window_categorical_to_numeric
 
 
 def scale_transformed_window(scaler: MinMaxScaler, num_adl_features: int, data: pd.Series):
+    """
+    Scale the series received based on the scaler and the number of features
+    :param scaler: sklearn MinMaxScaler used for scaling
+    :param num_adl_features: int representing the number of features that the data will be reshaped into
+    :param data: pd series that is going to be scaled
+    :return: the rescaled data
+    """
     reshaped_data = pd.DataFrame(data.values.reshape((-1, num_adl_features)))
     scaled_data = scaler.transform(reshaped_data)
     return scaled_data
@@ -26,8 +32,9 @@ def check_window_for_anomaly(window_size: int, anomaly_model_keeper: ModelKeeper
                              adl_collection: Collection, num_adl_features) -> int:
     """
     Checks if the last #window_size number of ADLs is anomalous. If it is, add it to the anomaly_collection.
+    :param num_adl_features: number of features used for scaling
     :param window_size: The size of the window to check for anomalies
-    :param anomaly_model: The chosen anomaly detection model
+    :param anomaly_model_keeper: ModelKeeper containing the model used for predicting
     :param anomaly_collection: The collection to add the anomalous window to
     :param scaler: The scaler used to scale the transformed window
     :param adl_encoding: The encoding function
@@ -64,28 +71,3 @@ def check_window_for_anomaly(window_size: int, anomaly_model_keeper: ModelKeeper
     except Exception as e:
         print(f"An error occurred while checking the window for anomalies: {str(e)}")
         return 1
-
-
-def anomaly_detection_stage(database_name: str = 'coho-edge-ai', adl_collection_name: str = 'adl_db',
-                            andet_collection_name: str = 'anomaly_db'):
-    """
-    Start the anomaly detection stage
-    :param database_name: The database of the 2 databases to add the result to.
-    :param adl_collection_name: The collection of the ADL Database to add the result to.
-    :param andet_collection_name: The collection of the Anomaly Database to add the result to.
-    :return:
-    """
-    from multi_modal_edge_ai.client.main import anomaly_detection_window_size
-    from multi_modal_edge_ai.client.main import anomaly_detection_model_keeper
-    from multi_modal_edge_ai.client.main import andet_scaler
-    from multi_modal_edge_ai.client.main import adl_onehot_encoder
-    from multi_modal_edge_ai.client.main import num_adl_features
-
-    db_client = get_database_client()
-    db_database = get_database(db_client, database_name)
-    adl_db_collection = get_collection(db_database, adl_collection_name)
-    anomaly_db_collection = get_collection(db_database, andet_collection_name)
-    print('checking for anomaly...')
-    check_window_for_anomaly(anomaly_detection_window_size, anomaly_detection_model_keeper, anomaly_db_collection,
-                             andet_scaler, adl_onehot_encoder, True, adl_db_collection, num_adl_features)
-    print('anomaly detection stage complete')

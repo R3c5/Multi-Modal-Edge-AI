@@ -4,10 +4,6 @@ from typing import List, Tuple
 import pandas as pd
 from pymongo.collection import Collection
 
-from multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage import anomaly_detection_stage
-from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
-from multi_modal_edge_ai.client.main import adl_model_keeper, anomaly_collection_name
-
 
 def get_all_activities(collection: Collection) -> List[Tuple[pd.Timestamp, pd.Timestamp, str]]:
     """
@@ -50,22 +46,16 @@ def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.
         past_activity_list = get_past_x_activities(collection, 1)
         past_activity = past_activity_list[0] if len(past_activity_list) > 0 else None
 
-        new_prediction_flag = True
         if past_activity is not None:
             if past_activity[2] == activity:
                 activity_dict["Start_Time"] = past_activity[0]
                 delete_last_x_activities(collection, 1)
                 if end_time < past_activity[1]:
                     activity_dict["End_Time"] = past_activity[1]
-                new_prediction_flag = False
             else:
                 end_past_activity = past_activity[1]
                 if end_past_activity > start_time:
                     activity_dict["Start_Time"] = end_past_activity
-
-        if new_prediction_flag:
-            adl_model_keeper.increase_predictions()
-            anomaly_detection_stage(str(collection.database.name), str(collection.name), anomaly_collection_name)
 
         # Insert the activity into the collection
         collection.insert_one(activity_dict)

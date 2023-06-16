@@ -28,9 +28,9 @@ scaler_path = os.path.join(root_directory, 'anomaly_detection', 'andet_scaler.pk
 with open(scaler_path, 'rb') as file:
     andet_scaler = pickle.load(file)
 
-sensor_db = 'sensor_data_AB123456789C'
+sensor_db = 'sensor_data_1234567ABC89'
 client_db = 'coho-edge-ai'
-adl_collection_name = 'adl_db'
+adl_collection_name = 'adl_test'
 anomaly_collection_name = 'anomaly_db'
 adl_window_size = 300
 anomaly_detection_window_size = 8
@@ -38,6 +38,7 @@ anomaly_detection_window_size = 8
 # Chosen models for ADL inference and Anomaly Detection
 adl_model = SVMModel()
 anomaly_detection_model = Autoencoder([96, 64, 32, 24, 16, 8], [8, 16, 24, 32, 64, 96], nn.ReLU(), nn.Sigmoid())
+# TODO: Find a way to train this model with some anomalies so that anomalies are actually predicted
 anomaly_detection_model.set_reconstruction_error_threshold()
 
 adl_model_path = os.path.join(root_directory, 'adl_inference', 'adl_model')
