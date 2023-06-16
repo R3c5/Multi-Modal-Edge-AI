@@ -4,12 +4,17 @@ from flwr.common import Metrics
 from flwr.common import Scalar
 from flwr.server import ServerConfig
 
-from multi_modal_edge_ai.server.federated_learning.SaveModelFedAvg import SaveModelFedAvg
+from multi_modal_edge_ai.server.federated_learning.PersistentFedAvg import PersistentFedAvg
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
 from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
 
 
 def weighted_average(metrics: list[tuple[int, Metrics]]) -> Metrics:
+    """
+    This function will perform the aggregation of the many metrics returned by each individual client.
+    :param metrics: The list of metrics returned by each client
+    :return: One single object of metrics with its values as the aggregation of all the clients' metrics
+    """
     # Multiply accuracy of each client by number of examples used
     accuracies = [num_examples * float(m["accuracy"]) for num_examples, m in metrics]
     recalls = [num_examples * float(m["recall"]) for num_examples, m in metrics]
@@ -36,9 +41,9 @@ class FederatedServer:
         :param log_file_path: The path to the log file which Flower will use
         :return:
         """
-        strategy = SaveModelFedAvg(on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
-                                   accept_failures=False, evaluate_metrics_aggregation_fn=weighted_average,
-                                   clients_keeper=self.clients_keeper, models_keeper=self.models_keeper)
+        strategy = PersistentFedAvg(on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
+                                    accept_failures=False, evaluate_metrics_aggregation_fn=weighted_average,
+                                    clients_keeper=self.clients_keeper, models_keeper=self.models_keeper)
         flwr.common.configure("server", log_file_path)
         fl.server.start_server(
             server_address=self.server_address,
@@ -46,6 +51,7 @@ class FederatedServer:
             config=ServerConfig(num_rounds=int(config["num_rounds"])),
         )
 
+# This piece of code was used in order to test the interaction between federated client and server
 # if __name__ == "__main__":
 #     fs = FederatedServer("127.0.0.1:8080")
 #     fs.start_server({"num_rounds": 2, "window_size": 10, "window_slide": 2, "one-hot": True, "batch_size": 32,

@@ -16,10 +16,9 @@ from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
-from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
 
 
-class SaveModelFedAvg(FedAvg):
+class PersistentFedAvg(FedAvg):
 
     def __init__(
             self,
