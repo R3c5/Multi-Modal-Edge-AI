@@ -30,7 +30,7 @@ log_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
 log_handler.setLevel(logging.INFO)
 app.logger.addHandler(log_handler)
 
-start_federation_flag = True
+start_federation_flag = False
 
 # Comment the first one when running manually and the second one for automatic testing
 dashboard_token_path = os.path.join(root_directory, 'developer_dashboard', 'token.txt')
