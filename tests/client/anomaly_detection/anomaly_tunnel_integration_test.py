@@ -1,144 +1,117 @@
-import unittest
+import pytest
 import pandas as pd
 import multi_modal_edge_ai.client.anomaly_detection.anomaly_queries as module
 from multi_modal_edge_ai.client.anomaly_detection.anomaly_tunnel import AnomalyDetectionDBTunnel
 
 
-class DatabaseTunnelTest(unittest.TestCase):
-    def setUp(self):
-        anom = AnomalyDetectionDBTunnel("coho-edge-ai-test")
-        self.client = anom.client
-        self.database = anom.database
-        self.collection = anom.get_collection("anomaly_integration")
+@pytest.fixture
+def collection():
+    anom = AnomalyDetectionDBTunnel("coho-edge-ai-test")
+    client = anom.client
+    database = anom.database
+    collection = anom.get_collection("anomaly_integration")
+    yield collection
+    collection.delete_many({})
 
-    def test_add_anomaly(self):
 
-        # Create a new anomaly Series
-        anomaly = pd.Series([pd.Timestamp('2020-01-01 00:04:00'), pd.Timestamp('2020-01-01 00:05:00'), "Sleep",
-                             pd.Timestamp('2020-01-01 00:05:01'), pd.Timestamp('2020-01-01 00:07:00'), "Toilet"])
+def test_add_anomaly(collection):
+    # Create a new anomaly Series
+    anomaly = pd.Series([pd.Timestamp('2020-01-01 00:04:00'), pd.Timestamp('2020-01-01 00:05:00'), "Sleep",
+                         pd.Timestamp('2020-01-01 00:05:01'), pd.Timestamp('2020-01-01 00:07:00'), "Toilet"])
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly, self.collection)
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly, collection)
 
-        # Check that the anomaly was added
-        self.assertEqual(self.collection.count_documents({}), 1)
+    # Check that the anomaly was added
+    assert collection.count_documents({}) == 1
 
-        # Clear the collection
-        self.collection.delete_many({})
 
-    def test_get_all_anomalies(self):
+def test_get_all_anomalies(collection):
+    # Create a new anomaly Series
+    anomaly1 = pd.Series([pd.Timestamp('2020-01-01 00:00:00'), pd.Timestamp('2020-01-01 00:05:00'), "Sleep",
+                          pd.Timestamp('2020-01-01 00:05:01'), pd.Timestamp('2020-01-01 00:07:00'), "Toilet"])
 
-        # Create a new anomaly Series
-        anomaly1 = pd.Series([pd.Timestamp('2020-01-01 00:00:00'), pd.Timestamp('2020-01-01 00:05:00'), "Sleep",
-                             pd.Timestamp('2020-01-01 00:05:01'), pd.Timestamp('2020-01-01 00:07:00'), "Toilet"])
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly1, collection)
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly1, self.collection)
+    # Create a new anomaly Series
+    anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
+                          pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
 
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 1)
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly2, collection)
 
-        # Create a new anomaly Series
-        anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
-                             pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
+    # Check that the anomalies were added
+    assert len(module.get_all_anomalies(collection)) == 2
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly2, self.collection)
 
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 2)
+def test_delete_all_anomalies(collection):
+    # Create a new anomaly Series
+    anomaly1 = pd.Series([pd.Timestamp('2023-01-01 00:00:00'), pd.Timestamp('2023-01-01 00:05:00'), "Sleep",
+                          pd.Timestamp('2023-01-01 00:05:01'), pd.Timestamp('2023-01-01 00:07:00'), "Toilet"])
 
-        # Clear the collection
-        self.collection.delete_many({})
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly1, collection)
 
-    def test_delete_all_anomalies(self):
+    # Create a new anomaly Series
+    anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
+                          pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
 
-        # Create a new anomaly Series
-        anomaly1 = pd.Series([pd.Timestamp('2023-01-01 00:00:00'), pd.Timestamp('2023-01-01 00:05:00'), "Sleep",
-                              pd.Timestamp('2023-01-01 00:05:01'), pd.Timestamp('2023-01-01 00:07:00'), "Toilet"])
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly2, collection)
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly1, self.collection)
+    # Delete all anomalies
+    module.delete_all_anomalies(collection)
 
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 1)
+    # Check that the anomalies were deleted
+    assert len(module.get_all_anomalies(collection)) == 0
 
-        # Create a new anomaly Series
-        anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
-                              pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly2, self.collection)
+def test_delete_past_x_anomalies(collection):
+    # Create a new anomaly Series
+    anomaly1 = pd.Series([pd.Timestamp('2022-01-01 00:00:00'), pd.Timestamp('2022-01-01 00:05:00'), "Sleep",
+                          pd.Timestamp('2022-01-01 00:05:01'), pd.Timestamp('2022-01-01 00:07:00'), "Toilet"])
 
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 2)
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly1, collection)
 
-        # Delete all anomalies
-        module.delete_all_anomalies(self.collection)
+    # Create a new anomaly Series
+    anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
+                          pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
 
-        # Check that the anomalies were deleted
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 0)
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly2, collection)
 
-    def test_delete_past_x_anomalies(self):
-        # Create a new anomaly Series
-        anomaly1 = pd.Series([pd.Timestamp('2022-01-01 00:00:00'), pd.Timestamp('2022-01-01 00:05:00'), "Sleep",
-                              pd.Timestamp('2022-01-01 00:05:01'), pd.Timestamp('2022-01-01 00:07:00'), "Toilet"])
+    # Delete last anomaly
+    module.delete_past_x_anomalies(collection, 1)
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly1, self.collection)
+    # Check that the anomaly was deleted
+    assert len(module.get_all_anomalies(collection)) == 1
 
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 1)
+    # Delete last anomaly
+    module.delete_past_x_anomalies(collection, 1)
 
-        # Create a new anomaly Series
-        anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
-                              pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
+    # Check that the anomaly was deleted
+    assert len(module.get_all_anomalies(collection)) == 0
 
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly2, self.collection)
 
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 2)
+def test_get_past_x_anomalies(collection):
+    # Create a new anomaly Series
+    anomaly1 = pd.Series([pd.Timestamp('2021-01-01 00:00:00'), pd.Timestamp('2021-01-01 00:05:00'), "Sleep",
+                          pd.Timestamp('2021-01-01 00:05:01'), pd.Timestamp('2021-01-01 00:07:00'), "Toilet"])
 
-        # Delete last anomaly
-        module.delete_past_x_anomalies(self.collection, 1)
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly1, collection)
 
-        # Check that the anomaly was deleted
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 1)
+    # Create a new anomaly Series
+    anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
+                          pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
 
-        # Delete last anomaly
-        module.delete_past_x_anomalies(self.collection, 1)
+    # Add the anomaly to the collection
+    module.add_anomaly(anomaly2, collection)
 
-        # Check that the anomaly was deleted
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 0)
+    # Get past 1 anomaly
+    assert len(module.get_past_x_anomalies(collection, 1)) == 1
 
-    def test_get_past_x_anomalies(self):
-
-        # Create a new anomaly Series
-        anomaly1 = pd.Series([pd.Timestamp('2021-01-01 00:00:00'), pd.Timestamp('2021-01-01 00:05:00'), "Sleep",
-                              pd.Timestamp('2021-01-01 00:05:01'), pd.Timestamp('2021-01-01 00:07:00'), "Toilet"])
-
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly1, self.collection)
-
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 1)
-
-        # Create a new anomaly Series
-        anomaly2 = pd.Series([pd.Timestamp('2020-01-01 00:07:01'), pd.Timestamp('2020-01-01 00:07:57'), "Outside",
-                              pd.Timestamp('2020-01-01 00:07:58'), pd.Timestamp('2020-01-01 00:08:00'), "Toilet"])
-
-        # Add the anomaly to the collection
-        module.add_anomaly(anomaly2, self.collection)
-
-        # Check that the anomaly was added
-        self.assertEqual(len(module.get_all_anomalies(self.collection)), 2)
-
-        # Get past 1 activity
-        self.assertEqual(len(module.get_past_x_anomalies(self.collection, 1)), 1)
-
-        # Get past 3 activities
-        self.assertEqual(len(module.get_past_x_anomalies(self.collection, 3)), 2)
-
-        # Clear the collection
-        self.collection.delete_many({})
+    # Get past 3 anomalies
+    assert len(module.get_past_x_anomalies(collection, 3)) == 2
