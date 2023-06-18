@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from schedule import repeat, every, run_pending, idle_seconds
 import time
@@ -55,7 +56,7 @@ def initiate_internal_pipeline() -> None:
     :return:
     """
     try:
-        predicted_activity = adl_inference_stage(sensor_db, adl_window_size)
+        predicted_activity = adl_inference_stage(sensor_db, adl_window_size, datetime.now())
 
         if predicted_activity is None:
             raise Exception('No ADL predicted')

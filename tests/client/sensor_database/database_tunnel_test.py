@@ -318,14 +318,14 @@ class TestDatabaseTunnel(unittest.TestCase):
             'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
             'voltage': 3000
         }
-
+        datetime.datetime.now()
         # Set up the mock for self.collection based on this entries
         db_tunnel.create_mongo_client = mock_create_mongo_client
         db_tunnel.collection = db_tunnel.create_mongo_client().db.collection
         db_tunnel.collection.insert_many([entry1, entry2, entry3, entry4])
-
+        current_time = datetime.datetime.now()
         # Call get_sensor_data_from_x_minutes_ago and check its result
-        result = db_tunnel.get_past_x_seconds_of_all_sensor_entries(5*60)
+        result = db_tunnel.get_past_x_seconds_of_all_sensor_entries(5*60, current_time)
         self.assertEqual(len(result), 2)
 
     @patch.object(DatabaseTunnel, 'create_mongo_client', return_value=mongomock.MongoClient())

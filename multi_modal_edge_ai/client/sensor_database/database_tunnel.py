@@ -142,14 +142,14 @@ class DatabaseTunnel:
         """
         return pymongo.MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
 
-    def get_past_x_seconds_of_all_sensor_entries(self, x: int) -> list[dict[Any, Any]]:
+    def get_past_x_seconds_of_all_sensor_entries(self, x: int, current_time: datetime.datetime) -> list[dict[Any, Any]]:
         """
         A method that retrieves all sensor entries from the local collection using a local method. It then returns
         the entries that have a start_time no longer than x seconds ago.
+        :param current_time: the current time as datetime
         :param x: the amount of seconds of sensor date to be returned
         :return: all the entries that have a start_time no longer than x seconds ago
         """
-        current_time = datetime.datetime.now()
         data = self.get_all_documents()
         new_data = []
 
