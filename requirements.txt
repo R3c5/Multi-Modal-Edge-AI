@@ -10,3 +10,5 @@ flwr=1.4.0
 flask_cors==3.0.10
 requests~=2.31.0
 schedule~=1.2.0
+APSchedul-er=3.10.1
+

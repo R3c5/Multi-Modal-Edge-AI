@@ -80,10 +80,9 @@ def send_set_up_connection_request() -> None:
         response = requests.get(server_url + '/api/set_up_connection')
         if response.status_code == 200:
             save_models_zip_file(response)
-            print("Connection set up successfully")
+            logging.info('Connection set up successfully')
         else:
             error_message = response.text
-            print("Error setting up connection:", error_message)
             raise Exception(error_message)
     except Exception as e:
         logging.error('An error occurred during set up with server: %s', str(e))
@@ -105,15 +104,13 @@ def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
             save_models_zip_file(response)
             start_federation_client_flag = ast.literal_eval(
                 response.headers.get('start_federation_client_flag', 'False'))
-            print("Heartbeat successful")
+            logging.info('Heartbeat successful')
             if start_federation_client_flag:
                 from multi_modal_edge_ai.client.orchestrator import run_federation_stage
                 run_federation_stage()
         elif response.status_code == 404:
-            print("Client not found")
             send_set_up_connection_request()
         else:
-            print("Error sending heartbeat:", response)
             raise Exception(response)
     except Exception as e:
         logging.error('An error occurred during heartbeat with server: %s', str(e))
