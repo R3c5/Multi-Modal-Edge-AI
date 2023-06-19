@@ -43,10 +43,23 @@ def add_activity(collection: Collection, start_time: pd.Timestamp, end_time: pd.
             "End_Time": end_time,
             "Activity": activity
         }
+
+        # if end time is before start time, then raise an exception
+        if end_time < start_time:
+            raise Exception("The end time is before the start time.")
+
         past_activity_list = get_past_x_activities(collection, 1)
         past_activity = past_activity_list[0] if len(past_activity_list) > 0 else None
 
         if past_activity is not None:
+            # if the current activity start is before the previous activity start, then raise an exception
+            if start_time < past_activity[0]:
+                raise Exception("The current activity start time is before the previous activity start time.")
+            # if the current activity start is after the previous activity start and
+            # the current activity end is before the previous activity end, then raise an exception
+            if start_time > past_activity[0] and end_time < past_activity[1]:
+                raise Exception("The current activity start time is after the previous activity start time and "
+                                "the current activity end time is before the previous activity end time.")
             if past_activity[2] == activity:
                 activity_dict["Start_Time"] = past_activity[0]
                 delete_last_x_activities(collection, 1)

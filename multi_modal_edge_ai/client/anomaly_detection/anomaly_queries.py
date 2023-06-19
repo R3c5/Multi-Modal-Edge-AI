@@ -17,7 +17,7 @@ def add_anomaly(anomaly: pd.Series, collection: Collection) -> None:
         index: int = 0
         while index < len(anomaly):
             position = str(int(index / 3))
-            anom_dict["Start_Time " + position] = anomaly.index[index]
+            anom_dict["Start_Time " + position] = anomaly[index]
             anom_dict["End_time " + position] = anomaly[index + 1]
             anom_dict["Activity " + position] = anomaly[index + 2]
             index += 3
@@ -58,7 +58,7 @@ def get_all_anomalies(collection: Collection) -> list[pd.Series]:
     :param collection: The collection to retrieve.
     """
     try:
-        anomalies = collection.find()
+        anomalies = collection.find({}, {"_id": 0})
         anomaly_list = [pd.Series([anomaly]) for anomaly in anomalies]
         return anomaly_list
     except Exception as e:
