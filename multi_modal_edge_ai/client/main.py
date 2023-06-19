@@ -1,7 +1,7 @@
 import logging
 import os
 import pickle
-import threading
+import sys
 
 from sklearn.preprocessing import OneHotEncoder
 from torch import nn
@@ -28,7 +28,11 @@ scaler_path = os.path.join(root_directory, 'anomaly_detection', 'andet_scaler.pk
 with open(scaler_path, 'rb') as file:
     andet_scaler = pickle.load(file)
 
-sensor_db = 'sensor_data_1234567ABC89'
+if len(sys.argv) <= 1:
+    sys.exit("Error: No command-line argument provided for 'sensor_db'.")
+else:
+    sensor_db = sys.argv[1]
+
 client_db = 'coho-edge-ai'
 adl_collection_name = 'adl_test'
 anomaly_collection_name = 'anomaly_db'
@@ -51,5 +55,4 @@ anomaly_detection_model_keeper = ModelKeeper(anomaly_detection_model, anomaly_de
 if __name__ == '__main__':
     from multi_modal_edge_ai.client.orchestrator import run_schedule
 
-    thread_internal = threading.Thread(target=run_schedule)
-    thread_internal.start()
+    run_schedule()

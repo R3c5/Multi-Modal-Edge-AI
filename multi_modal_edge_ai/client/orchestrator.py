@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+import threading
 
 from schedule import repeat, every, run_pending, idle_seconds
 import time
@@ -10,9 +11,11 @@ from multi_modal_edge_ai.client.adl_database.adl_queries import add_activity, ge
 from multi_modal_edge_ai.client.adl_inference.adl_inference_stage import adl_inference_stage
 from multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage import check_window_for_anomaly
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat
+from multi_modal_edge_ai.client.federated_learning.federated_client import FederatedClient
+from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
 from multi_modal_edge_ai.client.main import client_db, adl_window_size, adl_collection_name, sensor_db, \
     anomaly_detection_window_size, anomaly_detection_model_keeper, andet_scaler, adl_onehot_encoder, num_adl_features, \
-    anomaly_collection_name, adl_model_keeper
+    anomaly_collection_name, adl_model_keeper, distinct_adl_list
 
 
 @repeat(every(10).seconds)
@@ -99,3 +102,22 @@ def run_schedule() -> None:
             # sleep exactly the right amount of time
             time.sleep(idle_time)
         run_pending()
+
+
+def start_federated_client() -> None:
+    """
+    Define the TrainEval method and start the Federated Client
+    """
+    print('federation_started')
+    collection = get_collection(get_database(get_database_client(), "coho-edge-ai"), "adl_test")
+    train_eva = TrainEval(collection, distinct_adl_list, andet_scaler)
+    fc = FederatedClient(anomaly_detection_model_keeper, train_eva)
+    fc.start_numpy_client("127.0.0.1:8080")
+
+
+def run_federation_stage():
+    """
+    Create a seperate thread to run the federation client
+    """
+    thread = threading.Thread(target=start_federated_client)
+    thread.start()

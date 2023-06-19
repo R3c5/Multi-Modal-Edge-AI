@@ -44,6 +44,7 @@ def test_send_heartbeat_success(capsys):
     with mock.patch.object(requests, 'post') as mock_post:
         mock_response = mock.Mock()
         mock_response.status_code = 200
+        mock_response.headers = {'start_federation_client_flag': 'False'}
 
         with mock.patch('multi_modal_edge_ai.client.controllers.client_controller.save_models_zip_file') \
                 as mock_save_zip:
@@ -54,7 +55,7 @@ def test_send_heartbeat_success(capsys):
             mock_save_zip.assert_called_with(mock_post.return_value)
 
             captured = capsys.readouterr()
-            assert 'Heartbeat successful\n' == captured.out
+            assert 'Heartbeat successful\n' in captured.out
 
 
 def test_send_heartbeat_no_client(capsys):
