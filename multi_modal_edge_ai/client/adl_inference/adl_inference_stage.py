@@ -75,11 +75,12 @@ def modify_sensor_name(sensor_name):
         raise ValueError(f"Unrecognized sensor: {sensor_name}")
 
 
-def adl_inference_stage(sensor_database: str, seconds: int) -> dict | None:
+def adl_inference_stage(sensor_database: str, seconds: int, current_time: datetime) -> dict | None:
     """
     Run the inference stage of the ADL pipeline. This stage retrieves the past X seconds of entries from the Sensor
     Database, applies the preprocessing functions, predicts the ADL using the preprocessed data, and adds the result to
     the ADL Database.
+    :param current_time: the current time as a datetime, typically expecting datetime.now()
     :param sensor_database: The name of the Sensor Database to retrieve the entries from.
     :param seconds: The number of seconds of entries from the Sensor Database to retrieve.
     :return: dict containing the Start_Time, End_Time and Activity of the new prediction
@@ -87,8 +88,7 @@ def adl_inference_stage(sensor_database: str, seconds: int) -> dict | None:
     try:
         # Retrieve the past X seconds of entries from the Sensor Database
         dbt = DatabaseTunnel(sensor_database)
-        current_time = datetime.now()
-        entries = dbt.get_past_x_seconds_of_all_sensor_entries(seconds)
+        entries = dbt.get_past_x_seconds_of_all_sensor_entries(seconds, current_time)
         parsed_sensor_entries = transform_client_db_entries_to_activity_entries(entries)
 
         # Predict the ADL

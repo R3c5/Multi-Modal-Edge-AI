@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 import threading
 
 from schedule import repeat, every, run_pending, idle_seconds
@@ -17,7 +18,7 @@ from multi_modal_edge_ai.client.main import client_db, adl_window_size, adl_coll
     anomaly_collection_name, adl_model_keeper, distinct_adl_list
 
 
-@repeat(every(20).seconds)
+@repeat(every(10).seconds)
 def create_heartbeat_and_send() -> None:
     """
     Retrieve number of predictions for adl and anomaly detection model, then send a heartbeat to the server.
@@ -58,7 +59,7 @@ def initiate_internal_pipeline() -> None:
     :return:
     """
     try:
-        predicted_activity = adl_inference_stage(sensor_db, adl_window_size)
+        predicted_activity = adl_inference_stage(sensor_db, adl_window_size, datetime.now())
 
         if predicted_activity is None:
             raise Exception('No ADL predicted')
