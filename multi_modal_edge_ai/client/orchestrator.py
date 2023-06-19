@@ -92,7 +92,6 @@ def start_federated_client() -> None:
     fc.start_numpy_client("127.0.0.1:8080")
 
 
-
 def run_federation_stage():
     """
     Create a seperate thread to run the federation client

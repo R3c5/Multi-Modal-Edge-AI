@@ -109,6 +109,7 @@ def send_heartbeat(num_adls: int = 0, num_anomalies: int = 0) -> None:
                 from multi_modal_edge_ai.client.orchestrator import run_federation_stage
                 run_federation_stage()
         elif response.status_code == 404:
+            logging.error('Client not found')
             send_set_up_connection_request()
         else:
             raise Exception(response)

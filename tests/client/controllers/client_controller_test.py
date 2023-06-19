@@ -8,7 +8,7 @@ from multi_modal_edge_ai.client.controllers.client_controller import send_set_up
     save_models_zip_file, save_model_file
 
 
-def test_send_set_up_connection_request_success(capsys):
+def test_send_set_up_connection_request_success(caplog):
     with mock.patch.object(requests, 'get') as mock_get:
         mock_response = mock.Mock()
         mock_response.status_code = 200
@@ -21,11 +21,10 @@ def test_send_set_up_connection_request_success(capsys):
             # Assert that the appropriate functions were called
             mock_save_zip.assert_called_with(mock_get.return_value)
 
-            captured = capsys.readouterr()
-            assert 'Connection set up successfully' in captured.out
+            assert 'Connection set up successfully' in caplog.text
 
 
-def test_send_set_up_connection_request_fail(capsys, caplog):
+def test_send_set_up_connection_request_fail(caplog):
     with mock.patch.object(requests, 'get'):
         mock_response = mock.Mock()
         mock_response.status_code = 500
@@ -33,14 +32,11 @@ def test_send_set_up_connection_request_fail(capsys, caplog):
 
         send_set_up_connection_request()
 
-        # Check the printed exception message
-        captured = capsys.readouterr()
-        assert 'Error setting up connection: ' in captured.out
         # Check the log
         assert "An error occurred during set up with server: " in caplog.text
 
 
-def test_send_heartbeat_success(capsys):
+def test_send_heartbeat_success(caplog):
     with mock.patch.object(requests, 'post') as mock_post:
         mock_response = mock.Mock()
         mock_response.status_code = 200
@@ -54,11 +50,10 @@ def test_send_heartbeat_success(capsys):
             # Assert that the appropriate functions were called
             mock_save_zip.assert_called_with(mock_post.return_value)
 
-            captured = capsys.readouterr()
-            assert 'Heartbeat successful\n' in captured.out
+            assert 'Heartbeat successful' in caplog.text
 
 
-def test_send_heartbeat_no_client(capsys):
+def test_send_heartbeat_no_client(caplog):
     with mock.patch.object(requests, 'post') as mock_post:
         mock_response = mock.Mock()
         mock_response.status_code = 404
@@ -71,11 +66,10 @@ def test_send_heartbeat_no_client(capsys):
 
             mock_setup.assert_called_once()
 
-            captured = capsys.readouterr()
-            assert "Client not found" in captured.out
+            assert "Client not found" in caplog.text
 
 
-def test_send_heartbeat_fail(capsys, caplog):
+def test_send_heartbeat_fail(caplog):
     with mock.patch.object(requests, 'post'):
         mock_response = mock.Mock()
         mock_response.status_code = 500
@@ -83,8 +77,6 @@ def test_send_heartbeat_fail(capsys, caplog):
         # Call the method under test
         send_heartbeat(0, 0)
 
-        captured = capsys.readouterr()
-        assert "Error sending heartbeat: " in captured.out
         # Check the log
         assert "An error occurred during heartbeat with server: " in caplog.text
 

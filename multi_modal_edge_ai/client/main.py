@@ -19,14 +19,14 @@ log_filename = os.path.join(root_directory, 'client.log')
 
 # Create the logger instance for the root logger
 logger = logging.getLogger()
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 
 # Remove any existing handlers
 logger.handlers = []
 
 # Create a file handler and set its level
 file_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
-file_handler.setLevel(logging.ERROR)
+file_handler.setLevel(logging.INFO)
 
 # Create a log formatter and set it on the handler
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
