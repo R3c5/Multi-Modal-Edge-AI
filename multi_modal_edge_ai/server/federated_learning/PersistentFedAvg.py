@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime
 from logging import INFO
-from typing import Dict, List, Optional, Tuple, Union, Callable
+from typing import Dict, List, Optional, Tuple, Union, Callable, Any
 
 import torch
 from flwr.common import (
@@ -57,6 +57,7 @@ class PersistentFedAvg(FedAvg):
                          evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation_fn)
         self.clients_keeper = clients_keeper
         self.models_keeper = models_keeper
+        self.initial_parameters = self.get_parameters()
 
     def aggregate_fit(
             self,
@@ -105,3 +106,14 @@ class PersistentFedAvg(FedAvg):
             self.models_keeper.anomaly_detection_model.model.set_params(**parameters)
 
         self.models_keeper.save_anomaly_detection_model()
+
+    def get_parameters(self) -> Any:
+        """
+        This function will get the parameters of the current model
+        :return: The parameters
+        """
+        if isinstance(self.models_keeper.model.model, torch.nn.Module):
+            return [val.cpu().numpy() for _, val in self.models_keeper.model.model.state_dict().items()]
+        else:
+            params = self.models_keeper.model.model.get_params()
+            return params

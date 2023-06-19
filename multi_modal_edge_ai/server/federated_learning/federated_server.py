@@ -37,11 +37,15 @@ class FederatedServer:
     def start_server(self, config: dict[str, Scalar], log_file_path):
         """
         This function will start the rpc server with the specified parameters.
-        :param config: The config which contains hyperparameters for both training and evaluation
+        :param config: The config which contains hyperparameters for both training, evaluation, and federation
         :param log_file_path: The path to the log file which Flower will use
         :return:
         """
-        strategy = PersistentFedAvg(on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
+        strategy = PersistentFedAvg(fraction_fit=config["fraction_fit"], fraction_evaluate=config["fraction_evaluate"],
+                                    min_fit_clients=config["min_fit_clients"],
+                                    min_evaluate_clients=config["min_evaluate_clients"],
+                                    min_available_clients=config["min_available_clients"],
+                                    on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
                                     accept_failures=False, evaluate_metrics_aggregation_fn=weighted_average,
                                     clients_keeper=self.clients_keeper, models_keeper=self.models_keeper)
         flwr.common.configure("server", log_file_path)

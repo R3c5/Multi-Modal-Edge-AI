@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
@@ -20,6 +21,7 @@ class ClientsKeeper:
 
     def __init__(self) -> None:
         self.connected_clients: Dict[str, Dict[str, Any]] = {}
+        self.daily_information_lock = threading.Lock()
 
     def add_client(self, ip: str, status: str, last_seen: datetime) -> None:
         """
@@ -50,11 +52,12 @@ class ClientsKeeper:
         :param num_adls: int representing the number of adls that will be added to this client
         :param num_anomalies: int representing the number of anomalies that will be added to this client
         """
-        client = self.connected_clients[ip]
-        client['status'] = status
-        client['last_seen'] = last_seen
-        client['num_adls'] += num_adls
-        client['num_anomalies'] += num_anomalies
+        with self.daily_information_lock:
+            client = self.connected_clients[ip]
+            client['status'] = status
+            client['last_seen'] = last_seen
+            client['num_adls'] += num_adls
+            client['num_anomalies'] += num_anomalies
 
     def update_clients_statuses(self) -> None:
         """
@@ -96,3 +99,13 @@ class ClientsKeeper:
         :param ip: IP to check existence of
         """
         return ip in self.connected_clients
+
+    def reset_all_daily_information(self):
+        """
+        This function resets the values of the num_adls and num_anomalies for all the clients.
+        :return:
+        """
+        with self.daily_information_lock:
+            for client in self.connected_clients.keys():
+                self.connected_clients[client]["num_adls"] = 0
+                self.connected_clients[client]["num_anomalies"] = 0

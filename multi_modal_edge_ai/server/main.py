@@ -3,6 +3,8 @@ import os
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 from flask import Flask
 from flask_cors import CORS
 from torch import nn
@@ -10,12 +12,12 @@ from torch import nn
 # This should be changed to import the respective packages
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
-
 from multi_modal_edge_ai.server.api.client_connection import client_connection_blueprint
 from multi_modal_edge_ai.server.api.dashboard_connection import dashboard_connection_blueprint
-from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
+from multi_modal_edge_ai.server.federated_learning.federated_server import FederatedServer
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
-
+from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
+from apscheduler.jobstores.mongodb import MongoDBJobStore
 
 # Get the root directory of the project
 root_directory = os.path.abspath(os.path.dirname(__file__))
@@ -29,8 +31,8 @@ log_filename = os.path.join(root_directory, 'app.log')
 log_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
 log_handler.setLevel(logging.INFO)
 app.logger.addHandler(log_handler)
+federated_log_path = os.path.join(root_directory, 'federated_learning', 'server_log')
 
-# Comment the first one when running manually and the second one for automatic testing
 dashboard_token_path = os.path.join(root_directory, 'developer_dashboard', 'token.txt')
 
 # Uncomment this for automatic testing
@@ -40,7 +42,6 @@ anomaly_detection_model_path = os.path.join(root_directory, 'models', 'anomaly_d
 # Chosen models for ADL inference and Anomaly Detection
 adl_model = SVMModel()
 anomaly_detection_model = Autoencoder([96, 64, 32, 24, 16, 8], [8, 16, 24, 32, 64, 96], nn.ReLU(), nn.Sigmoid())
-
 
 # Instantiate ModelsKeeper and load models
 models_keeper = ModelsKeeper(adl_model, anomaly_detection_model, adl_model_path, anomaly_detection_model_path)
@@ -53,8 +54,19 @@ client_keeper = ClientsKeeper()
 app.register_blueprint(client_connection_blueprint)
 app.register_blueprint(dashboard_connection_blueprint)
 
+federated_server = FederatedServer("127.0.0.1:8080", models_keeper, client_keeper)
+
+job_store = {
+    'default': MongoDBJobStore(host='***REMOVED***', port=27017, database='coho-edge-ai',
+                               collection='federated_workloads_store')
+}
+
+scheduler = BackgroundScheduler(job_store=job_store, daemon=True)
+scheduler.start()
+
 # you can use this instead of the terminal to run the server
 if __name__ == '__main__':
+    scheduler.add_job(client_keeper.reset_all_daily_information, CronTrigger(hour=0, minute=0))
     app.run(port=5000)
 
 
