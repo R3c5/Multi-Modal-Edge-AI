@@ -3,7 +3,7 @@ import pandas as pd
 import torch.nn
 from sklearn.preprocessing import MinMaxScaler
 
-from multi_modal_edge_ai.client.adl_database.adl_database import get_database_client, get_database, get_collection
+from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.flower_clients import FlowerClient
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval

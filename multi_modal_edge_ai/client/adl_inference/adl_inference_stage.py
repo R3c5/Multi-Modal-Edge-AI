@@ -6,7 +6,8 @@ import pandas as pd
 from pandas import DataFrame
 
 from multi_modal_edge_ai.client.main import adl_model_keeper
-from multi_modal_edge_ai.client.sensor_database.database_tunnel import DatabaseTunnel
+from multi_modal_edge_ai.client.databases.database_connection import *
+from multi_modal_edge_ai.client.databases.sensor_queries import *
 
 
 def transform_client_db_entries_to_activity_entries(client_db_entries: list[dict]) -> DataFrame:
@@ -87,8 +88,8 @@ def adl_inference_stage(sensor_database: str, seconds: int, current_time: dateti
     """
     try:
         # Retrieve the past X seconds of entries from the Sensor Database
-        dbt = DatabaseTunnel(sensor_database)
-        entries = dbt.get_past_x_seconds_of_all_sensor_entries(seconds, current_time)
+        collection = get_collection(get_database(get_database_client(), sensor_database), "raw_sensor")
+        entries = get_past_x_seconds_of_all_sensor_entries(collection, seconds, current_time)
         parsed_sensor_entries = transform_client_db_entries_to_activity_entries(entries)
 
         # Predict the ADL

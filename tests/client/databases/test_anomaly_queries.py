@@ -1,4 +1,4 @@
-import multi_modal_edge_ai.client.anomaly_detection.anomaly_queries as anomaly_module
+import multi_modal_edge_ai.client.databases.anomaly_queries as anomaly_module
 import mongomock
 from unittest import mock
 import pandas as pd

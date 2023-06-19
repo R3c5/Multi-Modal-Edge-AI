@@ -1,15 +1,12 @@
 import pytest
 import pandas as pd
-import multi_modal_edge_ai.client.anomaly_detection.anomaly_queries as module
-from multi_modal_edge_ai.client.anomaly_detection.anomaly_tunnel import AnomalyDetectionDBTunnel
+import multi_modal_edge_ai.client.databases.anomaly_queries as module
+from multi_modal_edge_ai.client.databases.database_connection import *
 
 
 @pytest.fixture
 def collection():
-    anom = AnomalyDetectionDBTunnel("coho-edge-ai-test")
-    client = anom.client
-    database = anom.database
-    collection = anom.get_collection("anomaly_integration")
+    collection = get_collection(get_database(get_database_client(), "coho-edge-ai-test"), "anomaly_integration")
     yield collection
     collection.delete_many({})
 

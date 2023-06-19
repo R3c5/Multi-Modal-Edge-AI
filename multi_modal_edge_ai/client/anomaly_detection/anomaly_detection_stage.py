@@ -7,8 +7,8 @@ from pymongo.collection import Collection
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
 
-import multi_modal_edge_ai.client.adl_database.adl_queries as module
-import multi_modal_edge_ai.client.anomaly_detection.anomaly_queries as anomaly_module
+import multi_modal_edge_ai.client.databases.adl_queries as module
+import multi_modal_edge_ai.client.databases.anomaly_queries as anomaly_module
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
     window_categorical_to_numeric

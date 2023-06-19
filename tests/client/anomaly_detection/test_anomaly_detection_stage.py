@@ -8,7 +8,7 @@ from multi_modal_edge_ai.models.anomaly_detection.ml_models import IForest
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
-import multi_modal_edge_ai.client.adl_database.adl_queries as mod
+import multi_modal_edge_ai.client.databases.adl_queries as mod
 
 
 def test_check_window_for_anomaly_prediction_zero():
