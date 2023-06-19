@@ -1,7 +1,5 @@
 import logging
-from datetime import timedelta
-from datetime import datetime as datetime
-from typing import Dict
+from datetime import datetime, timedelta
 
 import pandas as pd
 from pandas import DataFrame
@@ -22,11 +20,11 @@ def transform_client_db_entries_to_activity_entries(client_db_entries: list[dict
     for entry in client_db_entries:
         new_entry = {}
 
-        start_time = datetime.strptime(entry['start_time'], '%H:%M:%S').time()
-        start_datetime = datetime.combine(datetime.strptime(entry['date'], '%Y-%m-%d'), start_time)
+        start_time = datetime.datetime.strptime(entry['start_time'], '%H:%M:%S').time()
+        start_datetime = datetime.datetime.combine(datetime.datetime.strptime(entry['date'], '%Y-%m-%d'), start_time)
 
-        end_time = datetime.strptime(entry['end_time'], '%H:%M:%S').time()
-        end_datetime = datetime.combine(datetime.strptime(entry['date'], '%Y-%m-%d'), end_time)
+        end_time = datetime.datetime.strptime(entry['end_time'], '%H:%M:%S').time()
+        end_datetime = datetime.datetime.combine(datetime.datetime.strptime(entry['date'], '%Y-%m-%d'), end_time)
 
         # Check if end time is on the following day
         if end_time < start_time:

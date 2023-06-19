@@ -1,3 +1,5 @@
+import pandas as pd
+
 from multi_modal_edge_ai.client.adl_inference.adl_inference_stage import *
 
 
