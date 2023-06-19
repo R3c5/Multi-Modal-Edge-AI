@@ -22,6 +22,7 @@ class ClientsKeeper:
     def __init__(self) -> None:
         self.connected_clients: Dict[str, Dict[str, Any]] = {}
         self.daily_information_lock = threading.Lock()
+        self.start_federation_lock = threading.Lock()
 
     def add_client(self, ip: str, status: str, last_seen: datetime) -> None:
         """
@@ -37,6 +38,7 @@ class ClientsKeeper:
                 'status': status,
                 'last_seen': last_seen,
                 'last_model_aggregation': datetime.min,
+                'start_federation': False,
                 'num_adls': 0,
                 'num_anomalies': 0
             }
@@ -52,10 +54,10 @@ class ClientsKeeper:
         :param num_adls: int representing the number of adls that will be added to this client
         :param num_anomalies: int representing the number of anomalies that will be added to this client
         """
+        client = self.connected_clients[ip]
+        client['status'] = status
+        client['last_seen'] = last_seen
         with self.daily_information_lock:
-            client = self.connected_clients[ip]
-            client['status'] = status
-            client['last_seen'] = last_seen
             client['num_adls'] += num_adls
             client['num_anomalies'] += num_anomalies
 
@@ -109,3 +111,16 @@ class ClientsKeeper:
             for client in self.connected_clients.keys():
                 self.connected_clients[client]["num_adls"] = 0
                 self.connected_clients[client]["num_anomalies"] = 0
+
+    def set_start_federation(self, value: bool) -> None:
+        with self.start_federation_lock:
+            for ip in self.connected_clients.keys():
+                self.connected_clients[ip]["start_federation"] = value
+
+    def compare_and_swap_start_federation(self, client_ip: str):
+        with self.start_federation_lock:
+            if not self.connected_clients[client_ip]["start_federation"]:
+                return False
+            else:
+                self.connected_clients[client_ip]["start_federation"] = False
+                return True

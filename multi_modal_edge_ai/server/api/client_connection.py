@@ -59,8 +59,11 @@ def heartbeat() -> Response | tuple[Response, int]:
 
         client_keeper.update_client(client_ip, 'Connected', datetime.datetime.now(), recent_adls, recent_anomalies)
 
-        return send_models_zip(client_last_seen)
+        response = send_models_zip(client_last_seen)
+        response.headers['start_federation_client_flag'] = \
+            str(client_keeper.compare_and_swap_start_federation(client_ip))
 
+        return response
     except Exception as e:
         logging.error('An error occurred in heartbeat: %s', str(e))
         return jsonify({'message': 'Error occurred during heartbeat'}), 500

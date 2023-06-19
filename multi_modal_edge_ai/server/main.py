@@ -33,6 +33,9 @@ log_handler.setLevel(logging.INFO)
 app.logger.addHandler(log_handler)
 federated_log_path = os.path.join(root_directory, 'federated_learning', 'server_log')
 
+start_federation_flag = False
+
+# Comment the first one when running manually and the second one for automatic testing
 dashboard_token_path = os.path.join(root_directory, 'developer_dashboard', 'token.txt')
 
 # Uncomment this for automatic testing
