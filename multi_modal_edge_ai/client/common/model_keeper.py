@@ -33,12 +33,10 @@ class ModelKeeper:
         """
         Increase the number of predictions by 1
         """
-        with self.lock:
-            self.num_predictions += 1
+        self.num_predictions += 1
 
     def reset_predictions(self) -> None:
         """
         Reset the number of predictions to 0
         """
-        with self.lock:
-            self.num_predictions = 0
+        self.num_predictions = 0

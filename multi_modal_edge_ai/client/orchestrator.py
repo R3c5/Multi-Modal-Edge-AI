@@ -17,7 +17,7 @@ from multi_modal_edge_ai.client.main import client_db, adl_window_size, adl_coll
     anomaly_collection_name, adl_model_keeper, distinct_adl_list
 
 
-@repeat(every(10).seconds)
+@repeat(every(20).seconds)
 def create_heartbeat_and_send() -> None:
     """
     Retrieve number of predictions for adl and anomaly detection model, then send a heartbeat to the server.
@@ -118,6 +118,5 @@ def run_federation_stage():
     """
     Create a seperate thread to run the federation client
     """
-    thread = threading.Thread(target=start_federated_client())
+    thread = threading.Thread(target=start_federated_client)
     thread.start()
-    thread.join()

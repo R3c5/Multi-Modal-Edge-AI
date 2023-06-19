@@ -29,3 +29,15 @@ server | INFO flwr 2023-06-16 16:01:07,940 | server.py:273 | Requesting initial 
 server | INFO flwr 2023-06-16 16:01:33,165 | server.py:277 | Received initial parameters from one random client
 server | INFO flwr 2023-06-16 16:01:33,165 | server.py:88 | Evaluating initial parameters
 server | INFO flwr 2023-06-16 16:01:33,165 | server.py:101 | FL starting
+server | INFO flwr 2023-06-19 10:00:25,527 | app.py:148 | Starting Flower server, config: ServerConfig(num_rounds=2, round_timeout=None)
+server | INFO flwr 2023-06-19 10:00:25,539 | app.py:168 | Flower ECE: gRPC server running (2 rounds), SSL is disabled
+server | INFO flwr 2023-06-19 10:00:25,540 | server.py:86 | Initializing global parameters
+server | INFO flwr 2023-06-19 10:00:25,540 | server.py:273 | Requesting initial parameters from one random client
+server | INFO flwr 2023-06-19 10:01:10,275 | app.py:148 | Starting Flower server, config: ServerConfig(num_rounds=2, round_timeout=None)
+server | INFO flwr 2023-06-19 10:01:10,285 | app.py:168 | Flower ECE: gRPC server running (2 rounds), SSL is disabled
+server | INFO flwr 2023-06-19 10:01:10,285 | server.py:86 | Initializing global parameters
+server | INFO flwr 2023-06-19 10:01:10,286 | server.py:273 | Requesting initial parameters from one random client
+server | INFO flwr 2023-06-19 10:02:34,953 | app.py:148 | Starting Flower server, config: ServerConfig(num_rounds=2, round_timeout=None)
+server | INFO flwr 2023-06-19 10:02:34,963 | app.py:168 | Flower ECE: gRPC server running (2 rounds), SSL is disabled
+server | INFO flwr 2023-06-19 10:02:34,963 | server.py:86 | Initializing global parameters
+server | INFO flwr 2023-06-19 10:02:34,963 | server.py:273 | Requesting initial parameters from one random client
