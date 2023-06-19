@@ -7,9 +7,7 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.cron import CronTrigger
 from flask import request, jsonify, Blueprint, Response, send_file
 
-from multi_modal_edge_ai.server.main import federated_log_path
-from multi_modal_edge_ai.server.main import scheduler
-from multi_modal_edge_ai.server.scheduler.jobs import open_federated_server, is_federated_workload_running
+from multi_modal_edge_ai.server.scheduler.jobs import open_federated_server_job, is_federated_workload_running
 
 dashboard_connection_blueprint = Blueprint('dashboard_connection', __name__)
 
@@ -53,6 +51,7 @@ def get_clients_info() -> Response:
 @dashboard_connection_blueprint.route('/dashboard/schedule_federation_workload', methods=['POST'])
 @authenticate
 def schedule_federation_workload():
+    from multi_modal_edge_ai.server.main import federated_log_path, scheduler
     """
     This function will schedule a federated learning workload according to the scheduling type and config_dict provided
     In case the type is "one-time", the job is schedule for a one time execution at the provided "date". In case the
@@ -76,11 +75,12 @@ def schedule_federation_workload():
     if not config_dict:
         return jsonify({'error': 'Missing config'}), 400
 
+    run_date = None
     job_id = str(uuid.uuid4())
 
     try:
         if schedule_type == "immediate":
-            open_federated_server(config_dict, federated_log_path)
+            open_federated_server_job(config_dict, federated_log_path)
 
         elif schedule_type in ["recurrent", "one-time"]:
             if schedule_type == "recurrent":
@@ -101,7 +101,7 @@ def schedule_federation_workload():
                 trigger = "date"
                 run_date = job_date
 
-            scheduler.add_job(open_federated_server, trigger, args=[config_dict, federated_log_path], id=job_id,
+            scheduler.add_job(open_federated_server_job, trigger, args=[config_dict, federated_log_path], id=job_id,
                               run_date=run_date)
 
         else:
@@ -130,15 +130,16 @@ def is_federation_workload_running():
 @dashboard_connection_blueprint.route('/dashboard/fetch_all_federation_workloads', methods=['GET'])
 @authenticate
 def fetch_all_federation_workloads():
+    from multi_modal_edge_ai.server.main import scheduler
     """
     This function will return all the federated learning workloads currently scheduled. All jobs will include id,
-    scheduled_time and the config_dict.
+    scheduled_time, the config_dict, and a flag representing if it is a cron job.
     :return: A list with a dict representing each job. This dict has: id, scheduled_time, and config
     """
-    federation_workloads = [job for job in scheduler.get_jobs() if job.func == open_federated_server]
+    federation_workloads = [job for job in scheduler.get_jobs() if job.func == open_federated_server_job]
 
-    workloads_info = [{'id': job.id, 'scheduled_time': str(job.next_run_time), "config": job.args} for job in
-                      federation_workloads]
+    workloads_info = [{'id': job.id, 'scheduled_time': str(job.next_run_time), "config": job.args[0],
+                       "cron_job": isinstance(job.trigger, CronTrigger)} for job in federation_workloads]
 
     return jsonify(workloads_info), 200
 
@@ -146,6 +147,7 @@ def fetch_all_federation_workloads():
 @dashboard_connection_blueprint.route('/dashboard/remove_federation_workload', methods=['DELETE'])
 @authenticate
 def remove_federation_workload():
+    from multi_modal_edge_ai.server.main import scheduler
     """
     This function will remove a specific federated learning workload, given its id.
     :return: If 200, the job_id of the removed federated learning workload. If 410, the id of the job that didn't exist,

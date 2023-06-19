@@ -1,3 +1,5 @@
+import time
+
 import flwr as fl
 import flwr.common
 from flwr.common import Metrics
@@ -41,19 +43,22 @@ class FederatedServer:
         :param log_file_path: The path to the log file which Flower will use
         :return:
         """
-        strategy = PersistentFedAvg(fraction_fit=config["fraction_fit"], fraction_evaluate=config["fraction_evaluate"],
-                                    min_fit_clients=config["min_fit_clients"],
-                                    min_evaluate_clients=config["min_evaluate_clients"],
-                                    min_available_clients=config["min_available_clients"],
-                                    on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
-                                    accept_failures=False, evaluate_metrics_aggregation_fn=weighted_average,
-                                    clients_keeper=self.clients_keeper, models_keeper=self.models_keeper)
-        flwr.common.configure("server", log_file_path)
-        fl.server.start_server(
-            server_address=self.server_address,
-            strategy=strategy,
-            config=ServerConfig(num_rounds=int(config["num_rounds"])),
-        )
+        # strategy = PersistentFedAvg(fraction_fit=config["fraction_fit"], fraction_evaluate=config["fraction_evaluate"],
+        #                             min_fit_clients=config["min_fit_clients"],
+        #                             min_evaluate_clients=config["min_evaluate_clients"],
+        #                             min_available_clients=config["min_available_clients"],
+        #                             on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
+        #                             accept_failures=False, evaluate_metrics_aggregation_fn=weighted_average,
+        #                             clients_keeper=self.clients_keeper, models_keeper=self.models_keeper)
+        # flwr.common.configure("server", log_file_path)
+        # fl.server.start_server(
+        #     server_address=self.server_address,
+        #     strategy=strategy,
+        #     config=ServerConfig(num_rounds=int(config["num_rounds"])),
+        # )
+        print("started...")
+        time.sleep(50)
+        print("finished...")
 
 # This piece of code was used in order to test the interaction between federated client and server
 # if __name__ == "__main__":

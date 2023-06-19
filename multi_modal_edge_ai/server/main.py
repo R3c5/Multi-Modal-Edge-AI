@@ -3,10 +3,13 @@ import os
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
+from apscheduler.jobstores.base import JobLookupError
+from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from flask import Flask
 from flask_cors import CORS
+from pymongo import MongoClient
 from torch import nn
 
 # This should be changed to import the respective packages
@@ -17,7 +20,7 @@ from multi_modal_edge_ai.server.api.dashboard_connection import dashboard_connec
 from multi_modal_edge_ai.server.federated_learning.federated_server import FederatedServer
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
 from multi_modal_edge_ai.server.object_keepers.models_keeper import ModelsKeeper
-from apscheduler.jobstores.mongodb import MongoDBJobStore
+from multi_modal_edge_ai.server.scheduler.jobs import reset_all_daily_information_job
 
 # Get the root directory of the project
 root_directory = os.path.abspath(os.path.dirname(__file__))
@@ -59,17 +62,23 @@ app.register_blueprint(dashboard_connection_blueprint)
 
 federated_server = FederatedServer("127.0.0.1:8080", models_keeper, client_keeper)
 
-job_store = {
-    'default': MongoDBJobStore(host='***REMOVED***', port=27017, database='coho-edge-ai',
-                               collection='federated_workloads_store')
+client = MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
+job_stores = {
+    'default': MongoDBJobStore(client=client, database='coho-edge-ai', collection='federated_workloads_job_store_test')
 }
-
-scheduler = BackgroundScheduler(job_store=job_store, daemon=True)
+scheduler = BackgroundScheduler(jobstores=job_stores, daemon=True)
 scheduler.start()
+
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)  # This will set APScheduler's logging level to DEBUG
 
 # you can use this instead of the terminal to run the server
 if __name__ == '__main__':
-    scheduler.add_job(client_keeper.reset_all_daily_information, CronTrigger(hour=0, minute=0))
+    try:
+        scheduler.remove_job(job_id="reset_all_daily_information")
+    except JobLookupError:
+        pass
+    scheduler.add_job(reset_all_daily_information_job, CronTrigger(hour=17, minute=52),
+                      job_id="reset_all_daily_information")
     app.run(port=5000)
 
 
