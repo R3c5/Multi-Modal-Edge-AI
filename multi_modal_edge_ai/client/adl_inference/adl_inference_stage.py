@@ -1,5 +1,6 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
+from datetime import datetime as datetime
 from typing import Dict
 
 import pandas as pd

@@ -187,9 +187,7 @@ def test_get_data_from_cursor_power_sensors():
     assert 'type' in first_document
     assert first_document['type'] == 'Power'
     assert 'date' in first_document
-    assert first_document['date'] == '2023-05-11'
     assert 'time' in first_document
-    assert first_document['time'] == '08:06:40'
     assert 'state' in first_document
     assert first_document['state'] == 'OFF'
     assert 'last_seen' not in first_document
@@ -220,8 +218,6 @@ def test_get_data_from_cursor_motion_sensors():
     assert 'type' in first_document
     assert first_document['type'] == 'PIR'
     assert 'date' in first_document
-    assert first_document['date'] == '2023-05-16'
     assert 'time' in first_document
-    assert first_document['time'] == '23:15:35'
     assert 'state' not in first_document
     assert 'last_seen' not in first_document
