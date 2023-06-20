@@ -13,7 +13,7 @@ from sklearn.metrics import confusion_matrix
 def split_and_validate(data: pd.DataFrame, ground_truth: pd.DataFrame, labels: list[str],
                        label_encoder: StringLabelEncoder,
                        default_activity: int, model: Model, model_hyperparams: dict | None = None,
-                       window_length_seconds: int = 300, window_slide_seconds: int | None = None,
+                       window_length_seconds: int = 60, window_slide_seconds: int | None = None,
                        split_method: Callable[[List], Tuple[List, List]] | None = None) -> tuple[float, Any]:
     """
     Full validation process of a model for dataset with a ground truth, with custom splitting method,
