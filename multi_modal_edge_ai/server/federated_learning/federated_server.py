@@ -3,7 +3,6 @@ from typing import Any
 import flwr as fl
 import flwr.common
 from flwr.common import Metrics
-from flwr.common import Scalar
 from flwr.server import ServerConfig
 
 from multi_modal_edge_ai.server.federated_learning.PersistentFedAvg import PersistentFedAvg

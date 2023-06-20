@@ -133,13 +133,29 @@ def fetch_all_federation_workloads() -> tuple[Response, int]:
     from multi_modal_edge_ai.server.main import scheduler
     """
     This function will return all the federated learning workloads currently scheduled. All jobs will include id,
-    scheduled_time, the config_dict, and a flag representing if it is a cron job.
+    scheduled_time, the config_dict, and a flag representing if it is a cron job, and the crontab, which will be the
+    respective crontab if it is a cron job, or empty otherwise
     :return: A list with a dict representing each job. This dict has: id, scheduled_time, and config
     """
     federation_workloads = [job for job in scheduler.get_jobs() if job.func == open_federated_server_job]
 
-    workloads_info = [{'id': job.id, 'scheduled_time': str(job.next_run_time), "config": job.args[0],
-                       "cron_job": isinstance(job.trigger, CronTrigger)} for job in federation_workloads]
+    workloads_info = []
+    for job in federation_workloads:
+        trigger = job.trigger
+        if isinstance(trigger, CronTrigger):
+            crontab_field_names = ['minute', 'hour', 'day', 'month', 'day_of_week']
+            fields_dict = {field.name: str(field) for field in trigger.fields}
+            crontab = ' '.join(fields_dict[field] for field in crontab_field_names)
+        else:
+            crontab = ""
+
+        workloads_info.append({
+            "id": job.id,
+            'scheduled_time': str(job.next_run_time),
+            "config": job.args[0],
+            "cron_job": isinstance(trigger, CronTrigger),
+            "crontab": crontab
+        })
 
     return jsonify(workloads_info), 200
 

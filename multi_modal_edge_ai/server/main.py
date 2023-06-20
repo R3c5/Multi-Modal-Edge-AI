@@ -4,12 +4,14 @@ from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from apscheduler.jobstores.base import JobLookupError
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.jobstores.mongodb import MongoDBJobStore
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from flask import Flask
 from flask_cors import CORS
 from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 from torch import nn
 
 # This should be changed to import the respective packages
@@ -62,17 +64,21 @@ app.register_blueprint(dashboard_connection_blueprint)
 
 federated_server = FederatedServer("127.0.0.1:8080", models_keeper, client_keeper)
 
-client = MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
-job_stores = {
-    'default': MongoDBJobStore(client=client, database='coho-edge-ai', collection='federated_workloads_job_store_test')
-}
-scheduler = BackgroundScheduler(jobstores=job_stores, daemon=True)
+job_stores = {}
+try:
+    client = client = MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
+    job_stores['default'] = \
+        MongoDBJobStore(client=client, database='coho-edge-ai', collection='federated_workloads_job_store_test')
+except PyMongoError:
+    job_stores['default'] = MemoryJobStore()
+
+scheduler = BackgroundScheduler(job_stores=job_stores, daemon=True)
+scheduler.start()
 
 logging.getLogger('apscheduler').setLevel(logging.DEBUG)  # This will set APScheduler's logging level to DEBUG
 
 # you can use this instead of the terminal to run the server
 if __name__ == '__main__':
-    scheduler.start()
     try:
         scheduler.remove_job(job_id="reset_all_daily_information")
     except JobLookupError:
