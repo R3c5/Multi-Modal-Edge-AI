@@ -1,12 +1,13 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
+from typing import Dict
 
 import pandas as pd
 from pandas import DataFrame
 
 from multi_modal_edge_ai.client.main import adl_model_keeper
-from multi_modal_edge_ai.client.databases.database_connection import *
 from multi_modal_edge_ai.client.databases.sensor_queries import *
+from multi_modal_edge_ai.client.databases.database_connection import *
 
 
 def transform_client_db_entries_to_activity_entries(client_db_entries: list[dict]) -> DataFrame:
