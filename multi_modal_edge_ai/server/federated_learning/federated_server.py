@@ -1,3 +1,5 @@
+from typing import Any
+
 import flwr as fl
 import flwr.common
 from flwr.common import Metrics
@@ -34,7 +36,7 @@ class FederatedServer:
         self.models_keeper = models_keeper
         self.clients_keeper = clients_keeper
 
-    def start_server(self, config: dict[str, Scalar], log_file_path):
+    def start_server(self, config: dict[str, Any], log_file_path: str) -> None:
         """
         This function will start the rpc server with the specified parameters.
         :param config: The config which contains hyperparameters for both training, evaluation, and federation

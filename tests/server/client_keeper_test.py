@@ -1,4 +1,5 @@
 import datetime
+
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
 
 
@@ -101,3 +102,20 @@ def test_exists_client():
 
     assert keeper.client_exists('192.168.0.2')
     assert not keeper.client_exists('192.168.0.3')
+
+
+def test_reset_all_daily_information():
+    keeper = ClientsKeeper()
+
+    keeper.add_client('192.168.0.1', 'Connected', datetime.datetime.now())
+    keeper.add_client('192.168.0.2', 'Connected', datetime.datetime.now())
+
+    keeper.update_client('192.168.0.1', 'Connected', datetime.datetime.now(), 2, 3)
+    keeper.update_client('192.168.0.2', 'Connected', datetime.datetime.now(), 2, 3)
+
+    keeper.reset_all_daily_information()
+
+    assert keeper.connected_clients["192.168.0.1"]["num_adls"] == 0
+    assert keeper.connected_clients["192.168.0.2"]["num_adls"] == 0
+    assert keeper.connected_clients["192.168.0.1"]["num_anomalies"] == 0
+    assert keeper.connected_clients["192.168.0.2"]["num_anomalies"] == 0

@@ -102,7 +102,7 @@ class ClientsKeeper:
         """
         return ip in self.connected_clients
 
-    def reset_all_daily_information(self):
+    def reset_all_daily_information(self) -> None:
         """
         This function resets the values of the num_adls and num_anomalies for all the clients.
         :return:
@@ -117,7 +117,7 @@ class ClientsKeeper:
             for ip in self.connected_clients.keys():
                 self.connected_clients[ip]["start_federation"] = value
 
-    def compare_and_swap_start_federation(self, client_ip: str):
+    def compare_and_swap_start_federation(self, client_ip: str) -> bool:
         with self.start_federation_lock:
             if not self.connected_clients[client_ip]["start_federation"]:
                 return False

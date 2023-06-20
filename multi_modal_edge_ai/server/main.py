@@ -67,12 +67,12 @@ job_stores = {
     'default': MongoDBJobStore(client=client, database='coho-edge-ai', collection='federated_workloads_job_store_test')
 }
 scheduler = BackgroundScheduler(jobstores=job_stores, daemon=True)
-scheduler.start()
 
 logging.getLogger('apscheduler').setLevel(logging.DEBUG)  # This will set APScheduler's logging level to DEBUG
 
 # you can use this instead of the terminal to run the server
 if __name__ == '__main__':
+    scheduler.start()
     try:
         scheduler.remove_job(job_id="reset_all_daily_information")
     except JobLookupError:

@@ -50,7 +50,7 @@ def get_clients_info() -> Response:
 
 @dashboard_connection_blueprint.route('/dashboard/schedule_federation_workload', methods=['POST'])
 @authenticate
-def schedule_federation_workload():
+def schedule_federation_workload() -> tuple[Response, int]:
     from multi_modal_edge_ai.server.main import federated_log_path, scheduler
     """
     This function will schedule a federated learning workload according to the scheduling type and config_dict provided
@@ -115,7 +115,7 @@ def schedule_federation_workload():
 
 @dashboard_connection_blueprint.route('/dashboard/is_federation_workload_running', methods=['GET'])
 @authenticate
-def is_federation_workload_running():
+def is_federation_workload_running() -> tuple[Response, int]:
     """
     This function will return the config file of the current federated learning workload being run, if any.
     :return: The config file, or a message saying that there are no configs being run
@@ -129,7 +129,7 @@ def is_federation_workload_running():
 
 @dashboard_connection_blueprint.route('/dashboard/fetch_all_federation_workloads', methods=['GET'])
 @authenticate
-def fetch_all_federation_workloads():
+def fetch_all_federation_workloads() -> tuple[Response, int]:
     from multi_modal_edge_ai.server.main import scheduler
     """
     This function will return all the federated learning workloads currently scheduled. All jobs will include id,
@@ -146,7 +146,7 @@ def fetch_all_federation_workloads():
 
 @dashboard_connection_blueprint.route('/dashboard/remove_federation_workload', methods=['DELETE'])
 @authenticate
-def remove_federation_workload():
+def remove_federation_workload() -> tuple[Response, int]:
     from multi_modal_edge_ai.server.main import scheduler
     """
     This function will remove a specific federated learning workload, given its id.
