@@ -1,13 +1,12 @@
 import logging
-from datetime import timedelta
-from typing import Dict
+from datetime import datetime, timedelta
 
 import pandas as pd
 from pandas import DataFrame
 
 from multi_modal_edge_ai.client.main import adl_model_keeper
-from multi_modal_edge_ai.client.databases.sensor_queries import *
-from multi_modal_edge_ai.client.databases.database_connection import *
+from multi_modal_edge_ai.client.databases.sensor_queries import get_past_x_seconds_of_all_sensor_entries
+from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
 
 
 def transform_client_db_entries_to_activity_entries(client_db_entries: list[dict]) -> DataFrame:
@@ -21,11 +20,11 @@ def transform_client_db_entries_to_activity_entries(client_db_entries: list[dict
     for entry in client_db_entries:
         new_entry = {}
 
-        start_time = datetime.datetime.strptime(entry['start_time'], '%H:%M:%S').time()
-        start_datetime = datetime.datetime.combine(datetime.datetime.strptime(entry['date'], '%Y-%m-%d'), start_time)
+        start_time = datetime.strptime(entry['start_time'], '%H:%M:%S').time()
+        start_datetime = datetime.combine(datetime.strptime(entry['date'], '%Y-%m-%d'), start_time)
 
-        end_time = datetime.datetime.strptime(entry['end_time'], '%H:%M:%S').time()
-        end_datetime = datetime.datetime.combine(datetime.datetime.strptime(entry['date'], '%Y-%m-%d'), end_time)
+        end_time = datetime.strptime(entry['end_time'], '%H:%M:%S').time()
+        end_datetime = datetime.combine(datetime.strptime(entry['date'], '%Y-%m-%d'), end_time)
 
         # Check if end time is on the following day
         if end_time < start_time:
@@ -76,7 +75,7 @@ def modify_sensor_name(sensor_name):
         raise ValueError(f"Unrecognized sensor: {sensor_name}")
 
 
-def adl_inference_stage(sensor_database: str, seconds: int, current_time: datetime.datetime) -> dict | None:
+def adl_inference_stage(sensor_database: str, seconds: int, current_time: datetime) -> dict | None:
     """
     Run the inference stage of the ADL pipeline. This stage retrieves the past X seconds of entries from the Sensor
     Database, applies the preprocessing functions, predicts the ADL using the preprocessed data, and adds the result to
