@@ -13,24 +13,21 @@ from multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage import
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat
 from multi_modal_edge_ai.client.federated_learning.federated_client import FederatedClient
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
-from multi_modal_edge_ai.client.main import client_db, adl_window_size, adl_collection_name, sensor_db, \
-    anomaly_detection_window_size, anomaly_detection_model_keeper, andet_scaler, adl_onehot_encoder, num_adl_features, \
-    anomaly_collection_name, adl_model_keeper, distinct_adl_list
 
 
-def create_heartbeat_and_send() -> None:
+def create_heartbeat_and_send(client_config: dict) -> None:
     """
     Retrieve number of predictions for ADL and anomaly detection model, then send a heartbeat to the server.
     After the heartbeat is sent, reset the num_predictions in both keepers
+    :param client_config: See *run_schedule* for exact format of dict
     """
+    num_adls = client_config['adl_model_keeper'].num_predictions
+    num_anomalies = client_config['anomaly_detection_model_keeper'].num_predictions
 
-    num_adls = adl_model_keeper.num_predictions
-    num_anomalies = anomaly_detection_model_keeper.num_predictions
+    send_heartbeat(client_config, num_adls, num_anomalies)
 
-    send_heartbeat(num_adls, num_anomalies)
-
-    adl_model_keeper.reset_predictions()
-    anomaly_detection_model_keeper.reset_predictions()
+    client_config['adl_model_keeper'].reset_predictions()
+    client_config['anomaly_detection_model_keeper'].reset_predictions()
 
 
 def activity_is_finished(activity: str, collection: Collection) -> bool:
@@ -50,30 +47,35 @@ def activity_is_finished(activity: str, collection: Collection) -> bool:
     return activity != past_activity[2]
 
 
-def initiate_internal_pipeline() -> None:
+def initiate_internal_pipeline(client_config: dict) -> None:
     """
     Run the ADL stage, in the ADL stage if a new activity is to be added to the ADL db,
     the anomaly detection stage will also be started.
+    :param client_config: See *run_schedule* for exact format of dict
     """
     try:
-        predicted_activity = adl_inference_stage(sensor_db, adl_window_size, datetime.now())
-
+        predicted_activity = adl_inference_stage(client_config['adl_model_keeper'], client_config['sensor_db'],
+                                                 client_config['adl_window_size'], datetime.now())
+        print(predicted_activity)
         if predicted_activity is None:
             raise Exception('No ADL predicted')
 
         adl_db_client = get_database_client()
-        db_database = get_database(adl_db_client, client_db)
-        adl_db_collection = get_collection(db_database, adl_collection_name)
-        anomaly_db_collection = get_collection(db_database, anomaly_collection_name)
+        db_database = get_database(adl_db_client, client_config['client_db'])
+        adl_db_collection = get_collection(db_database, client_config['adl_collection'])
+        anomaly_db_collection = get_collection(db_database, client_config['anomaly_collection'])
 
         if activity_is_finished(predicted_activity['Activity'], adl_db_collection):
 
-            adl_model_keeper.increase_predictions()
-            flag_anomaly = check_window_for_anomaly(anomaly_detection_window_size, anomaly_detection_model_keeper,
-                                                    anomaly_db_collection, andet_scaler, adl_onehot_encoder, True,
-                                                    adl_db_collection, num_adl_features)
+            client_config['adl_model_keeper'].increase_predictions()
+            flag_anomaly = check_window_for_anomaly(client_config['anomaly_detection_window_size'],
+                                                    client_config['anomaly_detection_model_keeper'],
+                                                    anomaly_db_collection, client_config['andet_scaler'],
+                                                    client_config['onehot_encoder'], True,
+                                                    adl_db_collection, client_config['num_adl_features'])
+            print(flag_anomaly)
             if flag_anomaly == 0:
-                anomaly_detection_model_keeper.increase_predictions()
+                client_config['anomaly_detection_model_keeper'].increase_predictions()
 
         add_activity(adl_db_collection, predicted_activity['Start_Time'],
                      predicted_activity['End_Time'], predicted_activity['Activity'])
@@ -81,37 +83,56 @@ def initiate_internal_pipeline() -> None:
         logging.error('An error occurred in the internal pipeline: %s', str(e))
 
 
-def start_federated_client() -> None:
+def start_federated_client(client_config: dict) -> None:
     """
     Define the TrainEval method and start the Federated Client
+    :param client_config: See *run_schedule* for exact format of dict
     """
     logging.info('Federation stage started')
-    collection = get_collection(get_database(get_database_client(), "coho-edge-ai"), "adl_test")
-    train_eva = TrainEval(collection, distinct_adl_list, andet_scaler)
-    fc = FederatedClient(anomaly_detection_model_keeper, train_eva)
+    database = get_database(get_database_client(), client_config['client_db'])
+    collection = get_collection(database, client_config['adl_collection'])
+    train_eva = TrainEval(collection, client_config['adl_list'], client_config['andet_scaler'])
+    fc = FederatedClient(client_config['anomaly_detection_model_keeper'], train_eva)
     fc.start_numpy_client("127.0.0.1:8080")
 
 
-def run_federation_stage():
+def run_federation_stage(client_config: dict):
     """
     Create a seperate thread to run the federation client
+    :param client_config: See *run_schedule* for exact format of dict
     """
-    thread = threading.Thread(target=start_federated_client)
+    thread = threading.Thread(target=start_federated_client, args=client_config)
     thread.start()
 
 
-def run_schedule() -> None:
+def run_schedule(client_config: dict) -> None:
     """
     Initiate the internal schedule and run it. Start by setting up the connection to the server.
 
-    Every 10 seconds a heartbeat is sent to the server
-    Every `adl_window_size` seconds the internal prediction pipeline is run
+    Every 10 seconds a heartbeat is sent to the server.
+    Every `adl_window_size` seconds the internal prediction pipeline is run.
+
+    :param client_config: Configuration parameters for client initialization.
+        - 'sensor_db': The name of the sensor database.
+        - 'client_db': The name of the client database.
+        - 'adl_collection': The name of the ADL collection.
+        - 'anomaly_collection': The name of the anomaly collection.
+        - 'adl_window_size': The window size for ADL prediction.
+        - 'anomaly_detection_window_size': The window size for anomaly detection.
+        - 'adl_list': List of distinct ADLs.
+        - 'num_adl_features': The number of ADL features.
+        - 'adl_encoder': The ADL encoder object.
+        - 'onehot_encoder': The one-hot encoder object.
+        - 'andet_scaler': The scaler object for anomaly detection.
+        - 'adl_model_keeper': The ADL model keeper object.
+        - 'anomaly_detection_model_keeper': The anomaly detection model keeper object.
     """
-    send_set_up_connection_request()
+    send_set_up_connection_request(client_config['adl_model_keeper'], client_config['anomaly_detection_model_keeper'])
 
     scheduler = BackgroundScheduler()
-    scheduler.add_job(create_heartbeat_and_send, 'interval', seconds=10)
-    scheduler.add_job(initiate_internal_pipeline, 'interval', seconds=adl_window_size)
+    scheduler.add_job(create_heartbeat_and_send, 'interval', seconds=10, args=(client_config,))
+    scheduler.add_job(initiate_internal_pipeline, 'interval', seconds=20,
+                      args=(client_config,))
     scheduler.start()
 
     try:

@@ -5,9 +5,7 @@ import flwr as fl
 import torch.nn
 from flwr.common import Scalar
 
-from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
-from multi_modal_edge_ai.commons.model import Model
 
 
 class FlowerClient(fl.client.NumPyClient):

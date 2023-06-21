@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 import pandas as pd
 from pandas import DataFrame
 
-from multi_modal_edge_ai.client.main import adl_model_keeper
-from multi_modal_edge_ai.client.databases.sensor_queries import get_past_x_seconds_of_all_sensor_entries
+from multi_modal_edge_ai.client.common.adl_model_keeper import ADLModelKeeper
 from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
+from multi_modal_edge_ai.client.databases.sensor_queries import get_past_x_seconds_of_all_sensor_entries
 
 
 def transform_client_db_entries_to_activity_entries(client_db_entries: list[dict]) -> DataFrame:
@@ -75,11 +75,13 @@ def modify_sensor_name(sensor_name):
         raise ValueError(f"Unrecognized sensor: {sensor_name}")
 
 
-def adl_inference_stage(sensor_database: str, seconds: int, current_time: datetime) -> dict | None:
+def adl_inference_stage(adl_model_keeper: ADLModelKeeper, sensor_database: str, seconds: int,
+                        current_time: datetime) -> dict | None:
     """
     Run the inference stage of the ADL pipeline. This stage retrieves the past X seconds of entries from the Sensor
     Database, applies the preprocessing functions, predicts the ADL using the preprocessed data, and adds the result to
     the ADL Database.
+    :param adl_model_keeper: ADLModelKeeper holding the model used to predict the adls
     :param current_time: the current time as a datetime, typically expecting datetime.now()
     :param sensor_database: The name of the Sensor Database to retrieve the entries from.
     :param seconds: The number of seconds of entries from the Sensor Database to retrieve.
