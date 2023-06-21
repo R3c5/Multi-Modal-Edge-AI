@@ -19,8 +19,6 @@ with open(scaler_path, 'rb') as file:
     andet_scaler = pickle.load(file)
 
 anomaly_detection_model = Autoencoder([96, 64, 32, 24, 16, 8], [8, 16, 24, 32, 64, 96], nn.ReLU(), nn.Sigmoid())
-# anomaly_detection_model = Autoencoder([96, 72, 64, 48, 32, 24, 16, 12,8], [8, 12, 24, 32, 48, 64, 72, 96],
-#                                      nn.ReLU(), nn.Sigmoid())
 anomaly_detection_model.set_reconstruction_error_threshold()
 
 anomaly_detection_model_path = os.path.join(root_directory, 'model_data', 'anomaly_detection_model')
@@ -63,7 +61,6 @@ def test_anomaly_detection_stage_not_enough_entries():
 
     adl_collection.delete_many({})
     assert anomaly_collection.count_documents({}) == 0
-    print(pred)
     assert pred == 1
 
 
@@ -135,7 +132,6 @@ def test_anomaly_detection_stage_no_anomaly():
               'End_Time': pd.Timestamp('2010-11-09 14:47:27'), 'Activity': 'Relax'}
     adl_collection.insert_many([entry1, entry2, entry3, entry4, entry5, entry6, entry7, entry8])
 
-    a = anomaly_detection_model_keeper
     anomaly_detection_model_keeper.load_model()
     pred = check_window_for_anomaly(anomaly_detection_window_size, anomaly_detection_model_keeper,
                                     anomaly_collection, andet_scaler, adl_onehot_encoder, True,

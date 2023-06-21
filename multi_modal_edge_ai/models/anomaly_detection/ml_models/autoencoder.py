@@ -69,7 +69,6 @@ class Autoencoder(Model):
                 print(f"Epoch {epoch + 1} training loss: {avg_training_loss[-1]}")
 
         self.reconstruction_errors += torch.tensor(curr_reconstruction_errors, device='cpu').tolist()
-        print("Reconstruction errors: ", self.reconstruction_errors)
         return avg_training_loss
 
     def set_reconstruction_error_threshold(self, quantile: float = 0.99) -> None:
@@ -98,9 +97,6 @@ class Autoencoder(Model):
 
         with torch.no_grad():  # no need to construct the computation graph
             reconstructed = self.model(instance)
-            check = self.loss_function(reconstructed, instance)
-            print("Reconstruction error in predict: ", check)
-            print("Threshold: ", self.reconstruction_loss_threshold)
             return int(self.loss_function(reconstructed, instance) <= self.reconstruction_loss_threshold)
 
     def save(self, file_path: str) -> None:
