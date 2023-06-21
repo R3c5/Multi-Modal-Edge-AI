@@ -8,16 +8,18 @@ from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_sc
 from sklearn.utils import shuffle
 from torch.utils.data import DataLoader
 
-# TODO consider solution for the immense number of external functions
 from multi_modal_edge_ai.client.databases.adl_queries import get_all_activities
 from multi_modal_edge_ai.commons.model import Model
 from multi_modal_edge_ai.models.anomaly_detection.data_access.adl_dataset import ADLDataset
-from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
+from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import (
     dataframe_categorical_to_numeric
+)
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.window_splitter import split_into_windows
 from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.model_validator import validation_df_concatenation
-from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.synthetic_anomaly_generator import clean_windows, \
+from multi_modal_edge_ai.models.anomaly_detection.train_and_eval.synthetic_anomaly_generator import (
+    clean_windows,
     synthetic_anomaly_generator
+)
 
 
 class TrainEval:
@@ -48,7 +50,6 @@ class TrainEval:
         :param config: The configuration parameters of the training procedure
         :return: The train dataset size and average training reconstruction loss
         """
-        # TODO encapsulate parameters in hparam class in later refactoring. Include exception handling
         self.define_train_test(config)
         dataset_size = self.clean_train_windows.shape[0] if self.clean_train_windows is not None else 0
 
@@ -82,7 +83,6 @@ class TrainEval:
         if self.clean_test_windows is None or self.anomalous_windows is None:
             self.define_train_test(config)
 
-        # TODO encapsulate parameters in hparam class in later refactoring. Include exception handling
         generated_anomalies_df = synthetic_anomaly_generator(self.anomalous_windows,
                                                              float(config["anomaly_generation_ratio"]))
         anomalous_df = pd.concat([self.anomalous_windows, generated_anomalies_df])
