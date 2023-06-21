@@ -83,7 +83,7 @@ if __name__ == '__main__':
         scheduler.remove_job(job_id="reset_all_daily_information")
     except JobLookupError:
         pass
-    scheduler.add_job(reset_all_daily_information_job, CronTrigger(hour=17, minute=52),
+    scheduler.add_job(reset_all_daily_information_job, CronTrigger(hour=0, minute=0),
                       job_id="reset_all_daily_information")
     app.run(port=5000)
 
