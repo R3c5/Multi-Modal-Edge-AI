@@ -32,29 +32,26 @@ def run_server():
     server_process.join()
 
 
-def test_set_up_connection(client, capsys):
+def test_set_up_connection(client, caplog):
     with patch('multi_modal_edge_ai.client.controllers.client_controller.save_models_zip_file') as mock_save_zip:
         send_set_up_connection_request()
         mock_save_zip.assert_called_once()
 
-        captured = capsys.readouterr()
-        assert 'Connection set up successfully' in captured.out
+        assert 'Connection set up successfully' in caplog.text
 
 
-def test_heartbeat_no_setup(client, capsys):
+def test_heartbeat_no_setup(client, caplog):
     with patch('multi_modal_edge_ai.client.controllers.client_controller.send_set_up_connection_request') as mock_setup:
         send_heartbeat(1, 1)
         mock_setup.assert_called_once()
 
-        captured = capsys.readouterr()
-        assert 'Client not found' in captured.out
+        assert 'Client not found' in caplog.text
 
 
-def test_heartbeat(client, capsys):
+def test_heartbeat(client, caplog):
     with patch('multi_modal_edge_ai.client.controllers.client_controller.save_models_zip_file') as mock_save_zip:
         send_set_up_connection_request()
         send_heartbeat(1, 1)
         mock_save_zip.assert_called()
         assert mock_save_zip.call_count == 2
-        captured = capsys.readouterr()
-        assert 'Heartbeat successful' in captured.out
+        assert 'Heartbeat successful' in caplog.text
