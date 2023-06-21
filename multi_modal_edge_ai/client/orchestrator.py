@@ -1,9 +1,9 @@
 import logging
-from datetime import datetime
 import threading
-
-from schedule import repeat, every, run_pending, idle_seconds
 import time
+from datetime import datetime
+
+from apscheduler.schedulers.background import BackgroundScheduler
 from pymongo.collection import Collection
 
 from multi_modal_edge_ai.client.adl_database.adl_database import get_database_client, get_database, get_collection
@@ -18,11 +18,10 @@ from multi_modal_edge_ai.client.main import client_db, adl_window_size, adl_coll
     anomaly_collection_name, adl_model_keeper, distinct_adl_list
 
 
-@repeat(every(10).seconds)
 def create_heartbeat_and_send() -> None:
     """
-    Retrieve number of predictions for adl and anomaly detection model, then send a heartbeat to the server.
-    After heartbeat is sent, reset the num_predictions in both keepers
+    Retrieve number of predictions for ADL and anomaly detection model, then send a heartbeat to the server.
+    After the heartbeat is sent, reset the num_predictions in both keepers
     """
 
     num_adls = adl_model_keeper.num_predictions
@@ -40,7 +39,7 @@ def activity_is_finished(activity: str, collection: Collection) -> bool:
     if it is the same return True else False
     :param activity: new activity that is going to be checked
     :param collection: Collection to be checked
-    :return: True iff the activity is the same as the last activity from the collection
+    :return: True if the activity is the same as the last activity from the collection
     """
     past_activity_list = get_past_x_activities(collection, 1)
 
@@ -51,12 +50,10 @@ def activity_is_finished(activity: str, collection: Collection) -> bool:
     return activity != past_activity[2]
 
 
-@repeat(every(adl_window_size).seconds)
 def initiate_internal_pipeline() -> None:
     """
-    Run the adl stage, in the adl stage if a new activity is to be added to the adl db,
+    Run the ADL stage, in the ADL stage if a new activity is to be added to the ADL db,
     the anomaly detection stage will also be started.
-    :return:
     """
     try:
         predicted_activity = adl_inference_stage(sensor_db, adl_window_size, datetime.now())
@@ -81,34 +78,14 @@ def initiate_internal_pipeline() -> None:
         add_activity(adl_db_collection, predicted_activity['Start_Time'],
                      predicted_activity['End_Time'], predicted_activity['Activity'])
     except Exception as e:
-        logging.error('An error occurred in the internal pipeline: ', str(e))
-
-
-def run_schedule() -> None:
-    """
-    Initiate the internal schedule and run it. Start by setting up the connection to the server.
-
-    Every 10 seconds a heartbeat is sent to the server
-    Every `adl_window_size` seconds the internal prediction pipeline is run
-    """
-    send_set_up_connection_request()
-
-    while True:
-        idle_time = idle_seconds()
-        if idle_time is None:
-            # no more jobs
-            break
-        elif idle_time > 0:
-            # sleep exactly the right amount of time
-            time.sleep(idle_time)
-        run_pending()
+        logging.error('An error occurred in the internal pipeline: %s', str(e))
 
 
 def start_federated_client() -> None:
     """
     Define the TrainEval method and start the Federated Client
     """
-    print('federation_started')
+    logging.info('Federation stage started')
     collection = get_collection(get_database(get_database_client(), "coho-edge-ai"), "adl_test")
     train_eva = TrainEval(collection, distinct_adl_list, andet_scaler)
     fc = FederatedClient(anomaly_detection_model_keeper, train_eva)
@@ -121,3 +98,26 @@ def run_federation_stage():
     """
     thread = threading.Thread(target=start_federated_client)
     thread.start()
+
+
+def run_schedule() -> None:
+    """
+    Initiate the internal schedule and run it. Start by setting up the connection to the server.
+
+    Every 10 seconds a heartbeat is sent to the server
+    Every `adl_window_size` seconds the internal prediction pipeline is run
+    """
+    send_set_up_connection_request()
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(create_heartbeat_and_send, 'interval', seconds=10)
+    scheduler.add_job(initiate_internal_pipeline, 'interval', seconds=adl_window_size)
+    scheduler.start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+
+    scheduler.shutdown()

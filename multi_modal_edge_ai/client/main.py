@@ -2,6 +2,7 @@ import logging
 import os
 import pickle
 import sys
+from logging.handlers import RotatingFileHandler
 
 from sklearn.preprocessing import OneHotEncoder
 from torch import nn
@@ -14,8 +15,26 @@ from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 
 root_directory = os.path.abspath(os.path.dirname(__file__))
 
-# Activate logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+log_filename = os.path.join(root_directory, 'client.log')
+
+# Create the logger instance for the root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Remove any existing handlers
+logger.handlers = []
+
+# Create a file handler and set its level
+file_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
+file_handler.setLevel(logging.INFO)
+
+# Create a log formatter and set it on the handler
+log_format = '%(asctime)s - %(levelname)s - %(message)s'
+formatter = logging.Formatter(log_format)
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
 
 distinct_adl_list = ['Toilet', 'Relax', 'Kitchen_Usage', 'Sleeping', 'Idle', 'Meal_Preparation', 'Outside', 'Movement']
 adl_encoder = StringLabelEncoder(distinct_adl_list)
