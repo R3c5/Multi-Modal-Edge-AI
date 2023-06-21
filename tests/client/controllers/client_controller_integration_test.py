@@ -13,7 +13,7 @@ from multi_modal_edge_ai.client.controllers.client_controller import send_set_up
 from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
-from multi_modal_edge_ai.server.main import app
+from multi_modal_edge_ai.server.main import app, run_server_set_up
 
 
 @pytest.fixture(autouse=True)
@@ -29,7 +29,7 @@ def client():
 
 
 def start_server():
-    app.run(port=5000)
+    run_server_set_up()
 
 
 @pytest.fixture(scope="function", autouse=True)

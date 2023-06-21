@@ -1,7 +1,27 @@
+import time
+from multiprocessing import Process
+
 import pytest
 
-from multi_modal_edge_ai.server.main import app
+from multi_modal_edge_ai.server.main import app, run_server_set_up
 from tests.server.api.client_connection_test import assert_connected_clients_with_expected
+
+
+def startup_server():
+    run_server_set_up()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def run_server():
+    server_process = Process(target=startup_server)
+    server_process.start()
+
+    time.sleep(3)
+
+    yield
+
+    server_process.terminate()
+    server_process.join()
 
 
 @pytest.fixture

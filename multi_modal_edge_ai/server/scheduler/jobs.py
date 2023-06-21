@@ -9,8 +9,7 @@ open_federated_server_lock = threading.Lock()
 current_federated_workload: dict[str, Any] = {}
 
 
-def open_federated_server_job(config: dict[str, Scalar], log_file_path: str) -> None:
-    from multi_modal_edge_ai.server.main import federated_server, client_keeper
+def open_federated_server_job(federated_server, client_keeper, config: dict[str, Scalar], log_file_path: str) -> None:
 
     if open_federated_server_lock.acquire(False):
         try:
@@ -25,8 +24,7 @@ def open_federated_server_job(config: dict[str, Scalar], log_file_path: str) -> 
         logging.error("This federated learning workload cannot start, there is another one currently being executed!")
 
 
-def reset_all_daily_information_job() -> None:
-    from multi_modal_edge_ai.server.main import client_keeper
+def reset_all_daily_information_job(client_keeper) -> None:
     client_keeper.reset_all_daily_information()
 
 
