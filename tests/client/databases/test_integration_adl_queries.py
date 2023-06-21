@@ -1,15 +1,15 @@
 import pytest
 import pandas as pd
 from pymongo import MongoClient
-import multi_modal_edge_ai.client.adl_database.adl_database
-import multi_modal_edge_ai.client.adl_database.adl_queries as module
+import multi_modal_edge_ai.client.databases.database_connection
+import multi_modal_edge_ai.client.databases.adl_queries as module
 
 
 @pytest.fixture
 def collection():
     client = MongoClient("mongodb://coho-edge-ai:w8duef%5E7vo%5E%24vc@localhost:27017/?authMechanism=DEFAULT")
-    database = multi_modal_edge_ai.client.adl_database.adl_database.get_database(client, "coho-edge-ai-test")
-    collection = multi_modal_edge_ai.client.adl_database.adl_database.get_collection(database, "adl_integration")
+    database = multi_modal_edge_ai.client.databases.database_connection.get_database(client, "coho-edge-ai-test")
+    collection = multi_modal_edge_ai.client.databases.database_connection.get_collection(database, "adl_integration")
     yield collection
     collection.delete_many({})
 

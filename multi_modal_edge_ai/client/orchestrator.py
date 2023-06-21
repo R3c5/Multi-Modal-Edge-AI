@@ -6,8 +6,8 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from pymongo.collection import Collection
 
-from multi_modal_edge_ai.client.adl_database.adl_database import get_database_client, get_database, get_collection
-from multi_modal_edge_ai.client.adl_database.adl_queries import add_activity, get_past_x_activities
+from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
+from multi_modal_edge_ai.client.databases.adl_queries import add_activity, get_past_x_activities
 from multi_modal_edge_ai.client.adl_inference.adl_inference_stage import adl_inference_stage
 from multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage import check_window_for_anomaly
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat

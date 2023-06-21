@@ -4,7 +4,7 @@ from unittest.mock import patch
 import mongomock
 import pandas as pd
 
-import multi_modal_edge_ai.client.adl_database.adl_queries as module
+import multi_modal_edge_ai.client.databases.adl_queries as module
 
 
 def test_exception_get_past_x_activities(capsys):

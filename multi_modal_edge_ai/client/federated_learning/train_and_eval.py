@@ -9,7 +9,7 @@ from sklearn.utils import shuffle
 from torch.utils.data import DataLoader
 
 # TODO consider solution for the immense number of external functions
-from multi_modal_edge_ai.client.adl_database.adl_queries import get_all_activities
+from multi_modal_edge_ai.client.databases.adl_queries import get_all_activities
 from multi_modal_edge_ai.commons.model import Model
 from multi_modal_edge_ai.models.anomaly_detection.data_access.adl_dataset import ADLDataset
 from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
