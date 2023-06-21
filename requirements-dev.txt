@@ -13,4 +13,4 @@ mongomock==4.1.2
 flwr==1.4.0
 requests~=2.31.0
 types-requests~=2.31.0
-APScheduler==3.10.1
+apscheduler==3.10.1

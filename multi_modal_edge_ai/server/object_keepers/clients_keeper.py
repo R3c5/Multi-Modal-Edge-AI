@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
@@ -20,6 +21,8 @@ class ClientsKeeper:
 
     def __init__(self) -> None:
         self.connected_clients: Dict[str, Dict[str, Any]] = {}
+        self.daily_information_lock = threading.Lock()
+        self.start_federation_lock = threading.Lock()
 
     def add_client(self, ip: str, status: str, last_seen: datetime) -> None:
         """
@@ -35,6 +38,7 @@ class ClientsKeeper:
                 'status': status,
                 'last_seen': last_seen,
                 'last_model_aggregation': datetime.min,
+                'start_federation': False,
                 'num_adls': 0,
                 'num_anomalies': 0
             }
@@ -53,8 +57,9 @@ class ClientsKeeper:
         client = self.connected_clients[ip]
         client['status'] = status
         client['last_seen'] = last_seen
-        client['num_adls'] += num_adls
-        client['num_anomalies'] += num_anomalies
+        with self.daily_information_lock:
+            client['num_adls'] += num_adls
+            client['num_anomalies'] += num_anomalies
 
     def update_clients_statuses(self) -> None:
         """
@@ -96,3 +101,26 @@ class ClientsKeeper:
         :param ip: IP to check existence of
         """
         return ip in self.connected_clients
+
+    def reset_all_daily_information(self) -> None:
+        """
+        This function resets the values of the num_adls and num_anomalies for all the clients.
+        :return:
+        """
+        with self.daily_information_lock:
+            for client in self.connected_clients.keys():
+                self.connected_clients[client]["num_adls"] = 0
+                self.connected_clients[client]["num_anomalies"] = 0
+
+    def set_start_federation(self, value: bool) -> None:
+        with self.start_federation_lock:
+            for ip in self.connected_clients.keys():
+                self.connected_clients[ip]["start_federation"] = value
+
+    def compare_and_swap_start_federation(self, client_ip: str) -> bool:
+        with self.start_federation_lock:
+            if not self.connected_clients[client_ip]["start_federation"]:
+                return False
+            else:
+                self.connected_clients[client_ip]["start_federation"] = False
+                return True
