@@ -1,3 +1,4 @@
+import logging
 from unittest import mock
 from unittest.mock import patch, mock_open
 
@@ -6,6 +7,11 @@ import requests
 
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat, \
     save_models_zip_file, save_model_file
+
+
+@pytest.fixture(autouse=True)
+def set_logging_level(caplog):
+    caplog.set_level(logging.INFO)
 
 
 def test_send_set_up_connection_request_success(caplog):

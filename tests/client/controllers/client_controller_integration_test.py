@@ -1,3 +1,4 @@
+import logging
 import time
 from multiprocessing import Process
 from unittest.mock import patch
@@ -6,6 +7,11 @@ import pytest
 
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat
 from multi_modal_edge_ai.server.main import app
+
+
+@pytest.fixture(autouse=True)
+def set_logging_level(caplog):
+    caplog.set_level(logging.INFO)
 
 
 @pytest.fixture(scope="module")
