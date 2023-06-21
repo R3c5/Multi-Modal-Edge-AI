@@ -56,7 +56,7 @@ def initiate_internal_pipeline() -> None:
     the anomaly detection stage will also be started.
     """
     try:
-        predicted_activity = adl_inference_stage(sensor_db, adl_window_size, datetime.now())
+        predicted_activity = adl_inference_stage(adl_model_keeper, sensor_db, adl_window_size, datetime.now())
 
         if predicted_activity is None:
             raise Exception('No ADL predicted')

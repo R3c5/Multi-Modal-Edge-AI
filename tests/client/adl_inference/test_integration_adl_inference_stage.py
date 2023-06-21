@@ -22,7 +22,7 @@ def test_adl_inference_stage():
     adl_model_keeper.load_encoder()
     adl_model_keeper.load_model()
 
-    prediction = adl_inference_stage("coho-edge-ai-test", 300, pd.Timestamp('2023-06-19 22:01:00'), adl_model_keeper)
+    prediction = adl_inference_stage(adl_model_keeper, "coho-edge-ai-test", 300, pd.Timestamp('2023-06-19 22:01:00'))
 
     assert len(prediction) == 3
     assert prediction['Start_Time'] == pd.Timestamp('2023-06-19 21:56:00')
