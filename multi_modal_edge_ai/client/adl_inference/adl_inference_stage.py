@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 from pandas import DataFrame
 
-from multi_modal_edge_ai.client.main import adl_model_keeper
+from multi_modal_edge_ai.client.common.adl_model_keeper import ADLModelKeeper
 from multi_modal_edge_ai.client.databases.sensor_queries import get_past_x_seconds_of_all_sensor_entries
 from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
 
@@ -75,7 +75,8 @@ def modify_sensor_name(sensor_name):
         raise ValueError(f"Unrecognized sensor: {sensor_name}")
 
 
-def adl_inference_stage(sensor_database: str, seconds: int, current_time: datetime) -> dict | None:
+def adl_inference_stage(sensor_database: str, seconds: int, current_time: datetime, model_keeper: ADLModelKeeper) -> \
+        dict | None:
     """
     Run the inference stage of the ADL pipeline. This stage retrieves the past X seconds of entries from the Sensor
     Database, applies the preprocessing functions, predicts the ADL using the preprocessed data, and adds the result to
@@ -83,6 +84,7 @@ def adl_inference_stage(sensor_database: str, seconds: int, current_time: dateti
     :param current_time: the current time as a datetime, typically expecting datetime.now()
     :param sensor_database: The name of the Sensor Database to retrieve the entries from.
     :param seconds: The number of seconds of entries from the Sensor Database to retrieve.
+    :param model_keeper: The ADLModelKeeper object containing the ADL model and encoder.
     :return: dict containing the Start_Time, End_Time and Activity of the new prediction
     """
     try:
@@ -92,8 +94,8 @@ def adl_inference_stage(sensor_database: str, seconds: int, current_time: dateti
         parsed_sensor_entries = transform_client_db_entries_to_activity_entries(entries)
 
         # Predict the ADL
-        result = adl_model_keeper.model.predict(parsed_sensor_entries)
-        result = adl_model_keeper.adl_encoder.decode_label(result[0])
+        result = model_keeper.model.predict(parsed_sensor_entries)
+        result = model_keeper.adl_encoder.decode_label(result[0])
 
         # Get start and end time of the ADL
         start_time = pd.Timestamp((current_time - timedelta(seconds=seconds)).strftime('%Y-%m-%d %H:%M:%S'))
