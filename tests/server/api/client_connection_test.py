@@ -36,7 +36,7 @@ def run_server_fixture():
     global stop_server
     stop_server = False
 
-    server_thread = threading.Thread(target=run_server, args=(app,))
+    server_thread = threading.Thread(target=run_server, args=(app,), daemon=True)
     server_thread.start()
     time.sleep(3)
 
