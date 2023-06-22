@@ -1,7 +1,4 @@
 import os
-import signal
-import threading
-import time
 from unittest import mock
 from unittest.mock import patch, MagicMock
 
@@ -13,7 +10,7 @@ import multi_modal_edge_ai.client.databases.adl_queries as db_queries
 from multi_modal_edge_ai.client.common.adl_model_keeper import ADLModelKeeper
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.orchestrator import create_heartbeat_and_send, activity_is_finished, \
-    initiate_internal_pipeline, start_federated_client, run_federation_stage, run_schedule
+    initiate_internal_pipeline, start_federated_client, run_federation_stage
 from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
