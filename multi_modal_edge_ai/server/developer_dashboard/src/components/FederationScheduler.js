@@ -1,4 +1,4 @@
-import React, { useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import NumericInput from 'react-numeric-input';
@@ -7,7 +7,7 @@ import {Popover2} from "@blueprintjs/popover2";
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import { Cron } from 'react-js-cron';
 import 'react-js-cron/dist/styles.css'
-import {scheduleFederationWorkload} from "../api";
+import {scheduleFederationWorkload, schedulePersonalizationWorkload} from "../api";
 import SECRET_TOKEN from "../secrets";
 
 const FederationScheduler = () => {
@@ -30,7 +30,6 @@ const FederationScheduler = () => {
         "min_evaluate_clients": {'name':'Minimum Validation Clients', 'default': '2', 'min':2, 'max': null, 'step':1, 'description':'Minimum number of clients used during validation.'},
         "min_available_clients": {'name':'Minimum Total Clients', 'default': '2', 'min':2, 'max':null, 'step':1, 'description':'Minimum number of total clients in the system.'},
     }
-    const disabledConfigs = ['window_size', 'one-hot', 'event_based'];
     const [config, setConfig] = useState({
         "num_rounds": 1,
         "window_size": 1,
@@ -50,12 +49,21 @@ const FederationScheduler = () => {
         "min_evaluate_clients": 2,
         "min_available_clients": 2
     });
+    const disabledConfigsFederation = ['window_size', 'one-hot', 'event_based'];
+    const disabledConfigsPersonalization = ['window_size', 'one-hot', 'event_based', 'fraction_fit',
+        'fraction_evaluate', 'min_fit_clients', 'min_evaluate_clients', 'min_available_clients'];
     const [scheduledTime, setScheduledTime] = useState(null);
     const [responseDisplay, setResponseDisplay] = useState('');
-    const [schedule_type, setScheduleType] = useState('recurrent');
-    const [crontab, setCrontab] = useState('* * * * *z');
+    const [scheduleType, setScheduleType] = useState('recurrent');
+    const [crontab, setCrontab] = useState('* * * * *');
+    const [disabledConfigs, setDisabledConfigs] = useState(disabledConfigsFederation)
+    const [workloadType, setWorkloadType] = useState('federation')
     const cronRef = useRef(null);
+    const availableWorkloadTypes = [ 'Federation', 'Personalization' ];
 
+    useEffect(() => {
+        setDisabledConfigs(workloadType === 'federation' ? disabledConfigsFederation : disabledConfigsPersonalization);
+    }, [workloadType]);
 
     const handleParameterChange = (value, parameter) => {
         setConfig((prevState) => ({
@@ -81,18 +89,28 @@ const FederationScheduler = () => {
     };
 
     const handleSubmit = async () => {
-        const response = await scheduleFederationWorkload(SECRET_TOKEN, config, schedule_type, crontab, scheduledTime)
+        let response = undefined;
+        if(workloadType === 'personalization'){
+            response = await schedulePersonalizationWorkload(SECRET_TOKEN, config, scheduleType, crontab, scheduledTime);
+        } else {
+            response = await scheduleFederationWorkload(SECRET_TOKEN, config, scheduleType, crontab, scheduledTime);
+        }
         if(response === undefined){
-            setResponseDisplay("Could not receive response")
+            setResponseDisplay("Could not receive response");
         }
         else if(response.status === 200){
-            setResponseDisplay("Task scheduled successfully")
+            setResponseDisplay("Task scheduled successfully");
         } else if(response.data.error !== undefined){
-            setResponseDisplay(response.data.error)
+            setResponseDisplay(response.data.error);
         }
         else {
             setResponseDisplay("There was an error scheduling task")
         }
+    };
+
+    const handleWorkloadTypeChange = (event) => {
+        const selectedType = event.target.value;
+        setWorkloadType(selectedType);
     };
 
     return (
@@ -132,13 +150,54 @@ const FederationScheduler = () => {
                     </div>
                 </FormGroup>
             </div>
-            <FormGroup label="Scheduled Time" style={{ textAlign: 'center' }}>
-                <select value={schedule_type} onChange={handleOptionChange}>
+            <FormGroup>
+                <div>
+                    <Popover2
+                        position={Position.TOP}
+                        interactionKind="hover-target"
+                        content={
+                            <div style={{ padding: '10px', borderRadius: '10px' }}>
+                                This selection determines the type of workload. Federation begins a federation round with all the clients. Personalization locally updates the client models to be more fitted to their individual data.
+                            </div>
+                        }>
+                    <span>
+                      Workload Type
+                    </span>
+                    </Popover2>
+                </div>
+                <select value={workloadType} onChange={handleWorkloadTypeChange}>
+                    {availableWorkloadTypes.map((type) => (
+                        <option key={type} value={type.toLowerCase()}>
+                            {type}
+                        </option>
+                    ))}
+                </select>
+            </FormGroup>
+            <FormGroup style={{ textAlign: 'center' }}>
+                <div>
+                    <Popover2
+                        position={Position.TOP}
+                        interactionKind="hover-target"
+                        content={
+                            <div style={{ padding: '10px', borderRadius: '10px' }}>
+                                This selection determines the type of schedule. 'Immediate' begins immediately,
+                                'One Time' only schedules a single event, and 'Recurrent' will repeat according
+                                to the selected Cron expression.
+                            </div>
+                        }
+                        style = {{margin:'10px'}}
+                    >
+                    <span>
+                      Schedule Type
+                    </span>
+                    </Popover2>
+                </div>
+                <select value={scheduleType} onChange={handleOptionChange}>
                     <option value="recurrent">Recurrent</option>
                     <option value="one-time">One Time</option>
                     <option value="immediate">Immediate</option>
                 </select>
-                {schedule_type === "recurrent" && (
+                {scheduleType === "recurrent" && (
                     <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <Cron ref={cronRef}
                             setValue={(value) => handleCronExpressionChange(value)}
@@ -146,7 +205,7 @@ const FederationScheduler = () => {
                         />
                     </div>
                 )}
-                {schedule_type === "one-time" && (
+                {scheduleType === "one-time" && (
                     <div style={{ marginTop: '10px' }}>
                         <DatePicker
                             placeholderText="Select date and time"
@@ -159,7 +218,7 @@ const FederationScheduler = () => {
                         />
                     </div>
                 )}
-                {schedule_type === "immediate"}
+                {scheduleType === "immediate"}
                 <div style={{ marginTop: '10px' }}>
                     <Button onClick={handleSubmit} style={{ justifySelf: 'center' }}>
                         Send Request

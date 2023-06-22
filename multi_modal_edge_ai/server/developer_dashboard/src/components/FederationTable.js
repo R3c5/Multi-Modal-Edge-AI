@@ -42,6 +42,9 @@ const FederationTable = () => {
                         <span>{entry.scheduled_time}</span>
                     </Popover2>
                 </td>
+                <td style={{ color: 'white'}}>
+                    <span>{entry.workload_type.charAt(0).toUpperCase() + entry.workload_type.slice(1)}</span>
+                </td>
                 <td style={{ color: 'white' }}>
                     <span>{entry.cron_job.toString()}</span>
                 </td>
@@ -75,6 +78,7 @@ const FederationTable = () => {
                 <thead>
                 <tr>
                     <th style={{ color: 'white' }}>Scheduled Time</th>
+                    <th style={{ color: 'white' }}>Workload Type</th>
                     <th style={{ color: 'white' }}>Recurrent Job</th>
                     <th style={{ color: 'white' }}>Cron String</th>
                 </tr>

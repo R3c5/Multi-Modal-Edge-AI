@@ -25,13 +25,14 @@ const DataFetchingProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchAllData = async () => {
+            // for each fetch, if it fails, the value is set back to default values
             try {
                 const responseClients = await getClients(SECRET_TOKEN);
                 if (responseClients !== undefined) {
                     setClients(responseClients);
                 }
             } catch (error) {
-                // console.error('Error fetching client info:', error);
+                setClients({"connected_clients":{}})
             }
             try {
                 const responseServerLog = await getServerLog(SECRET_TOKEN);
@@ -39,7 +40,7 @@ const DataFetchingProvider = ({ children }) => {
                     setServerLog(responseServerLog);
                 }
             } catch (error) {
-                // console.error('Error fetching server log:', error);
+                setServerLog("Cannot fetch server logs")
             }
             try {
                 const responseFederationLog = await getFederationLog(SECRET_TOKEN);
@@ -47,7 +48,7 @@ const DataFetchingProvider = ({ children }) => {
                     setFederationLog(responseFederationLog);
                 }
             } catch (error) {
-                // console.error('Error fetching federation log:', error);
+                setFederationLog("Cannot fetch server logs")
             }
             try {
                 const responseFederationWorkloads = await getFederationWorkloads(SECRET_TOKEN);
@@ -55,7 +56,7 @@ const DataFetchingProvider = ({ children }) => {
                     setFederationWorkloads(responseFederationWorkloads)
                 }
             } catch (error) {
-                // console.error('Error fetching federation workloads:', error);
+                setFederationWorkloads([])
             }
             try {
                 const responseIsFederationRunning = await isFederationWorkloadRunning(SECRET_TOKEN);
@@ -63,7 +64,7 @@ const DataFetchingProvider = ({ children }) => {
                     setIsFederationRunning(responseIsFederationRunning)
                 }
             } catch (error) {
-                // console.error('Error fetching isFederationRunning:', error);
+                setIsFederationRunning(null)
             }
 
         };
