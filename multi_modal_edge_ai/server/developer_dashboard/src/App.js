@@ -3,12 +3,13 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import React from 'react';
 import './App.css';
 import Dashboard from "./components/Dashboard";
+import {DataFetchingProvider} from "./context/DataFetchingContext";
 
 function App() {
     return (
-        <div>
+        <DataFetchingProvider>
             <Dashboard />
-        </div>
+        </DataFetchingProvider>
     );
 }
 
