@@ -73,12 +73,30 @@ export const scheduleFederationWorkload = async (token, config, schedule_type, c
         const headers = {
             Authorization: token
         };
-        console.log("data: " , data)
         const response = await axios.post(`${BASE_URL}/dashboard/schedule_federation_workload`, data, { headers });
-        console.log(response)
         return response;
     } catch (error) {
         console.error('Error scheduling federation workload:', error);
+    }
+};
+
+
+export const schedulePersonalizationWorkload = async (token, config, schedule_type, crontab, date) => {
+    try {
+        const data = {
+            schedule_type: schedule_type,
+            config: config,
+            crontab: crontab,
+            date: date
+        };
+
+        const headers = {
+            Authorization: token
+        };
+        const response = await axios.post(`${BASE_URL}/dashboard/schedule_personalization_workload`, data, { headers });
+        return response;
+    } catch (error) {
+        console.error('Error scheduling personalization workload:', error);
     }
 };
 
