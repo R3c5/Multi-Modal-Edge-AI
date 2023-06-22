@@ -39,7 +39,7 @@ class FederatedServer:
         """
         This function will start the rpc server with the specified parameters.
         :param config: The config which contains hyperparameters for both training, evaluation, and federation
-        :param log_file_path: The path to the log file `w`hich Flower will use
+        :param log_file_path: The path to the log file which Flower will use
         :return:
         """
         strategy = PersistentFedAvg(fraction_fit=config["fraction_fit"], fraction_evaluate=config["fraction_evaluate"],

@@ -112,6 +112,11 @@ def schedule_federation_workload() -> tuple[Response, int]:
 
     return jsonify({'job_id': job_id}), 200
 
+@dashboard_connection_blueprint.route('/dashboard/schedule_personalization_workload', methods=['POST'])
+@authenticate
+def schedule_personalization_workload():
+    pass
+
 
 @dashboard_connection_blueprint.route('/dashboard/is_federation_workload_running', methods=['GET'])
 @authenticate

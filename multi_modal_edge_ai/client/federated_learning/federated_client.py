@@ -1,14 +1,8 @@
 import flwr as fl
-import pandas as pd
-import torch.nn
-from sklearn.preprocessing import MinMaxScaler
 
-from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.flower_clients import FlowerClient
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
-from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import parse_file_with_idle
-from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 
 
 class FederatedClient:

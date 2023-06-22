@@ -86,7 +86,7 @@ def start_federated_client() -> None:
     Define the TrainEval method and start the Federated Client
     """
     logging.info('Federation stage started')
-    collection = get_collection(get_database(get_database_client(), "coho-edge-ai"), "adl_test")
+    collection = get_collection(get_database(get_database_client(), "coho-edge-ai"), "adl_test")  # TODO change this
     train_eva = TrainEval(collection, distinct_adl_list, andet_scaler)
     fc = FederatedClient(anomaly_detection_model_keeper, train_eva)
     fc.start_numpy_client("127.0.0.1:8080")
