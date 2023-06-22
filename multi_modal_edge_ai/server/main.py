@@ -27,12 +27,8 @@ from multi_modal_edge_ai.server.scheduler.jobs import reset_all_daily_informatio
 # Get the root directory of the project
 root_directory = os.path.abspath(os.path.dirname(__file__))
 
-# Initialize Flask application
-app = Flask(__name__)
-CORS(app)
 
-
-def configure_logging():
+def configure_logging(app):
     # Configure logging
     log_filename = os.path.join(root_directory, 'app.log')
     log_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
@@ -65,7 +61,7 @@ def initialize_clients_keeper():
     return client_keeper
 
 
-def configure_client_connection_blueprints(client_connection_blueprint, client_keeper, models_keeper):
+def configure_client_connection_blueprints(app, client_connection_blueprint, client_keeper, models_keeper):
     client_connection_blueprint.client_keeper = client_keeper
     client_connection_blueprint.models_keeper = models_keeper
 
@@ -73,7 +69,7 @@ def configure_client_connection_blueprints(client_connection_blueprint, client_k
     app.register_blueprint(client_connection_blueprint)
 
 
-def configure_dashboard_connection_blueprints(dashboard_connection_blueprint, client_keeper, scheduler,
+def configure_dashboard_connection_blueprints(app, dashboard_connection_blueprint, client_keeper, scheduler,
                                               federated_server):
     dashboard_connection_blueprint.client_keeper = client_keeper
     dashboard_connection_blueprint.scheduler = scheduler
@@ -119,8 +115,8 @@ def start_scheduler(job_stores, client_keeper):
     return scheduler
 
 
-def run_server_set_up():
-    configure_logging()
+def run_server_set_up(app):
+    configure_logging(app)
 
     models_keeper = initialize_models()
     client_keeper = initialize_clients_keeper()
@@ -128,12 +124,16 @@ def run_server_set_up():
     job_stores = configure_job_stores()
     scheduler = start_scheduler(job_stores, client_keeper)
 
-    configure_client_connection_blueprints(client_connection_blueprint, client_keeper, models_keeper)
-    configure_dashboard_connection_blueprints(dashboard_connection_blueprint, client_keeper, scheduler,
+    configure_client_connection_blueprints(app, client_connection_blueprint, client_keeper, models_keeper)
+    configure_dashboard_connection_blueprints(app, dashboard_connection_blueprint, client_keeper, scheduler,
                                               federated_server)
 
     app.run(port=5000)
 
 
 if __name__ == '__main__':
-    run_server_set_up()
+    # Initialize Flask application
+    app = Flask(__name__)
+    CORS(app)
+
+    run_server_set_up(app)
