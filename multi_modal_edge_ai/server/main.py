@@ -29,6 +29,9 @@ root_directory = os.path.abspath(os.path.dirname(__file__))
 
 
 def configure_logging(app):
+    """
+    Configure the logger for the server
+    """
     # Configure logging
     log_filename = os.path.join(root_directory, 'app.log')
     log_handler = RotatingFileHandler(log_filename, maxBytes=1000000, backupCount=1)
@@ -40,6 +43,9 @@ def configure_logging(app):
 
 
 def initialize_models():
+    """
+    Initialise the models keeper
+    """
     # Uncomment this for automatic testing
     adl_model_path = os.path.join(root_directory, 'models', 'adl_model')
     anomaly_detection_model_path = os.path.join(root_directory, 'models', 'anomaly_detection_model')
@@ -56,12 +62,18 @@ def initialize_models():
 
 
 def initialize_clients_keeper():
+    """
+    Initialise the client keeper
+    """
     # initialize clients keeper
     client_keeper = ClientsKeeper()
     return client_keeper
 
 
 def configure_client_connection_blueprints(app, client_connection_blueprint, client_keeper, models_keeper):
+    """
+    Add the client and model keeper to the client connection blueprint
+    """
     client_connection_blueprint.client_keeper = client_keeper
     client_connection_blueprint.models_keeper = models_keeper
 
@@ -71,6 +83,9 @@ def configure_client_connection_blueprints(app, client_connection_blueprint, cli
 
 def configure_dashboard_connection_blueprints(app, dashboard_connection_blueprint, client_keeper, scheduler,
                                               federated_server):
+    """
+    Add the required variables to the dashboard connection blueprint
+    """
     dashboard_connection_blueprint.client_keeper = client_keeper
     dashboard_connection_blueprint.scheduler = scheduler
     dashboard_connection_blueprint.federated_server = federated_server
@@ -84,11 +99,17 @@ def configure_dashboard_connection_blueprints(app, dashboard_connection_blueprin
 
 
 def initialize_federated_server(models_keeper, client_keeper):
+    """
+    Create the federation server
+    """
     federated_server = FederatedServer("127.0.0.1:8080", models_keeper, client_keeper)
     return federated_server
 
 
 def configure_job_stores():
+    """
+    Create the jobs
+    """
     job_stores = {}
     try:
         client = MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
@@ -101,6 +122,10 @@ def configure_job_stores():
 
 
 def start_scheduler(job_stores, client_keeper):
+    """
+    Start the scheduler based on the jobs
+    """
+
     scheduler = BackgroundScheduler(job_stores=job_stores, daemon=True)
     scheduler.start()
 
@@ -116,6 +141,9 @@ def start_scheduler(job_stores, client_keeper):
 
 
 def run_server_set_up(app):
+    """
+    Initiate all the required variables and start the server
+    """
     configure_logging(app)
 
     models_keeper = initialize_models()

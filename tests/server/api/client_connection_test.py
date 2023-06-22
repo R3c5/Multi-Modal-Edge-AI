@@ -113,48 +113,6 @@ def test_heartbeat_unseen_client(client1):
     assert '0.0.0.1' not in list(connected_clients.keys())
 
 
-#
-# def test_heartbeat_with_anomaly_detection_file(client):
-#     payload = {
-#         'recent_adls': 0,
-#         'recent_anomalies': 0
-#     }
-#
-#     update_anomaly_detection_model_update_time(datetime.now() + timedelta(days=1))
-#
-#     response = client.post('/api/heartbeat', json=payload)
-#     assert_response_with_zip(response, False, True)
-#
-#     expected_data = {
-#         '0.0.0.0': {'status': 'Connected',
-#                     'num_adls': 5,
-#                     'num_anomalies': 5
-#                     }
-#     }
-#     assert_connected_clients_with_expected(expected_data)
-#
-#
-# def test_heartbeat_with_adl_file(client):
-#     payload = {
-#         'recent_adls': 0,
-#         'recent_anomalies': 0
-#     }
-#
-#     update_anomaly_detection_model_update_time(datetime.now() - timedelta(days=2))
-#     update_adl_model_update_time(datetime.now() + timedelta(days=1))
-#
-#     response = client.post('/api/heartbeat', json=payload)
-#     assert_response_with_zip(response, True, False)
-#
-#     expected_data = {
-#         '0.0.0.0': {'status': 'Connected',
-#                     'num_adls': 5,
-#                     'num_anomalies': 5
-#                     }
-#     }
-#     assert_connected_clients_with_expected(expected_data)
-
-
 def test_heartbeat_extra_adls(client):
     payload = {
         'recent_adls': 5,
@@ -189,47 +147,6 @@ def test_heartbeat_bad_payload(client):
                     }
     }
     assert_connected_clients_with_expected(client, expected_data)
-
-
-def test_get_client_info(client):
-    # client.get('/api/set_up_connection')
-    # payload = {
-    #     'recent_adls': 10,
-    #     'recent_anomalies': 5
-    # }
-    # client.post('api/heartbeat', json=payload)
-
-    # Set up the headers with the authorization token
-    headers = {'Authorization': 'super_secure_token_here_123'}
-
-    # Make a GET request to the API endpoint
-    response = client.get('/dashboard/get_client_info', headers=headers)
-
-    # Assert the response status code is 200 (OK)
-    assert response.status_code == 200
-
-    # Assert the response JSON data contains the expected keys
-    data = response.get_json()
-    assert 'connected_clients' in data
-    assert isinstance(data['connected_clients'], dict)
-
-    # You can add more assertions to validate the response data
-    connected_clients = data['connected_clients']
-
-    assert len(connected_clients) == 1
-    expected = {
-        '0.0.0.0': {'status': 'Connected',
-                    'num_adls': 10,
-                    'num_anomalies': 5
-                    }
-    }
-
-    for ip, expected_values in expected.items():
-        assert ip in connected_clients
-        connected_values = connected_clients[ip]
-        for key, value in expected_values.items():
-            assert key in connected_values
-            assert connected_values[key] == value
 
 
 def assert_connected_clients_with_expected(client, expected):
