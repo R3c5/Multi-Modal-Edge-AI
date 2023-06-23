@@ -112,8 +112,9 @@ class PersistentFedAvg(FedAvg):
         This function will get the parameters of the current model
         :return: The parameters
         """
-        if isinstance(self.models_keeper.model.model, torch.nn.Module):
-            return [val.cpu().numpy() for _, val in self.models_keeper.model.model.state_dict().items()]
+        if isinstance(self.models_keeper.anomaly_detection_model.model, torch.nn.Module):
+            return [val.cpu().numpy() for _, val in
+                    self.models_keeper.anomaly_detection_model.model.state_dict().items()]
         else:
-            params = self.models_keeper.model.model.get_params()
+            params = self.models_keeper.anomaly_detection_model.model.get_params()
             return params
