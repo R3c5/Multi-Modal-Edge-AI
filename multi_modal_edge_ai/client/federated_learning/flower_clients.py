@@ -55,7 +55,6 @@ class FlowerClient(fl.client.NumPyClient):
         :param config: The config of the training procedure
         :return: The model parameters and the training stats
         """
-        print(config)
         if self.federation_workload:
             self.set_parameters(parameters)
         training_stats = self.train_eval.train(self.model_keeper.model, config)

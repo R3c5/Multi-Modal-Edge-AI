@@ -28,6 +28,7 @@ root_directory = os.path.abspath(os.path.dirname(__file__))
 federated_server_address = "127.0.0.1:8080"
 flask_server_port = 5000
 
+
 def configure_logging(app):
     """
     Configure the logger for the server

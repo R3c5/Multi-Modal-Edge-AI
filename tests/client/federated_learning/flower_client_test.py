@@ -29,7 +29,7 @@ def mock_model_keeper(mock_model):
 
 @pytest.fixture
 def client(mock_model_keeper, mock_train_eval):
-    return FlowerClient(mock_model_keeper, mock_train_eval)
+    return FlowerClient(mock_model_keeper, mock_train_eval, True)
 
 
 def test_get_parameters_torch_model(client):

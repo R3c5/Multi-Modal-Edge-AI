@@ -1,7 +1,6 @@
 import datetime
 import logging
 import os
-import uuid
 import zipfile
 from typing import Dict, cast, Tuple, Any
 
@@ -81,7 +80,6 @@ def heartbeat() -> Response | Tuple[Response, int]:
             str(client_keeper.compare_and_swap_start_workload("start_federation", client_ip))
         response.headers['start_personalization_client_flag'] = \
             str(client_keeper.compare_and_swap_start_workload("start_personalization", client_ip))
-
 
         return response
     except Exception as e:
