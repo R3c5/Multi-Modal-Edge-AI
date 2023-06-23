@@ -11,6 +11,8 @@ class ClientsKeeper:
         'ip1': {
             'status': 'Connected' or 'Disconnected',
             'last_seen': datetime,
+            'start_federation': bool,
+            'start_personalization': bool
             'num_adls': int,
             'num_anomalies': int
             'last_model_aggregation': datetime
@@ -39,6 +41,7 @@ class ClientsKeeper:
                 'last_seen': last_seen,
                 'last_model_aggregation': datetime.min,
                 'start_federation': False,
+                'start_personalization': False,
                 'num_adls': 0,
                 'num_anomalies': 0
             }
@@ -112,15 +115,15 @@ class ClientsKeeper:
                 self.connected_clients[client]["num_adls"] = 0
                 self.connected_clients[client]["num_anomalies"] = 0
 
-    def set_start_federation(self, value: bool) -> None:
+    def set_start_workload(self, workload_flag: str, value: bool) -> None:
         with self.start_federation_lock:
             for ip in self.connected_clients.keys():
-                self.connected_clients[ip]["start_federation"] = value
+                self.connected_clients[ip][workload_flag] = value
 
-    def compare_and_swap_start_federation(self, client_ip: str) -> bool:
+    def compare_and_swap_start_workload(self, workload_flag: str, client_ip: str) -> bool:
         with self.start_federation_lock:
-            if not self.connected_clients[client_ip]["start_federation"]:
+            if not self.connected_clients[client_ip][workload_flag]:
                 return False
             else:
-                self.connected_clients[client_ip]["start_federation"] = False
+                self.connected_clients[client_ip][workload_flag] = False
                 return True

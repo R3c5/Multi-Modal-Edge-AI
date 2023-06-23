@@ -7,7 +7,8 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.triggers.cron import CronTrigger
 from flask import request, jsonify, Blueprint, Response, send_file
 
-from multi_modal_edge_ai.server.scheduler.jobs import open_federated_server_job, is_federated_workload_running
+from multi_modal_edge_ai.server.scheduler.jobs import open_federated_server_job, open_personalization_job, \
+    is_federated_workload_running
 
 
 class DashboardBlueprint(Blueprint):
@@ -130,9 +131,24 @@ def schedule_federation_workload() -> tuple[Response, int]:
 
     return jsonify({'job_id': job_id}), 200
 
+
 @dashboard_connection_blueprint.route('/dashboard/schedule_personalization_workload', methods=['POST'])
 @authenticate
 def schedule_personalization_workload():
+    """
+    This function will schedule a personalization workload according to the scheduling type and config_dict provided
+    In case the type is "one-time", the job is schedule for a one time execution at the provided "date". In case the
+    type is "recurrent", a CronTrigger is created by parsing the crontab in the "crontab" field. Finally, in the case
+    "immediate" is the provided scheduling type, the job is done immediately.
+    In case any of the parameters are missing, or the date/crontab is in a wrong format, a 400 error coded will be
+    returned
+    :return: If 200, the job_id of the job scheduled. If 400, the reason responsible to this being a bad request
+    """
+    federated_log_path = dashboard_connection_blueprint.federated_log_path
+    scheduler = dashboard_connection_blueprint.scheduler
+    client_keeper = dashboard_connection_blueprint.client_keeper
+    federated_server = dashboard_connection_blueprint.federated_server
+
     data = request.get_json()
 
     if not data:
@@ -152,7 +168,7 @@ def schedule_personalization_workload():
 
     try:
         if schedule_type == "immediate":
-            # TODO change
+            open_personalization_job(federated_server, client_keeper, config_dict, federated_log_path)
 
         elif schedule_type in ["recurrent", "one-time"]:
             if schedule_type == "recurrent":
@@ -173,7 +189,8 @@ def schedule_personalization_workload():
                 trigger = "date"
                 run_date = job_date
 
-            scheduler.add_job(open_federated_server_job, trigger, args=[config_dict, federated_log_path], id=job_id,
+            scheduler.add_job(open_personalization_job, trigger,
+                              args=[federated_server, client_keeper, config_dict, federated_log_path], id=job_id,
                               run_date=run_date)
 
         else:
@@ -185,11 +202,11 @@ def schedule_personalization_workload():
     return jsonify({'job_id': job_id}), 200
 
 
-@dashboard_connection_blueprint.route('/dashboard/is_federation_workload_running', methods=['GET'])
+@dashboard_connection_blueprint.route('/dashboard/is_workload_running', methods=['GET'])
 @authenticate
-def is_federation_workload_running() -> tuple[Response, int]:
+def is_workload_running() -> tuple[Response, int]:
     """
-    This function will return the config file of the current federated learning workload being run, if any.
+    This function will return the config file of the current workload being run, if any.
     :return: The config file, or a message saying that there are no configs being run
     """
     config = is_federated_workload_running()
@@ -201,19 +218,23 @@ def is_federation_workload_running() -> tuple[Response, int]:
 
 @dashboard_connection_blueprint.route('/dashboard/fetch_all_federation_workloads', methods=['GET'])
 @authenticate
-def fetch_all_federation_workloads() -> tuple[Response, int]:
+def fetch_all_workloads() -> tuple[Response, int]:
     """
-    This function will return all the federated learning workloads currently scheduled. All jobs will include id,
-    scheduled_time, the config_dict, and a flag representing if it is a cron job, and the crontab, which will be the
-    respective crontab if it is a cron job, or empty otherwise
+    This function will return all the federated learning and personalization workloads currently scheduled.
+    All jobs will include id, scheduled_time, the config_dict, and a flag representing if it is a cron job, and the
+    crontab, which will be the respective crontab if it is a cron job, or empty otherwise. It will also contain a
+    field workload_type representing if it is a federation workload or personalization workload
     :return: A list with a dict representing each job. This dict has: id, scheduled_time, and config
     """
     scheduler = dashboard_connection_blueprint.scheduler
 
-    federation_workloads = [job for job in scheduler.get_jobs() if job.func == open_federated_server_job]
+    workloads = [job for job in scheduler.get_jobs() if
+                 (job.func == open_federated_server_job or job.func == open_personalization_job)]
+
+    workloads.sort(key=lambda job: job.next_run_time)
 
     workloads_info = []
-    for job in federation_workloads:
+    for job in workloads:
         trigger = job.trigger
         if isinstance(trigger, CronTrigger):
             crontab_field_names = ['minute', 'hour', 'day', 'month', 'day_of_week']
@@ -227,7 +248,8 @@ def fetch_all_federation_workloads() -> tuple[Response, int]:
             'scheduled_time': str(job.next_run_time),
             "config": job.args[0],
             "cron_job": isinstance(trigger, CronTrigger),
-            "crontab": crontab
+            "crontab": crontab,
+            "workload_type": "federation" if job.func == open_federated_server_job else "personalization"
         })
 
     return jsonify(workloads_info), 200
