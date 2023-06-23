@@ -112,7 +112,7 @@ def schedule_federation_workload() -> tuple[Response, int]:
                     return jsonify({'error': 'Missing date'}), 400
 
                 try:
-                    job_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                    job_date = datetime.fromisoformat(date_str[:-1])
                 except ValueError:
                     return jsonify({'error': 'Invalid date format'}), 400
                 trigger = "date"
@@ -209,5 +209,5 @@ def get_error_log() -> Response:
 @dashboard_connection_blueprint.route('/dashboard/get_federation_log', methods=['GET'])
 @authenticate
 def get_federation_log() -> Response:
-    log_path = './multi_modal_edge_ai/server/federated_learning/server_log'
+    log_path = './federated_learning/server_log'
     return send_file(log_path)
