@@ -62,9 +62,7 @@ class TrainEval:
         normalized_training_dataloader = DataLoader(ADLDataset(normalized_training_df), config["batch_size"],
                                                     shuffle=True)
 
-        print("model will actually start training")
         training_loss = [loss.cpu().item() for loss in model.train(normalized_training_dataloader, **config)]
-        print("model has finished training")
 
         return (dataset_size, {}) if training_loss is None else \
             (dataset_size, {"avg_reconstruction_loss": sum(training_loss) / len(training_loss)})

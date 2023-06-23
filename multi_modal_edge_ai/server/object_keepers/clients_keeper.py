@@ -127,11 +127,25 @@ class ClientsKeeper:
                 self.connected_clients[client]["num_anomalies"] = 0
 
     def set_start_workload(self, workload_flag: str, value: bool) -> None:
+        """
+        This function will set the flag of the specified type of workload as specified. It will do so for all the
+        clients
+        :param workload_flag: The type of workload: start_federation or start_personalization
+        :param value: The value, true or false
+        :return:
+        """
         with self.start_federation_lock:
             for ip in self.connected_clients.keys():
                 self.connected_clients[ip][workload_flag] = value
 
     def compare_and_swap_start_workload(self, workload_flag: str, client_ip: str) -> bool:
+        """
+        This function will compare and swap the value of the flag for the workload. This is an atomic operation, and if
+        the value of the flag is true, it will set it to false. If it is false, it will remain false
+        :param workload_flag: The type of workload: start_federation or start_personalization
+        :param client_ip: The ip of the client for which to perform the compare and swap
+        :return: The value after swap
+        """
         with self.start_federation_lock:
             if not self.connected_clients[client_ip][workload_flag]:
                 return False
