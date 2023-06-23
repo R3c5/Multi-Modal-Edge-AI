@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import uuid
 import zipfile
 from typing import Dict, cast, Tuple, Any
 
@@ -55,6 +56,7 @@ def heartbeat() -> Response | Tuple[Response, int]:
     """
     try:
         client_ip = request.remote_addr
+
         if client_ip is None:
             raise Exception("No IP found")
 
@@ -76,9 +78,10 @@ def heartbeat() -> Response | Tuple[Response, int]:
 
         response = send_models_zip(models_keeper, client_last_seen)
         response.headers['start_federation_client_flag'] = \
-            str(client_keeper.compare_and_swap_start_workload("federation", client_ip))
+            str(client_keeper.compare_and_swap_start_workload("start_federation", client_ip))
         response.headers['start_personalization_client_flag'] = \
-            str(client_keeper.compare_and_swap_start_workload("personalization", client_ip))
+            str(client_keeper.compare_and_swap_start_workload("start_personalization", client_ip))
+
 
         return response
     except Exception as e:

@@ -99,8 +99,7 @@ class PersistentFedAvg(FedAvg):
                 log(
                     INFO,
                     "%s clients successfully personalized their local model",
-                    len(results),
-                    len(results) + len(failures)
+                    len(results)
                 )
 
         return aggregate_weights

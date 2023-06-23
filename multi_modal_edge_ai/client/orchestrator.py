@@ -124,7 +124,7 @@ def run_federation_stage(client_config: dict):
     :param client_config: See *run_schedule* for exact format of dict
     """
     if workload_lock.acquire(blocking=False):
-        thread = threading.Thread(target=start_federated_client, args=client_config)
+        thread = threading.Thread(target=start_federated_client, args=[client_config])
         thread.start()
     else:
         logging.info("Couldn't start federation workload. There is a workload running")
@@ -136,7 +136,7 @@ def run_personalization_stage(client_config: dict):
     :param client_config: See *run_schedule* for exact format of dict
     """
     if workload_lock.acquire(blocking=False):
-        thread = threading.Thread(target=start_personalization_client, args=client_config)
+        thread = threading.Thread(target=start_personalization_client, args=[client_config])
         thread.start()
     else:
         logging.info("Couldn't start personalization workload. There is a workload running")

@@ -213,7 +213,7 @@ def is_workload_running() -> tuple[Response, int]:
     if config:
         return jsonify(config), 200
     else:
-        return jsonify({"message": "There are no federated workloads currently being ran"}), 200
+        return jsonify({"message": "There are no workloads currently being ran"}), 200
 
 
 @dashboard_connection_blueprint.route('/dashboard/fetch_all_federation_workloads', methods=['GET'])
