@@ -85,6 +85,7 @@ def adl_inference_stage(adl_model_keeper: ADLModelKeeper, sensor_database: str, 
     :param current_time: the current time as a datetime, typically expecting datetime.now()
     :param sensor_database: The name of the Sensor Database to retrieve the entries from.
     :param seconds: The number of seconds of entries from the Sensor Database to retrieve.
+    :param adl_model_keeper: The ADLModelKeeper object containing the ADL model and encoder.
     :return: dict containing the Start_Time, End_Time and Activity of the new prediction
     """
     try:
