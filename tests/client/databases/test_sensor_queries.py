@@ -115,82 +115,91 @@ class TestSensorQueries(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
 
-    # def test_get_past_x_seconds_of_all_sensor_entries(self):
-    #     mock_client = mongomock.MongoClient()
-    #     mock_collection = mock_client['test_db']['test_collection']
-    #
-    #     last_seen1 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=7)) * 1000
-    #     last_seen2 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=6)) * 1000
-    #     last_seen3 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=4)) * 1000
-    #     last_seen4 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=3)) * 1000
-    #
-    #     # Create test entries
-    #     # last seen is 7 minutes ago
-    #     entry1 = {'device': {'friendlyName': 'motion_bedroom'}, '_id': 'Object1', 'battery': 100,
-    #               'detection_interval': 30, 'illuminance': 156, 'last_seen': last_seen1, 'linkquality': 126,
-    #               'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
-    #               'voltage': 3100}
-    #     # last seen is 6 minutes ago
-    #     entry2 = {'device': {'friendlyName': 'contact_bathroom'}, 'contact': False, 'last_seen': last_seen2,
-    #               'linkquality': 150}
-    #
-    #     # last seen is 4 minutes ago
-    #     entry3 = {
-    #         'device': {'friendlyName': 'contact_bathroom1'}, 'contact': False, 'last_seen': last_seen3,
-    #         'linkquality': 150}
-    #     # last seen is 3 minutes ago
-    #     entry4 = {
-    #         'device': {'friendlyName': 'motion_bedroom1'}, '_id': 'Object3', 'battery': 100,
-    #         'detection_interval': 30, 'illuminance': 155, 'last_seen': last_seen4, 'linkquality': 126,
-    #         'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
-    #         'voltage': 3000
-    #     }
-    #     mock_collection.insert_many([entry1, entry2, entry3, entry4])
-    #     current_time = datetime.datetime.now()
-    #     # Call get_sensor_data_from_x_minutes_ago and check its result
-    #     last_seen3 = datetime.datetime.fromtimestamp(last_seen3 / 1000)
-    #     last_seen4 = datetime.datetime.fromtimestamp(last_seen4 / 1000)
-    #     result = get_past_x_seconds_of_all_sensor_entries(mock_collection, 5 * 60, current_time)
-    #     expected_result = [{'date': last_seen4.strftime("%Y-%m-%d"),
-    #                         'device': {'friendlyName': 'motion_bedroom1'},
-    #                         'end_time': last_seen4.strftime("%H:%M:%S"),
-    #                         'occupancy': True,
-    #                         'start_time': last_seen4.strftime("%H:%M:%S"),
-    #                         'type': 'PIR'},
-    #                        {'contact': False,
-    #                         'date': last_seen3.strftime("%Y-%m-%d"),
-    #                         'device': {'friendlyName': 'contact_bathroom1'},
-    #                         'end_time': last_seen3.strftime("%H:%M:%S"),
-    #                         'start_time': last_seen3.strftime("%H:%M:%S"),
-    #                         'type': 'Contact'}]
-    #     self.assertEqual(result, expected_result)
-    #
-    # def test_get_power_sensors(self):
-    #     mock_client = mongomock.MongoClient()
-    #     mock_collection = mock_client['test_db']['test_collection']
-    #
-    #     # Create test entries
-    #     # last seen is 2023-05-08 16:57:07
-    #     entry1 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object1', 'child_lock': 'UNLOCK', 'current': 0,
-    #               'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557827000, 'linkquality': 168, 'power': 10,
-    #               'power_outage_memory': 'off', 'state': 'ON', 'voltage': 223}
-    #     # last seen is 2023-05-08 16:57:27
-    #     entry2 = {'device': {'friendlyName': 'contact_bathroom'}, '_id': 'Object3', 'contact': True,
-    #               'last_seen': 1683557847000, 'linkquality': 150}
-    #     # last seen is 2023-05-08 16:59:42
-    #     entry3 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object2', 'child_lock': 'UNLOCK', 'current': 0,
-    #               'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557982000, 'linkquality': 168, 'power': 0,
-    #               'power_outage_memory': 'off', 'state': 'OFF', 'voltage': 245}
-    #     # last seen is 2023-05-08 17:08:42
-    #     entry4 = {'device': {'friendlyName': 'power_microwave'}, '_id': 'Object4', 'child_lock': 'UNLOCK', 'current': 0,
-    #               'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683558522000, 'linkquality': 168, 'power': 0,
-    #               'power_outage_memory': 'off', 'state': 'ON', 'voltage': 245}
-    #
-    #     mock_collection.insert_many([entry1, entry2, entry3, entry4])
-    #
-    #     # Call get_power_sensors and check its result
-    #     result = get_power_sensors(mock_collection)
-    #     self.assertEqual(len(result), 1)
+    def test_get_past_x_seconds_of_all_sensor_entries(self):
+        mock_client = mongomock.MongoClient()
+        mock_collection = mock_client['test_db']['test_collection']
+
+        last_seen1 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=7)) * 1000
+        last_seen2 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=6)) * 1000
+        last_seen3 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=4)) * 1000
+        last_seen4 = datetime.datetime.timestamp(datetime.datetime.now() - datetime.timedelta(minutes=3)) * 1000
+
+        # Create test entries
+        # last seen is 7 minutes ago
+        entry1 = {'device': {'friendlyName': 'motion_bedroom'}, '_id': 'Object1', 'battery': 100,
+                  'detection_interval': 30, 'illuminance': 156, 'last_seen': last_seen1, 'linkquality': 126,
+                  'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
+                  'voltage': 3100}
+        # last seen is 6 minutes ago
+        entry2 = {'device': {'friendlyName': 'contact_bathroom'}, 'contact': False, 'last_seen': last_seen2,
+                  'linkquality': 150}
+
+        # last seen is 4 minutes ago
+        entry3 = {
+            'device': {'friendlyName': 'contact_bathroom1'}, 'contact': False, 'last_seen': last_seen3,
+            'linkquality': 150}
+        # last seen is 3 minutes ago
+        entry4 = {
+            'device': {'friendlyName': 'motion_bedroom1'}, '_id': 'Object3', 'battery': 100,
+            'detection_interval': 30, 'illuminance': 155, 'last_seen': last_seen4, 'linkquality': 126,
+            'motion_sensitivity': 'medium', 'occupancy': True, 'trigger_indicator': False,
+            'voltage': 3000
+        }
+        mock_collection.insert_many([entry1, entry2, entry3, entry4])
+        current_time = datetime.datetime.now()
+        # Call get_sensor_data_from_x_minutes_ago and check its result
+        last_seen3 = datetime.datetime.fromtimestamp(last_seen3 / 1000)
+        last_seen4 = datetime.datetime.fromtimestamp(last_seen4 / 1000)
+        result = get_past_x_seconds_of_all_sensor_entries(mock_collection, 5 * 60, current_time)
+        expected_result = [{'contact': False,
+                            'date': last_seen3.strftime("%Y-%m-%d"),
+                            'device': {'friendlyName': 'contact_bathroom1'},
+                            'end_time': last_seen3.strftime("%H:%M:%S"),
+                            'linkquality': 150,
+                            'start_time': last_seen3.strftime("%H:%M:%S"),
+                            'type': 'Contact'},
+                            {'battery': 100,
+                            'date': last_seen4.strftime("%Y-%m-%d"),
+                            'detection_interval': 30,
+                            'device': {'friendlyName': 'motion_bedroom1'},
+                            'end_time': last_seen4.strftime("%H:%M:%S"),
+                            'illuminance': 155,
+                            'linkquality': 126,
+                            'motion_sensitivity': 'medium',
+                            'occupancy': True,
+                            'start_time': last_seen4.strftime("%H:%M:%S"),
+                            'trigger_indicator': False,
+                            'type': 'PIR',
+                            'voltage': 3000}]
+
+        self.assertEqual(result, expected_result)
+
+    def test_get_power_sensors(self):
+        mock_client = mongomock.MongoClient()
+        mock_collection = mock_client['test_db']['test_collection']
+
+        # Create test entries
+        # last seen is 2023-05-08 16:57:07
+        entry1 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object1', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557827000, 'linkquality': 168, 'power': 10,
+                  'power_outage_memory': 'off', 'state': 'ON', 'voltage': 223}
+        # last seen is 2023-05-08 16:57:27
+        entry2 = {'device': {'friendlyName': 'contact_bathroom'}, '_id': 'Object3', 'contact': True,
+                  'last_seen': 1683557847000, 'linkquality': 150}
+        # last seen is 2023-05-08 16:59:42
+        entry3 = {'device': {'friendlyName': 'power_tv'}, '_id': 'Object2', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683557982000, 'linkquality': 168, 'power': 0,
+                  'power_outage_memory': 'off', 'state': 'OFF', 'voltage': 245}
+        # last seen is 2023-05-08 17:08:42
+        entry4 = {'device': {'friendlyName': 'power_microwave'}, '_id': 'Object4', 'child_lock': 'UNLOCK', 'current': 0,
+                  'energy': 0, 'indicator_mode': 'off/on', 'last_seen': 1683558522000, 'linkquality': 168, 'power': 0,
+                  'power_outage_memory': 'off', 'state': 'ON', 'voltage': 245}
+
+        mock_collection.insert_many([entry1, entry2, entry3, entry4])
+
+        # Call get_power_sensors and check its result
+        result = get_power_sensors(mock_collection)
+        self.assertEqual(len(result), 1)
 
     def test_get_all_documents(self):
         mock_client = mongomock.MongoClient()

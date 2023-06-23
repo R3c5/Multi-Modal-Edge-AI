@@ -75,6 +75,8 @@ def aggregate_similar_entries(data: list[dict[Any, Any]], seconds_difference: in
     # Delete the time and date from the dictionary, since it will be modified to reflect the start and end time
     del prev['time']
     del prev['date']
+    if '_id' in prev:
+        del prev['_id']
     # Iterate over the remaining dictionaries in the list, remove the field 'time' and 'date' from the dictionary,
     # and check if the current dictionary is equal to the previous dictionary. If it is, update the end time to that
     # of the current dictionary. If it is not, append to the previous dictionary the start_date, start_time and end_time
@@ -84,6 +86,8 @@ def aggregate_similar_entries(data: list[dict[Any, Any]], seconds_difference: in
         current_date = dictionary['date']
         del dictionary['time']
         del dictionary['date']
+        if '_id' in dictionary:
+            del dictionary['_id']
         if dictionary == prev and is_time_difference_smaller_than_x_seconds(end_time, current_time, seconds_difference):
             end_time = current_time
         else:

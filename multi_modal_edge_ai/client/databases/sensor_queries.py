@@ -98,7 +98,8 @@ def get_all_documents_all_fields(collection: Collection) -> list[dict[Any, Any]]
 #     return new_data
 
 
-def get_past_x_seconds_of_all_sensor_entries(collection: Collection, x: int, current_time: datetime.datetime) -> list[dict]:
+def get_past_x_seconds_of_all_sensor_entries(collection: Collection, x: int, current_time: datetime.datetime) -> \
+        list[dict]:
     """
     A method that retrieves entries from the collection where 'last_seen' is greater than or equal to
     the current time minus x seconds.
@@ -110,16 +111,18 @@ def get_past_x_seconds_of_all_sensor_entries(collection: Collection, x: int, cur
     """
     query_time = (current_time - datetime.timedelta(seconds=x)).timestamp() * 1000
 
-    power_sensors = filter_by_time_and_name(collection, query_time, "power_")
-    contact_sensors = filter_by_time_and_name(collection, query_time, "contact_")
-    motion_sensors = filter_by_time_and_name(collection, query_time, "motion_")
+    power_sensors = get_data_from_cursor(filter_by_time_and_name(collection, query_time, "power_"), 'Power')
+    contact_sensors = get_data_from_cursor(filter_by_time_and_name(collection, query_time, "contact_"), 'Contact')
+    motion_sensors = get_data_from_cursor(filter_by_time_and_name(collection, query_time, "motion_"), 'PIR')
 
     # processing sensors
-    processed_power_sensors = aggregate_similar_entries(get_data_from_cursor(power_sensors, 'Power'), 60)
-    processed_contact_sensors = aggregate_similar_entries(get_data_from_cursor(contact_sensors, "Contact"), 60)
-    processed_pir_sensors = aggregate_similar_entries(get_data_from_cursor(motion_sensors, "PIR"), 60)
+    processed_power_sensors = group_sensors_on_friendly_names_and_aggregate_entries(power_sensors, 60)
+    processed_contact_sensors = group_sensors_on_friendly_names_and_aggregate_entries(contact_sensors, 60)
+    processed_pir_sensors = aggregate_similar_entries(motion_sensors, 60)
 
     return processed_power_sensors + processed_contact_sensors + processed_pir_sensors
+
+
 # def filter_entries_by_friendly_name(cursor, search_string):
 #     collection = cursor.with_options(cursor_type=Collection)
 #     filtered_cursor = collection.find({'device.friendlyName': {'$regex': search_string}})
