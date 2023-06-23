@@ -115,7 +115,56 @@ def schedule_federation_workload() -> tuple[Response, int]:
 @dashboard_connection_blueprint.route('/dashboard/schedule_personalization_workload', methods=['POST'])
 @authenticate
 def schedule_personalization_workload():
-    pass
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    config_dict = data.get('config')
+    schedule_type = data.get("schedule_type")
+
+    if not schedule_type:
+        return jsonify({'error': 'Missing schedule_type'}), 400
+
+    if not config_dict:
+        return jsonify({'error': 'Missing config'}), 400
+
+    run_date = None
+    job_id = str(uuid.uuid4())
+
+    try:
+        if schedule_type == "immediate":
+            # TODO change
+
+        elif schedule_type in ["recurrent", "one-time"]:
+            if schedule_type == "recurrent":
+                cron_str = data.get("crontab")
+                if not cron_str:
+                    return jsonify({'error': 'Missing crontab'}), 400
+                trigger = CronTrigger.from_crontab(cron_str)
+
+            else:  # "one-time"
+                date_str = data.get("date")
+                if not date_str:
+                    return jsonify({'error': 'Missing date'}), 400
+
+                try:
+                    job_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    return jsonify({'error': 'Invalid date format'}), 400
+                trigger = "date"
+                run_date = job_date
+
+            scheduler.add_job(open_federated_server_job, trigger, args=[config_dict, federated_log_path], id=job_id,
+                              run_date=run_date)
+
+        else:
+            return jsonify({'error': f'Invalid schedule_type: {schedule_type}'}), 400
+
+    except Exception as e:
+        return jsonify({'error': f'Error scheduling job: {str(e)}'}), 500
+
+    return jsonify({'job_id': job_id}), 200
 
 
 @dashboard_connection_blueprint.route('/dashboard/is_federation_workload_running', methods=['GET'])
