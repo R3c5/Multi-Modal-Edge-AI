@@ -1,6 +1,5 @@
 import logging
 import os
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
 
 from apscheduler.jobstores.base import JobLookupError
@@ -26,7 +25,8 @@ from multi_modal_edge_ai.server.scheduler.jobs import reset_all_daily_informatio
 
 # Get the root directory of the project
 root_directory = os.path.abspath(os.path.dirname(__file__))
-
+federated_server_address = "127.0.0.1:8080"
+flask_server_port = 5000
 
 def configure_logging(app):
     """
@@ -102,7 +102,7 @@ def initialize_federated_server(models_keeper, client_keeper):
     """
     Create the federation server
     """
-    federated_server = FederatedServer("127.0.0.1:8080", models_keeper, client_keeper)
+    federated_server = FederatedServer(federated_server_address, models_keeper, client_keeper)
     return federated_server
 
 
@@ -156,7 +156,7 @@ def run_server_set_up(app):
     configure_dashboard_connection_blueprints(app, dashboard_connection_blueprint, client_keeper, scheduler,
                                               federated_server)
 
-    app.run(port=5000)
+    app.run(port=flask_server_port)
 
 
 if __name__ == '__main__':

@@ -6,13 +6,15 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from pymongo.collection import Collection
 
-from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
-from multi_modal_edge_ai.client.databases.adl_queries import add_activity, get_past_x_activities
 from multi_modal_edge_ai.client.adl_inference.adl_inference_stage import adl_inference_stage
 from multi_modal_edge_ai.client.anomaly_detection.anomaly_detection_stage import check_window_for_anomaly
 from multi_modal_edge_ai.client.controllers.client_controller import send_set_up_connection_request, send_heartbeat
+from multi_modal_edge_ai.client.databases.adl_queries import add_activity, get_past_x_activities
+from multi_modal_edge_ai.client.databases.database_connection import get_database_client, get_database, get_collection
 from multi_modal_edge_ai.client.federated_learning.federated_client import FederatedClient
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
+
+federated_server_address = "127.0.0.1:8080"
 
 
 def create_heartbeat_and_send(client_config: dict) -> None:
@@ -93,7 +95,7 @@ def start_federated_client(client_config: dict) -> None:
     collection = get_collection(database, client_config['adl_collection'])
     train_eva = TrainEval(collection, client_config['adl_list'], client_config['andet_scaler'])
     fc = FederatedClient(client_config['anomaly_detection_model_keeper'], train_eva)
-    fc.start_numpy_client("127.0.0.1:8080")
+    fc.start_numpy_client(federated_server_address)
 
 
 def run_federation_stage(client_config: dict):
