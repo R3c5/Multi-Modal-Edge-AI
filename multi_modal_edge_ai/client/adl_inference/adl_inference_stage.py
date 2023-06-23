@@ -79,12 +79,12 @@ def adl_inference_stage(adl_model_keeper: ADLModelKeeper, sensor_database: str, 
                         current_time: datetime) -> dict | None:
     """
     Run the inference stage of the ADL pipeline. This stage retrieves the past X seconds of entries from the Sensor
-    Database, applies the preprocessing functions, predicts the ADL using the preprocessed data, and adds the result to
-    the ADL Database.
+    Database, applies the preprocessing functions, predicts the ADL using the preprocessed data.
     :param adl_model_keeper: ADLModelKeeper holding the model used to predict the adls
     :param current_time: the current time as a datetime, typically expecting datetime.now()
     :param sensor_database: The name of the Sensor Database to retrieve the entries from.
     :param seconds: The number of seconds of entries from the Sensor Database to retrieve.
+    :param adl_model_keeper: The ADLModelKeeper object containing the ADL model and encoder.
     :return: dict containing the Start_Time, End_Time and Activity of the new prediction
     """
     try:

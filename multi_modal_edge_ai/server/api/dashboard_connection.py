@@ -290,5 +290,5 @@ def get_error_log() -> Response:
 @dashboard_connection_blueprint.route('/dashboard/get_federation_log', methods=['GET'])
 @authenticate
 def get_federation_log() -> Response:
-    log_path = './multi_modal_edge_ai/server/federated_learning/server_log'
+    log_path = './federated_learning/server_log'
     return send_file(log_path)
