@@ -27,7 +27,6 @@ class FederatedClient:
             client=self.flower_client
         )
 
-
 # This piece of code was used in order to test the interaction between federated client and server
 # if __name__ == "__main__":
 #     adl_df = parse_file_with_idle(
