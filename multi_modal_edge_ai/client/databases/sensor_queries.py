@@ -98,8 +98,8 @@ def get_all_documents_all_fields(collection: Collection) -> list[dict[Any, Any]]
 #     return new_data
 
 
-def get_past_x_seconds_of_all_sensor_entries(collection: Collection, x: int, current_time: datetime.datetime) -> \
-        list[dict]:
+def get_past_x_seconds_of_all_sensor_entries(collection: Collection, x: int,
+                                             current_time: datetime.datetime) -> list[dict]:
     """
     A method that retrieves entries from the collection where 'last_seen' is greater than or equal to
     the current time minus x seconds.
