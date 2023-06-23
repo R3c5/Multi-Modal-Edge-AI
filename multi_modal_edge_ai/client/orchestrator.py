@@ -15,6 +15,7 @@ from multi_modal_edge_ai.client.federated_learning.federated_client import Feder
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
 
 federated_server_address = "127.0.0.1:8080"
+workload_lock = threading.Lock()
 
 
 def create_heartbeat_and_send(client_config: dict) -> None:
@@ -90,12 +91,31 @@ def start_federated_client(client_config: dict) -> None:
     Define the TrainEval method and start the Federated Client
     :param client_config: See *run_schedule* for exact format of dict
     """
-    logging.info('Federation stage started')
-    database = get_database(get_database_client(), client_config['client_db'])
-    collection = get_collection(database, client_config['adl_collection'])
-    train_eva = TrainEval(collection, client_config['adl_list'], client_config['andet_scaler'])
-    fc = FederatedClient(client_config['anomaly_detection_model_keeper'], train_eva)
-    fc.start_numpy_client(federated_server_address)
+    try:
+        logging.info('Federation stage started')
+        database = get_database(get_database_client(), client_config['client_db'])
+        collection = get_collection(database, client_config['adl_collection'])
+        train_eva = TrainEval(collection, client_config['adl_list'], client_config['andet_scaler'])
+        fc = FederatedClient(client_config['anomaly_detection_model_keeper'], train_eva, True)
+        fc.start_numpy_client(federated_server_address)
+    finally:
+        workload_lock.release()
+
+
+def start_personalization_client(client_config: dict) -> None:
+    """
+    Define the TrainEval method and start the Federated Client
+    :param client_config: See *run_schedule* for exact format of dict
+    """
+    try:
+        logging.info('Personalization stage started')
+        database = get_database(get_database_client(), client_config['client_db'])
+        collection = get_collection(database, client_config['adl_collection'])
+        train_eva = TrainEval(collection, client_config['adl_list'], client_config['andet_scaler'])
+        fc = FederatedClient(client_config['anomaly_detection_model_keeper'], train_eva, False)
+        fc.start_numpy_client(federated_server_address)
+    finally:
+        workload_lock.release()
 
 
 def run_federation_stage(client_config: dict):
@@ -103,8 +123,23 @@ def run_federation_stage(client_config: dict):
     Create a seperate thread to run the federation client
     :param client_config: See *run_schedule* for exact format of dict
     """
-    thread = threading.Thread(target=start_federated_client, args=client_config)
-    thread.start()
+    if workload_lock.acquire(blocking=False):
+        thread = threading.Thread(target=start_federated_client, args=client_config)
+        thread.start()
+    else:
+        logging.info("Couldn't start federation workload. There is a workload running")
+
+
+def run_personalization_stage(client_config: dict):
+    """
+    Create a seperate thread to run the personalization client
+    :param client_config: See *run_schedule* for exact format of dict
+    """
+    if workload_lock.acquire(blocking=False):
+        thread = threading.Thread(target=start_personalization_client, args=client_config)
+        thread.start()
+    else:
+        logging.info("Couldn't start personalization workload. There is a workload running")
 
 
 def run_schedule(client_config: dict) -> None:
@@ -133,7 +168,7 @@ def run_schedule(client_config: dict) -> None:
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(create_heartbeat_and_send, 'interval', seconds=10, args=(client_config,))
-    scheduler.add_job(initiate_internal_pipeline, 'interval', seconds=20,
+    scheduler.add_job(initiate_internal_pipeline, 'interval', seconds=client_config["adl_window_size"],
                       args=(client_config,))
     scheduler.start()
 

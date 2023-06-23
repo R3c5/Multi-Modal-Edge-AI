@@ -40,6 +40,7 @@ class PersistentFedAvg(FedAvg):
             initial_parameters: Optional[Parameters] = None,
             fit_metrics_aggregation_fn: Optional[MetricsAggregationFn] = None,
             evaluate_metrics_aggregation_fn: Optional[MetricsAggregationFn] = None,
+            running_federation_workload: bool,
             clients_keeper: ClientsKeeper,
             models_keeper
     ):
@@ -55,6 +56,7 @@ class PersistentFedAvg(FedAvg):
                          initial_parameters=initial_parameters,
                          fit_metrics_aggregation_fn=fit_metrics_aggregation_fn,
                          evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation_fn)
+        self.running_federation_workload = running_federation_workload
         self.clients_keeper = clients_keeper
         self.models_keeper = models_keeper
         self.initial_parameters = self.get_parameters()
@@ -79,16 +81,27 @@ class PersistentFedAvg(FedAvg):
         clients_ips = [client_proxy.cid for client_proxy, _ in results]
         aggregation_date = datetime.now()
         for ip in clients_ips:
-            self.clients_keeper.update_last_model_aggregation(ip, aggregation_date)
+            if self.running_federation_workload:
+                self.clients_keeper.update_last_model_aggregation(ip, aggregation_date)
+            else:
+                self.clients_keeper.update_last_model_personalization(ip, aggregation_date)
 
         if aggregate_weights is not None:
-            self.set_parameters(aggregate_weights[0])
-            log(
-                INFO,
-                "aggregated %s clients successfully out of %s total selected clients",
-                len(results),
-                len(results) + len(failures)
-            )
+            if self.running_federation_workload:
+                self.set_parameters(aggregate_weights[0])
+                log(
+                    INFO,
+                    "aggregated %s clients successfully out of %s total selected clients",
+                    len(results),
+                    len(results) + len(failures)
+                )
+            else:
+                log(
+                    INFO,
+                    "%s clients successfully personalized their local model",
+                    len(results),
+                    len(results) + len(failures)
+                )
 
         return aggregate_weights
 

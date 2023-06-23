@@ -15,7 +15,7 @@ def open_federated_server_job(federated_server, client_keeper, config: dict[str,
             client_keeper.set_start_workload("start_federation", True)
             current_workload["config"] = config
             current_workload["workload_type"] = "federation"
-            federated_server.start_server(config, log_file_path)
+            federated_server.start_server(config, log_file_path, True)
         finally:
             current_workload.clear()
             client_keeper.set_start_workload("start_federation", False)
@@ -31,7 +31,7 @@ def open_personalization_job(federated_server, client_keeper, config: dict[str, 
             client_keeper.set_start_workload("start_personalization", True)
             current_workload["config"] = config
             current_workload["workload_type"] = "personalization"
-            federated_server.start_server(config, log_file_path)
+            federated_server.start_server(config, log_file_path, False)
         finally:
             current_workload.clear()
             client_keeper.set_start_workload("start_personalization", False)

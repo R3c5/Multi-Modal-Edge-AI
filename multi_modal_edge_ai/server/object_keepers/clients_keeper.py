@@ -15,7 +15,8 @@ class ClientsKeeper:
             'start_personalization': bool
             'num_adls': int,
             'num_anomalies': int
-            'last_model_aggregation': datetime
+            'last_model_aggregation': datetime,
+            'last_model_personalization': datetime
         },
         ...
     }
@@ -40,6 +41,7 @@ class ClientsKeeper:
                 'status': status,
                 'last_seen': last_seen,
                 'last_model_aggregation': datetime.min,
+                'last_model_personalization': datetime.min,
                 'start_federation': False,
                 'start_personalization': False,
                 'num_adls': 0,
@@ -86,6 +88,15 @@ class ClientsKeeper:
         :return:
         """
         self.connected_clients[ip]["last_model_aggregation"] = date
+
+    def update_last_model_personalization(self, ip: str, date: datetime) -> None:
+        """
+        This function will override the last_model_personalization field
+        :param ip: The ip of the client on which to override the last_model_personalization field
+        :param date: The datetime object to which override
+        :return:
+        """
+        self.connected_clients[ip]["last_model_personalization"] = date
 
     def get_last_seen(self, ip) -> Optional[datetime]:
         """
