@@ -76,10 +76,13 @@ def heartbeat() -> Response | Tuple[Response, int]:
         client_keeper.update_client(client_ip, 'Connected', datetime.datetime.now(), recent_adls, recent_anomalies)
 
         response = send_models_zip(models_keeper, client_last_seen)
-        response.headers['start_federation_client_flag'] = \
-            str(client_keeper.compare_and_swap_start_workload("start_federation", client_ip))
-        response.headers['start_personalization_client_flag'] = \
+
+        start_federation_client_flag = str(client_keeper.compare_and_swap_start_workload("start_federation", client_ip))
+        start_personalization_client_flag = \
             str(client_keeper.compare_and_swap_start_workload("start_personalization", client_ip))
+
+        response.headers['start_federation_client_flag'] = start_federation_client_flag
+        response.headers['start_personalization_client_flag'] = start_personalization_client_flag
 
         return response
     except Exception as e:

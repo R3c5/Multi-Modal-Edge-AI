@@ -1,3 +1,4 @@
+import threading
 import uuid
 from datetime import datetime
 from functools import wraps
@@ -8,7 +9,7 @@ from apscheduler.triggers.cron import CronTrigger
 from flask import request, jsonify, Blueprint, Response, send_file
 
 from multi_modal_edge_ai.server.scheduler.jobs import open_federated_server_job, open_personalization_job, \
-    is_federated_workload_running
+    get_current_workload
 
 
 class DashboardBlueprint(Blueprint):
@@ -98,7 +99,9 @@ def schedule_federation_workload() -> tuple[Response, int]:
 
     try:
         if schedule_type == "immediate":
-            open_federated_server_job(federated_server, client_keeper, config_dict, federated_log_path)
+            thread = threading.Thread(target=open_federated_server_job,
+                                      args=(federated_server, client_keeper, config_dict, federated_log_path))
+            thread.start()
 
         elif schedule_type in ["recurrent", "one-time"]:
             if schedule_type == "recurrent":
@@ -113,7 +116,7 @@ def schedule_federation_workload() -> tuple[Response, int]:
                     return jsonify({'error': 'Missing date'}), 400
 
                 try:
-                    job_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                    job_date = datetime.fromisoformat(date_str[:-1])
                 except ValueError:
                     return jsonify({'error': 'Invalid date format'}), 400
                 trigger = "date"
@@ -168,7 +171,9 @@ def schedule_personalization_workload():
 
     try:
         if schedule_type == "immediate":
-            open_personalization_job(federated_server, client_keeper, config_dict, federated_log_path)
+            thread = threading.Thread(target=open_personalization_job,
+                                      args=(federated_server, client_keeper, config_dict, federated_log_path))
+            thread.start()
 
         elif schedule_type in ["recurrent", "one-time"]:
             if schedule_type == "recurrent":
@@ -183,7 +188,7 @@ def schedule_personalization_workload():
                     return jsonify({'error': 'Missing date'}), 400
 
                 try:
-                    job_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                    job_date = datetime.fromisoformat(date_str[:-1])
                 except ValueError:
                     return jsonify({'error': 'Invalid date format'}), 400
                 trigger = "date"
@@ -209,7 +214,7 @@ def is_workload_running() -> tuple[Response, int]:
     This function will return the config file of the current workload being run, if any.
     :return: The config file, or a message saying that there are no configs being run
     """
-    config = is_federated_workload_running()
+    config = get_current_workload()
     if config:
         return jsonify(config), 200
     else:
@@ -246,7 +251,7 @@ def fetch_all_workloads() -> tuple[Response, int]:
         workloads_info.append({
             "id": job.id,
             'scheduled_time': str(job.next_run_time),
-            "config": job.args[0],
+            "config": job.args[2],
             "cron_job": isinstance(trigger, CronTrigger),
             "crontab": crontab,
             "workload_type": "federation" if job.func == open_federated_server_job else "personalization"

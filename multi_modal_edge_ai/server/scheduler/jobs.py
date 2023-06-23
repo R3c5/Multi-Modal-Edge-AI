@@ -67,7 +67,7 @@ def reset_all_daily_information_job(client_keeper) -> None:
     client_keeper.reset_all_daily_information()
 
 
-def is_federated_workload_running() -> dict[str, Scalar]:
+def get_current_workload() -> dict[str, Scalar]:
     """
     This function will return the config with which the workloads are running.
     :return: If a workload is running, it will return the config with which it is running, else empty dictionary

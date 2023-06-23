@@ -1,3 +1,4 @@
+import pickle
 from collections import OrderedDict
 from datetime import datetime
 from logging import INFO
@@ -9,13 +10,15 @@ from flwr.common import (
     Parameters,
     Scalar,
     NDArrays,
-    MetricsAggregationFn
+    MetricsAggregationFn,
+    parameters_to_ndarrays
 )
 from flwr.common.logger import log
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
+from flwr.server.strategy.aggregate import aggregate
 
 
 class PersistentFedAvg(FedAvg):
@@ -59,7 +62,6 @@ class PersistentFedAvg(FedAvg):
         self.running_federation_workload = running_federation_workload
         self.clients_keeper = clients_keeper
         self.models_keeper = models_keeper
-        self.initial_parameters = self.get_parameters()
 
     def aggregate_fit(
             self,
@@ -76,19 +78,27 @@ class PersistentFedAvg(FedAvg):
         :return: The parameters and trainings statistics
         """
 
-        aggregate_weights = super().aggregate_fit(server_round, results, failures)
+        weights_results = [
+            (parameters_to_ndarrays(fit_res.parameters), fit_res.num_examples)
+            for _, fit_res in results
+        ]
+
+        aggregated_weights_results = aggregate(weights_results)
+
+        aggregated_parameters = super().aggregate_fit(server_round, results, failures)
 
         clients_ips = [client_proxy.cid for client_proxy, _ in results]
         aggregation_date = datetime.now()
         for ip in clients_ips:
+            clean_ip = ip.split(':')[1]
             if self.running_federation_workload:
-                self.clients_keeper.update_last_model_aggregation(ip, aggregation_date)
+                self.clients_keeper.update_last_model_aggregation(clean_ip, aggregation_date)
             else:
-                self.clients_keeper.update_last_model_personalization(ip, aggregation_date)
+                self.clients_keeper.update_last_model_personalization(clean_ip, aggregation_date)
 
-        if aggregate_weights is not None:
+        if aggregated_parameters is not None:
             if self.running_federation_workload:
-                self.set_parameters(aggregate_weights[0])
+                self.set_parameters(aggregated_weights_results)
                 log(
                     INFO,
                     "aggregated %s clients successfully out of %s total selected clients",
@@ -102,7 +112,7 @@ class PersistentFedAvg(FedAvg):
                     len(results)
                 )
 
-        return aggregate_weights
+        return aggregated_parameters
 
     def set_parameters(self, parameters) -> None:
         """
