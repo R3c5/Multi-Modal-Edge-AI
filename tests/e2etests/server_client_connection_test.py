@@ -2,6 +2,7 @@ import subprocess
 import requests
 import time
 import os
+import signal
 
 
 def test_server_connection():
@@ -23,8 +24,10 @@ def test_server_connection():
     assert response_heartbeat.status_code == 500
 
     # Stop the server
+    server.send_signal(signal.SIGINT)
     server.terminate()
     server.kill()
+    time.sleep(5)
 
 
 def test_client_connection():
@@ -59,12 +62,16 @@ def test_client_connection():
     assert response_heartbeat.status_code == 200
 
     # Stop the server
+    server.send_signal(signal.SIGINT)
     server.terminate()
     server.kill()
 
     # Stop the client
+    client.send_signal(signal.SIGINT)
     client.terminate()
     client.kill()
+
+    time.sleep(2)
 
 
 def test_parameters_for_client():
@@ -82,5 +89,7 @@ def test_parameters_for_client():
     assert result.returncode != 0, "Script should have exited with non-zero exit code"
 
     # Stop the server
+    server.send_signal(signal.SIGINT)
     server.terminate()
     server.kill()
+    time.sleep(2)
