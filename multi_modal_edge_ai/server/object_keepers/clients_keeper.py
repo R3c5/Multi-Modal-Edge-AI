@@ -66,7 +66,7 @@ class ClientsKeeper:
         Update the statuses of the clients that were last seen more than 3 hours ago to 'Disconnected'
         """
         current_time = datetime.now()
-        timeout_threshold = timedelta(hours=3)
+        timeout_threshold = timedelta(seconds=30)
 
         for ip, client in self.connected_clients.items():
             last_seen = client['last_seen']
