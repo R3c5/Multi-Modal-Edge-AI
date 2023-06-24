@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useRef, useState} from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import NumericInput from 'react-numeric-input';
@@ -7,7 +7,7 @@ import {Popover2} from "@blueprintjs/popover2";
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import { Cron } from 'react-js-cron';
 import 'react-js-cron/dist/styles.css'
-import {scheduleFederationWorkload, schedulePersonalizationWorkload} from "../api";
+import {scheduleFederationWorkload} from "../api";
 import SECRET_TOKEN from "../secrets";
 
 const FederationScheduler = () => {
