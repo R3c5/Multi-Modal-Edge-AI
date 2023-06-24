@@ -160,3 +160,4 @@ yarn-error.log*
 
 /multi_modal_edge_ai/client/model_zip/
 /multi_modal_edge_ai/server/federated_learning/server_log
+/multi_modal_edge_ai/tests/end_to_end_tests/model_zip/
