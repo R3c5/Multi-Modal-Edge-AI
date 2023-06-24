@@ -49,12 +49,10 @@ export const getFederationLog = async (token) => {
 
 export const getFederationWorkloads = async (token) => {
     try {
-        const config = {
-            headers: {
-                Authorization: token,
-            },
+        const headers = {
+            Authorization: token
         };
-        const response = await axios.get(`${BASE_URL}/dashboard/fetch_all_federation_workloads`, config);
+        const response = await axios.get(`${BASE_URL}/dashboard/fetch_all_federation_workloads`, { headers });
         return response.data;
     } catch (error) {
         console.error('Error fetching federation workloads:', error)
@@ -117,14 +115,14 @@ export const removeFederationWorkload = async (token, job_id) => {
     }
 };
 
-export const isFederationWorkloadRunning = async (token) => {
+export const getIsWorkloadRunning = async (token) => {
     try {
         const config = {
             headers: {
                 Authorization: token,
             },
         };
-        const response = await axios.get(`${BASE_URL}/dashboard/is_federation_workload_running`, config);
+        const response = await axios.get(`${BASE_URL}/dashboard/is_workload_running`, config);
         return response.data;
     } catch (error) {
         console.error('Error checking running federation workload:', error);
