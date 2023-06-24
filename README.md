@@ -1,92 +1,121 @@
-# Multi-Modal Edge-AI
+<h1 align="center">
+  <span style="color:grey;font-weight:bold;text-stroke: 1px white;-webkit-text-stroke-width: 1px;-webkit-text-fill-color: white;">Multi-Modal Edge</span>-<span style="color:black;font-weight:bold;text-stroke: 1px white;-webkit-text-stroke-width: 1px;-webkit-text-fill-color: #4287f5; font-weight:bold">AI</span>
+</h1>
 
 
 
-## Getting started
+<h2 align="center">
+   Future of Healthcare: Edge AI Technology to Assist Elderly in their Daily Lives with Multi-Modal Federated Learning.
+</h2>
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+<h3 align="center">
+  <a href="#introduction">Introduction</a> |
+  <a href="#features">Features</a> |
+  <a href="#installation">Installation</a> |
+  <a href="#usage">Usage</a> |
+  <a href="#contributing">Contributing</a> |
+  <a href="#contributors">Contributors</a> |
+  <a href="#license">License</a>
+</h3>
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+---
+<div align="center">
+    <img src="https://img.shields.io/badge/Python-3-blue.svg" alt="Python">
+    <img src="https://img.shields.io/badge/AI-Enabled-red.svg" alt="AI">
+    <img src="https://img.shields.io/badge/Pytest-Enabled-darkgreen.svg">
+    <img src="https://img.shields.io/badge/scikit--learn-Enabled-orange.svg">
+    <img src="https://img.shields.io/badge/Anomaly-Detection-blue.svg">
+</div>
 
-## Add your files
+---
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## **Introduction**
 
-```
-cd existing_repo
-git remote add origin https://gitlab.ewi.tudelft.nl/cse2000-software-project/2022-2023-q4/cluster19/multi-modal-edge-ai/multi-modal-edge-ai.git
-git branch -M main
-git push -uf origin main
-```
+The system was created as part of an IoT homekit that will be used in assisting the caretakers supervise more elderly people that still want to be independent but may require additional support. To that extent, it uses machine learning models to predict anomalies in the daily routines, based on information from sensor data and save the anomalies in a database, from where the caretaker will be notified. It has a few key principles that had to be followed throughout it's whole development proces:
 
-## Integrate with your tools
+- **Protect data privacy**: The sensor data is stored locally in a database, and never sent to the server
+- **Model Improvements**: Federated Learning is used to be able to further train the modelsy, but without violating the previous point.
+- **Scalable**: The system was designed to be scalable in the number of clients
+- **Maintainability and Reusability**: The codebase makes use of existent frameworks like [PyTorch](https://pytorch.org/docs/stable/index.html) and [Flower](https://flower.dev/docs/) in order for the code to be readable maintainable and of the highest quality.
 
-- [ ] [Set up project integrations](https://gitlab.ewi.tudelft.nl/cse2000-software-project/2022-2023-q4/cluster19/multi-modal-edge-ai/multi-modal-edge-ai/-/settings/integrations)
+## **Features**
 
-## Collaborate with your team
+Here are the most notable features available in our system:
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+* **Sandboxes**: There are 2 sandboxes one for ADL (activity of daily living) inference and one for anomaly detection. Each one includes multiple models to choose, both deep learning models and non deep learning models. You can create a model, configure it and validate it on a public dataset chosen by us to reflect the requirements of our system.
 
-## Test and Deploy
+* **Federated Learning**: A federated round can be scheduled on the server. Then the server will choose multiple clients and initiate their training stage. After they the round is finished, it aggregates all the models and saves it as the new global modal to be redistributed to all the clients.
 
-Use the built-in continuous integration in GitLab.
+* **Personalisation**: This allows the client to train on its own data so that it's own model becomes more accostumed to the behaviour of the user. So even if the global model would predict 10 hours of sleep as anomalous, the local one might see that as normal.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+* **Dashboard**: Dashboard is the interface that a user can see the status of the system. It displays info about connected clients, it allows the scheduling of federation rounds, while also displaying any errors that appear on the server side.
 
-***
+## **Installation**
 
-# Editing this README
+To see a guide on how to install and run the system, check this [Installation guide](documentation/INSTALLATION.md)
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## **Usage**
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+For a brief description on how to interact with the system, check the [User guide](documentation/USER_GUIDE.md).
 
-## Name
-Choose a self-explaining name for your project.
+If you are interested in the available server APIs, their documentation can be found [here](documentation/API_DOCS.md).
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+## **Contributing**
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Thank you for wanting to contribute to our project! If you have ideas or improvements that you want to share with us, please follow these guidelines:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+- **Bug Reports and Feature Requests**: 
+  - Submit clear bug reports with steps to reproduce or feature requests with detailed explanations to our repository. Please use the available template for this.
+    
+- **Code Contributions**: 
+  - Fork the repository and create a branch for your changes.
+  - Adhere to our coding style and conventions.
+  - Before submiting your changes please run the pipeline locally. To see how the gitlab pipeline is run, check the [Pipeline YAML file](.gitlab-ci.yml)
+  - Submit a pull request with a concise description of your changes. Please use the available template.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### *Naming Conventions*
+Please follow the following guidelines for naming conventions.
+* Commit Naming Conventions
+    Commit messages should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format:
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+    1. Start with one of the following prefixes: `docs:`, `fix:`, `feat:`, `refactor:`, or `test:`.
+    2. Use a verb in the present form that describes the main addition in the commit, starting with a capital letter.
+    3. Include one or more words that can describe the subject of the commit.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+    For example: `docs: Add meeting notes`
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+* Issue Naming Conventions
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+    When creating an issue:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+    1. Use a brief but descriptive title that summarizes the problem or task.
+    2. Provide a detailed description of the issue or task, including any relevant background information, steps to reproduce the problem, or requirements for the task.
+    3. Assign appropriate labels and milestones to the issue to help with organization and tracking.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+* File Naming Conventions
 
-## License
-For open source projects, say how it is licensed.
+    File names should adhere to the following conventions:
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+    1. Use lowercase letters and separate words with underscores ( `_` ).
+    2. Start with a short, descriptive name that reflects the content of the file.
+    3. End the file name with the appropriate file extension (e.g., `.py` for Python scripts, `.md` for Markdown files).
+
+
+## **Contributors**
+
+This project was created by five *Computer Science* students during the *Software Project* at *Delft University of Technology*. It was developed alongside [Maketek](https://www.maketek.nl/).
+
+The students that worked on this project are:
+
+- **Rafael Borges**
+- **Alexandru-Sebastian Nechita**
+- **Razvan Nistor**
+- **Alexandru Preda**
+- **Aksel Tacettin**
+
+
+## **License**
+
+This project is licensed under the MIT License. See the [LICENSE](documentation/LICENCE.md) file for details.
+
