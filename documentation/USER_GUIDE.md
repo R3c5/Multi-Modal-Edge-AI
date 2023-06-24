@@ -26,6 +26,12 @@ and output activation function: `nn.Sigmoid()`.
 
 ## Client
 
+The client has a few main characteristics:
+- *Connection to server*: When the client is first started it sends a `Set up connection` request to the server. The server will then send the `adl_model` and `anomaly_detection_model` for the client to save, load and use.
+- *Heartbeat*: After the first connection, a `heartbeat` is scheduled to be sent every 10 seconds to the server. In the heartbeat the client sends the recent number of predictions to the server. In the response, the server can send the models again, if they were updated since the last request from the client. Also, the response contains a flag that indicates if the federation client should be started or not.
+- *Internal predictions*: The client will read the sensor data, infer ADLs and store them in `adl_db`, and if the new ADL is different than the previous one (i.e. the previous activity is finished), the number of ADLs predicted is increased, and the anomaly detection stage is run to check for anomalies. If the anomaly detection detects an anomaly it will store the anomalous window in `anomalies_db`. Also, it increases the number of anomalies detected. These number of predictions will then be sent with the next heartbeat to the server, and then reset.
+- *Federation*: If the `start_federation_client_flag` is set to true, the client will start the federated client and initiate the federated round. This part is handled by [Flower library](https://flower.dev/docs/)
+
 Since the clients are supposed to be represented by Raspberry Pis, there is not much a user can interact with on this side.
 However, the client is supposed to interact with a MongoDB and the server so the functionality of the client can be tested there.
 
@@ -45,9 +51,35 @@ to the scheduling done by setting up the heartbeat and the prediction sequence a
 
 ## Server and Dashboard
 
-The server is the central point in the system. Its purpose is to hold and aggregate the global models used
-to predict the anomalies, holding all the client information, as well as scheduling the federation rounds.
+The server is the central point in the system. It holds information about all the clients that connect to it. Also, it allows the scheduling of federation rounds, where it uses [Flower library](https://flower.dev/docs/) to initiate a federation round. After the round is finished, it aggregates all the models from the selected clients, and aggregates to models into one global one that is stored on the server. This will then be redistributed to all the clients of the system.
 
 Once the server is running there some APIs become available, some intended for the client, and some for the dashboard.
 For a complete overview of these, check [here](API_DOCS.md).
 
+The dashboard is the main way a user can interact with the system. It displays information about client information, scheduling federation and personalisation and the server and federated logs.
+
+The top of the dashboard displays simple statistics about the system, like number of clients and the date and time of the next federation round.
+<img src="images/dashboard_top_info.png">
+
+
+Next the dashboard allows the user to schedule new federation or personalisation jobs. The user can schedule the job to run regurarly at fixed times, schedule the job to run once, or to run once imediately.
+<img src="images/dashboard_schedule_job.png">
+Also, before scheduling the job, the paramaters for the job can be set. While hovering over a parameter, a info box appears, explaining it.
+<img src="images/dashboard_param_description.png">
+
+All the scheduled jobs can be seen in the `Scheduled Jobs` table. This shows the type of job, and if it is a recurent job, including the cron string in that case, or not. Also, it allows the user to cancel scheduled jobs.
+<img src="images/dashboard_scheduled_jobs.png">
+
+In addition to all this information, if the user hovers over a job, a box containing all the parameters appears.
+<img src="images/dashboard_job_description.png">
+
+The dashboard also includes a list of the clients, alongside some information for each one. 
+- The IP identifies the client.
+- The connected status is based on a `last_seen` field stored on the server that is updated after every interaction with the server. If this field is more than 3 hours ago, the client appears is `Disconnected` indicating a malfunction, otherwise it shows `Connected`.
+- The `Last Federation/Personalisation Update` shows the last time the client participated in a federation/personalisation round.
+- The recent ADLs and anomalies show the number of predictions the client has done for each in the past day. These numbers reset everyday at midnight.
+<img src="images/dashboard_client_info.png">
+
+Also, the user is able to see the error logs from the server, and all the federation info logs.
+<img src="images/dashboard_server_log.png">
+<img src="images/dashboard_federation_log.png">
