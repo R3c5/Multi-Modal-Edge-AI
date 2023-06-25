@@ -52,7 +52,7 @@ export const getFederationWorkloads = async (token) => {
         const headers = {
             Authorization: token
         };
-        const response = await axios.get(`${BASE_URL}/dashboard/fetch_all_federation_workloads`, { headers });
+        const response = await axios.get(`${BASE_URL}/dashboard/fetch_all_workloads`, { headers });
         return response.data;
     } catch (error) {
         console.error('Error fetching federation workloads:', error)

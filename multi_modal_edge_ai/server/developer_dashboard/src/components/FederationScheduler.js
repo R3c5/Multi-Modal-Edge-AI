@@ -1,4 +1,4 @@
-import React, { useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import NumericInput from 'react-numeric-input';
@@ -7,7 +7,7 @@ import {Popover2} from "@blueprintjs/popover2";
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import { Cron } from 'react-js-cron';
 import 'react-js-cron/dist/styles.css'
-import {scheduleFederationWorkload} from "../api";
+import {scheduleFederationWorkload, schedulePersonalizationWorkload} from "../api";
 import SECRET_TOKEN from "../secrets";
 
 const FederationScheduler = () => {
@@ -69,8 +69,6 @@ const FederationScheduler = () => {
         "min_available_clients": 2,
         "verbose":true,
     });
-    const [config, setConfig] = useState(federationConfig)
-
     const disabledConfigsFederation = ['window_size', 'one-hot', 'event_based','verbose'];
     const disabledConfigsPersonalization = ['window_size', 'one-hot', 'event_based', 'fraction_fit',
         'fraction_evaluate', 'min_fit_clients', 'min_evaluate_clients', "num_rounds", 'verbose'];
