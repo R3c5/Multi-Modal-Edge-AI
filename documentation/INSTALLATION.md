@@ -10,6 +10,7 @@ Clone the repository to your machine. This can be done as following:
 git clone https://gitlab.ewi.tudelft.nl/cse2000-software-project/2022-2023-q4/cluster19/multi-modal-edge-ai/multi-modal-edge-ai.git
 ```
 
+
 After that, you need to set up your python virtual environment. This can be done with any virtual environment tool, but for purposes of exemplification, `venv` will be used. For this project, Python 3.10 is being used, so it is important to create the virtual environment with that version of the Python interpreter.
 
 First, create the virtual environment:
@@ -46,7 +47,7 @@ Then, navigate to the developer dashboard directory. Assuming you are on the roo
 cd /multi_modal_edge_ai/server/developer_dashboard
 ```
 
-Then, you'll need to isntall the necessary dependencies. You can do it with the following command:
+Then, you'll need to install the necessary dependencies. You can do it with the following command:
 
 ```bash
 npm install
