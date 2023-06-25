@@ -28,6 +28,18 @@ def weighted_average(metrics: list[tuple[int, Metrics]]) -> Metrics:
             "precision": sum(precisions) / sum(examples), "f1_score": sum(f1_scores) / sum(examples)}
 
 
+def training_loss_average(metrics: list[tuple[int, Metrics]]) -> Metrics:
+    """
+    This will aggregate the training time metrics
+    :param metrics: The list of metrics returned by each client
+    :return: The aggregated object
+    """
+    training_loss_avg = [num_examples * float(m['avg_reconstruction_loss']) for num_examples, m in metrics]
+    examples = [num_examples for num_examples, _ in metrics]
+
+    return {"avg_reconstruction_loss": sum(training_loss_avg) / sum(examples)}
+
+
 class FederatedServer:
 
     def __init__(self, server_address: str, models_keeper: ModelsKeeper, clients_keeper: ClientsKeeper) -> None:
@@ -35,11 +47,13 @@ class FederatedServer:
         self.models_keeper = models_keeper
         self.clients_keeper = clients_keeper
 
-    def start_server(self, config: dict[str, Any], log_file_path: str) -> None:
+    def start_server(self, config: dict[str, Any], log_file_path: str, running_federation_workload: bool) -> None:
         """
         This function will start the rpc server with the specified parameters.
         :param config: The config which contains hyperparameters for both training, evaluation, and federation
-        :param log_file_path: The path to the log file `w`hich Flower will use
+        :param log_file_path: The path to the log file which Flower will use
+        :param running_federation_workload: A boolean representing if it is a federation workload or a personalization
+        workload
         :return:
         """
         strategy = PersistentFedAvg(fraction_fit=config["fraction_fit"], fraction_evaluate=config["fraction_evaluate"],
@@ -47,7 +61,9 @@ class FederatedServer:
                                     min_evaluate_clients=config["min_evaluate_clients"],
                                     min_available_clients=config["min_available_clients"],
                                     on_fit_config_fn=lambda _: config, on_evaluate_config_fn=lambda _: config,
-                                    accept_failures=False, evaluate_metrics_aggregation_fn=weighted_average,
+                                    accept_failures=False, fit_metrics_aggregation_fn=training_loss_average,
+                                    evaluate_metrics_aggregation_fn=weighted_average,
+                                    running_federation_workload=running_federation_workload,
                                     clients_keeper=self.clients_keeper, models_keeper=self.models_keeper)
         flwr.common.configure("server", log_file_path)
         fl.server.start_server(

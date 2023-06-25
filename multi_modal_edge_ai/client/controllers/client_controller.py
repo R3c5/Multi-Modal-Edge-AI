@@ -90,10 +90,18 @@ def send_heartbeat(client_config: dict, num_adls: int = 0, num_anomalies: int = 
                                  client_config['anomaly_detection_model_keeper'])
             start_federation_client_flag = ast.literal_eval(
                 response.headers.get('start_federation_client_flag', 'False'))
+            start_personalization_client_flag = ast.literal_eval(
+                response.headers.get("start_personalization_client_flag", 'False'))
+
             logging.info('Heartbeat successful')
             if start_federation_client_flag:
                 from multi_modal_edge_ai.client.orchestrator import run_federation_stage
                 run_federation_stage(client_config)
+
+            elif start_personalization_client_flag:
+                from multi_modal_edge_ai.client.orchestrator import run_personalization_stage
+                run_personalization_stage(client_config)
+
         elif response.status_code == 404:
             logging.error('Client not found')
             send_set_up_connection_request(client_config['adl_model_keeper'],

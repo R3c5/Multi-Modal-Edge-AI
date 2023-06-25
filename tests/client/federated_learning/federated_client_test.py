@@ -12,7 +12,7 @@ def test_start_client(start_numpy_client_mock):
     model = Autoencoder([3, 2], [2, 3], torch.nn.ReLU(), torch.nn.Sigmoid())
     train_eval = Mock()
     model_keeper = ModelKeeper(model, "")
-    fed_client = FederatedClient(model_keeper, train_eval)
+    fed_client = FederatedClient(model_keeper, train_eval, True)
 
     fed_client.start_numpy_client("address")
 
