@@ -11,9 +11,12 @@ class ClientsKeeper:
         'ip1': {
             'status': 'Connected' or 'Disconnected',
             'last_seen': datetime,
+            'start_federation': bool,
+            'start_personalization': bool
             'num_adls': int,
             'num_anomalies': int
-            'last_model_aggregation': datetime
+            'last_model_aggregation': datetime,
+            'last_model_personalization': datetime
         },
         ...
     }
@@ -38,7 +41,9 @@ class ClientsKeeper:
                 'status': status,
                 'last_seen': last_seen,
                 'last_model_aggregation': datetime.min,
+                'last_model_personalization': datetime.min,
                 'start_federation': False,
+                'start_personalization': False,
                 'num_adls': 0,
                 'num_anomalies': 0
             }
@@ -84,6 +89,15 @@ class ClientsKeeper:
         """
         self.connected_clients[ip]["last_model_aggregation"] = date
 
+    def update_last_model_personalization(self, ip: str, date: datetime) -> None:
+        """
+        This function will override the last_model_personalization field
+        :param ip: The ip of the client on which to override the last_model_personalization field
+        :param date: The datetime object to which override
+        :return:
+        """
+        self.connected_clients[ip]["last_model_personalization"] = date
+
     def get_last_seen(self, ip) -> Optional[datetime]:
         """
         Get the last seen of the client with the ip
@@ -112,15 +126,29 @@ class ClientsKeeper:
                 self.connected_clients[client]["num_adls"] = 0
                 self.connected_clients[client]["num_anomalies"] = 0
 
-    def set_start_federation(self, value: bool) -> None:
+    def set_start_workload(self, workload_flag: str, value: bool) -> None:
+        """
+        This function will set the flag of the specified type of workload as specified. It will do so for all the
+        clients
+        :param workload_flag: The type of workload: start_federation or start_personalization
+        :param value: The value, true or false
+        :return:
+        """
         with self.start_federation_lock:
             for ip in self.connected_clients.keys():
-                self.connected_clients[ip]["start_federation"] = value
+                self.connected_clients[ip][workload_flag] = value
 
-    def compare_and_swap_start_federation(self, client_ip: str) -> bool:
+    def compare_and_swap_start_workload(self, workload_flag: str, client_ip: str) -> bool:
+        """
+        This function will compare and swap the value of the flag for the workload. This is an atomic operation, and if
+        the value of the flag is true, it will set it to false. If it is false, it will remain false
+        :param workload_flag: The type of workload: start_federation or start_personalization
+        :param client_ip: The ip of the client for which to perform the compare and swap
+        :return: The value after swap
+        """
         with self.start_federation_lock:
-            if not self.connected_clients[client_ip]["start_federation"]:
+            if not self.connected_clients[client_ip][workload_flag]:
                 return False
             else:
-                self.connected_clients[client_ip]["start_federation"] = False
+                self.connected_clients[client_ip][workload_flag] = False
                 return True

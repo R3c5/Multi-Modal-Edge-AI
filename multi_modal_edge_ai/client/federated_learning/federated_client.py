@@ -7,14 +7,15 @@ from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEv
 
 class FederatedClient:
 
-    def __init__(self, model_keeper: ModelKeeper, train_eval: TrainEval) -> None:
+    def __init__(self, model_keeper: ModelKeeper, train_eval: TrainEval, federation_workload: bool) -> None:
         """
         Constructor for the basic Federated Client
         :param model_keeper: The model keeper which holds the machine learning model
         :param train_eval: The train eval object with the training, evaluation and other data
+        :param federation_workload: The boolean representing whether it is a federation or a personalization workload
         """
         self.model_keeper = model_keeper
-        self.flower_client = FlowerClient(model_keeper, train_eval)
+        self.flower_client = FlowerClient(model_keeper, train_eval, federation_workload)
 
     def start_numpy_client(self, server_address):
         """
