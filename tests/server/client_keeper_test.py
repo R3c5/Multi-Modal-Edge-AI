@@ -59,8 +59,8 @@ def test_update_clients_statuses():
     current_time = datetime.datetime.now()
 
     # Add two clients with different last_seen times
-    keeper.add_client(ip1, 'Connected', current_time - datetime.timedelta(hours=2))
-    keeper.add_client(ip2, 'Connected', current_time - datetime.timedelta(hours=4))
+    keeper.add_client(ip1, 'Connected', current_time - datetime.timedelta(seconds=5))
+    keeper.add_client(ip2, 'Connected', current_time - datetime.timedelta(seconds=15))
 
     # Update clients statuses
     keeper.update_clients_statuses()
