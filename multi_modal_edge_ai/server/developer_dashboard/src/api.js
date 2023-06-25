@@ -49,12 +49,10 @@ export const getFederationLog = async (token) => {
 
 export const getFederationWorkloads = async (token) => {
     try {
-        const config = {
-            headers: {
-                Authorization: token,
-            },
+        const headers = {
+            Authorization: token
         };
-        const response = await axios.get(`${BASE_URL}/dashboard/fetch_all_federation_workloads`, config);
+        const response = await axios.get(`${BASE_URL}/dashboard/fetch_all_workloads`, { headers });
         return response.data;
     } catch (error) {
         console.error('Error fetching federation workloads:', error)
@@ -73,12 +71,30 @@ export const scheduleFederationWorkload = async (token, config, schedule_type, c
         const headers = {
             Authorization: token
         };
-        console.log("data: " , data)
         const response = await axios.post(`${BASE_URL}/dashboard/schedule_federation_workload`, data, { headers });
-        console.log(response)
         return response;
     } catch (error) {
         console.error('Error scheduling federation workload:', error);
+    }
+};
+
+
+export const schedulePersonalizationWorkload = async (token, config, schedule_type, crontab, date) => {
+    try {
+        const data = {
+            schedule_type: schedule_type,
+            config: config,
+            crontab: crontab,
+            date: date
+        };
+
+        const headers = {
+            Authorization: token
+        };
+        const response = await axios.post(`${BASE_URL}/dashboard/schedule_personalization_workload`, data, { headers });
+        return response;
+    } catch (error) {
+        console.error('Error scheduling personalization workload:', error);
     }
 };
 
@@ -92,21 +108,21 @@ export const removeFederationWorkload = async (token, job_id) => {
             Authorization: token
         };
 
-        const response = await axios.delete(`${BASE_URL}/dashboard/remove_federation_workload`, { data, headers });
+        const response = await axios.delete(`${BASE_URL}/dashboard/remove_workload`, { data, headers });
         return response.data;
     } catch (error) {
         console.error('Error deleting scheduled federation workload:', error);
     }
 };
 
-export const isFederationWorkloadRunning = async (token) => {
+export const getIsWorkloadRunning = async (token) => {
     try {
         const config = {
             headers: {
                 Authorization: token,
             },
         };
-        const response = await axios.get(`${BASE_URL}/dashboard/is_federation_workload_running`, config);
+        const response = await axios.get(`${BASE_URL}/dashboard/is_workload_running`, config);
         return response.data;
     } catch (error) {
         console.error('Error checking running federation workload:', error);

@@ -28,7 +28,6 @@ def run_server(app):
 #     pytest.exit()
 
 
-
 @pytest.fixture(scope="module")
 def run_server_fixture():
     app = Flask(__name__)
@@ -106,9 +105,11 @@ def test_heartbeat_unseen_client(client1):
     assert response.status_code == 404
     assert response.get_json() == {'message': 'Client not found'}
 
-    headers = {'Authorization': 'super_secure_token_here_123'}
+    file = open("./multi_modal_edge_ai/server/developer_dashboard/token.txt", 'r')
+    token = file.read().strip()
+    headers = {'Authorization': token}
     response = client1.get('/dashboard/get_client_info', headers=headers)
-
+    print(response)
     connected_clients = response.get_json()['connected_clients']
     assert '0.0.0.1' not in list(connected_clients.keys())
 
@@ -150,7 +151,9 @@ def test_heartbeat_bad_payload(client):
 
 
 def assert_connected_clients_with_expected(client, expected):
-    headers = {'Authorization': 'super_secure_token_here_123'}
+    file = open("./multi_modal_edge_ai/server/developer_dashboard/token.txt", 'r')
+    token = file.read().strip()
+    headers = {'Authorization': token}
     response = client.get('/dashboard/get_client_info', headers=headers)
 
     connected_clients = response.get_json()['connected_clients']

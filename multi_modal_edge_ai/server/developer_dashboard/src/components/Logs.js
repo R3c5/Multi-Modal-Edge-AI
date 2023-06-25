@@ -33,7 +33,7 @@ const Logs = () => {
                         key={log.id}
                         id={log.id}
                         title={log.title}
-                        panel={<Pre>{log.content}</Pre>}
+                        panel={<Pre style={{ whiteSpace: 'pre-wrap' }}>{log.content}</Pre>}
                         style={{
                             background: 'none',
                             color: selectedTabId === log.id ? 'white' : 'gray',

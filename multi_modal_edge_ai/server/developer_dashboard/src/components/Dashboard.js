@@ -43,7 +43,7 @@ const Dashboard = () => {
                 <StatCircles />
             </div>
             <div style={{ width: '100%', color: "white" }}>
-                <h2>Federation Scheduler</h2>
+                <h2>Scheduler</h2>
                 <FederationScheduler />
             </div>
             <div style={{ width: '100%', color: "white" }}>

@@ -1,4 +1,4 @@
-import React, { useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import NumericInput from 'react-numeric-input';
@@ -7,7 +7,7 @@ import {Popover2} from "@blueprintjs/popover2";
 import '@blueprintjs/popover2/lib/css/blueprint-popover2.css';
 import { Cron } from 'react-js-cron';
 import 'react-js-cron/dist/styles.css'
-import {scheduleFederationWorkload} from "../api";
+import {scheduleFederationWorkload, schedulePersonalizationWorkload} from "../api";
 import SECRET_TOKEN from "../secrets";
 
 const FederationScheduler = () => {
@@ -22,16 +22,36 @@ const FederationScheduler = () => {
         "event_based": {'name':'Event-Based Windowing', 'default': 'true', 'description':'Boolean for whether the anomaly detection is event-based or time-based'}, // NOT UPDATEABLE
         "anomaly_whisker": {'name':'Anomaly Whisker', 'default': '1.75', 'min':0, 'max':null, 'step':1, 'description':'Configures the size of the whisker by which clean and anomalous windows will be separated in terms of duration'},
         "clean_test_data_ratio": {'name':'Clean Test Data Ratio', 'default': '0.2', 'min':0, 'max':1, 'step':0.01, 'description':'Ratio of clean data that will be in the test set'},
-        "anomaly_gen_ratio": {'name':'Anomaly Generation Ratio', 'default': '0.1', 'min':0, 'max':null, 'step':0.01, 'description':'Ratio of generated anomalous data to seen anomalous data'},
+        "anomaly_generation_ratio": {'name':'Anomaly Generation Ratio', 'default': '0.1', 'min':0, 'max':null, 'step':0.01, 'description':'Ratio of generated anomalous data to seen anomalous data'},
         "reconstruction_error_quantile": {'name':'Reconstruction Error Quantile', 'default': '0.99', 'min':0, 'max':1, 'step':0.01, 'description':'Quantile in terms of seen training errors for maximum reconstruction error threshold'},
         "fraction_fit": {'name':'Training Ratio', 'default': '1.0', 'min':0, 'max':1, 'step':0.01, 'description':'Fraction of clients used during training. In case `min_fit_clients` is larger than `fraction_fit * available_clients`, `min_fit_clients` will still be sampled.'},
         "fraction_evaluate": {'name':'Validation Ratio', 'default': '0.99', 'min':0, 'max':1, 'step':0.01, 'description':'Fraction of clients used during validation. In case `min_evaluate_clients` is larger than `fraction_evaluate * available_clients`, `min_evaluate_clients` will still be sampled.'},
         "min_fit_clients": {'name':'Minimum Training Clients', 'default': '2', 'min':2, 'max': null, 'step':1, 'description':'Minimum number of clients used during training.'},
         "min_evaluate_clients": {'name':'Minimum Validation Clients', 'default': '2', 'min':2, 'max': null, 'step':1, 'description':'Minimum number of clients used during validation.'},
         "min_available_clients": {'name':'Minimum Total Clients', 'default': '2', 'min':2, 'max':null, 'step':1, 'description':'Minimum number of total clients in the system.'},
+        "verbose": {'name':'Verbose', 'default':'true', 'description':'Verbose display of federation in client logs'}
     }
-    const disabledConfigs = ['window_size', 'one-hot', 'event_based'];
-    const [config, setConfig] = useState({
+    const [federationConfig, setFederationConfig] = useState({
+        "num_rounds": 1,
+        "window_size": 8,
+        "window_slide":1,
+        "one-hot": true,
+        "batch_size":32,
+        "learning_rate": 0.01,
+        "n_epochs": 2,
+        "event_based": true,
+        "anomaly_whisker": 1.75,
+        "clean_test_data_ratio": 0.2,
+        "anomaly_generation_ratio": 0.1,
+        "reconstruction_error_quantile": 0.99,
+        "fraction_fit": 1.0,
+        "fraction_evaluate": 1.0,
+        "min_fit_clients": 2,
+        "min_evaluate_clients": 2,
+        "min_available_clients": 2,
+        "verbose":true
+    });
+    const [personalizationConfig, setPersonalizationConfig] = useState({
         "num_rounds": 1,
         "window_size": 1,
         "window_slide":1,
@@ -42,26 +62,43 @@ const FederationScheduler = () => {
         "event_based": true,
         "anomaly_whisker": 1.75,
         "clean_test_data_ratio": 0.2,
-        "anomaly_gen_ratio": 0.1,
+        "anomaly_generation_ratio": 0.1,
         "reconstruction_error_quantile": 0.99,
         "fraction_fit": 1.0,
-        "fraction_evaluate": 0.99,
-        "min_fit_clients": 2,
-        "min_evaluate_clients": 2,
-        "min_available_clients": 2
+        "fraction_evaluate": 1.0,
+        "min_available_clients": 2,
+        "verbose":true,
     });
+    const disabledConfigsFederation = ['window_size', 'one-hot', 'event_based','verbose'];
+    const disabledConfigsPersonalization = ['window_size', 'one-hot', 'event_based', 'fraction_fit',
+        'fraction_evaluate', 'min_fit_clients', 'min_evaluate_clients', "num_rounds", 'verbose'];
+    const [disabledConfigs, setDisabledConfigs] = useState(disabledConfigsFederation)
+
     const [scheduledTime, setScheduledTime] = useState(null);
     const [responseDisplay, setResponseDisplay] = useState('');
-    const [schedule_type, setScheduleType] = useState('recurrent');
-    const [crontab, setCrontab] = useState('* * * * *z');
+    const [scheduleType, setScheduleType] = useState('recurrent');
+    const [crontab, setCrontab] = useState('* * * * *');
+    const [workloadType, setWorkloadType] = useState('federation')
     const cronRef = useRef(null);
+    const availableWorkloadTypes = [ 'Federation', 'Personalization' ];
 
+    useEffect(() => {
+        setDisabledConfigs(workloadType === 'federation' ? disabledConfigsFederation : disabledConfigsPersonalization);
+    }, [workloadType]);
 
     const handleParameterChange = (value, parameter) => {
-        setConfig((prevState) => ({
-            ...prevState,
-            [parameter]: { ...prevState[parameter], value: value },
-        }));
+        console.log(value)
+        if (workloadType === 'federation') {
+            setFederationConfig((prevState) => ({
+                ...prevState,
+                [parameter]: value,
+            }));
+        } else if (workloadType === 'personalization') {
+            setPersonalizationConfig((prevState) => ({
+                ...prevState,
+                [parameter]: value,
+            }));
+        }
     };
 
     const handleDateChange = (date) => {
@@ -76,23 +113,36 @@ const FederationScheduler = () => {
     };
 
     const handleCronExpressionChange = (value) => {
-        console.log(value)
         setCrontab(value);
     };
 
     const handleSubmit = async () => {
-        const response = await scheduleFederationWorkload(SECRET_TOKEN, config, schedule_type, crontab, scheduledTime)
+        let response = undefined;
+        if(workloadType === 'personalization'){
+            personalizationConfig["min_fit_clients"] = 2;
+            personalizationConfig["min_evaluate_clients"] = 2
+            response = await schedulePersonalizationWorkload(SECRET_TOKEN, personalizationConfig, scheduleType, crontab, scheduledTime);
+            delete personalizationConfig.min_fit_clients;
+            delete personalizationConfig.min_evaluate_clients;
+        } else {
+            response = await scheduleFederationWorkload(SECRET_TOKEN, federationConfig, scheduleType, crontab, scheduledTime);
+        }
         if(response === undefined){
-            setResponseDisplay("Could not receive response")
+            setResponseDisplay("Could not receive response");
         }
         else if(response.status === 200){
-            setResponseDisplay("Task scheduled successfully")
+            setResponseDisplay("Task scheduled successfully");
         } else if(response.data.error !== undefined){
-            setResponseDisplay(response.data.error)
+            setResponseDisplay(response.data.error);
         }
         else {
             setResponseDisplay("There was an error scheduling task")
         }
+    };
+
+    const handleWorkloadTypeChange = (event) => {
+        const selectedType = event.target.value;
+        setWorkloadType(selectedType);
     };
 
     return (
@@ -100,7 +150,7 @@ const FederationScheduler = () => {
             <div>
                 <FormGroup label="Parameters">
                     <div style={{ margin: '10px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gridGap: '20px' }}>
-                        {Object.keys(config).map((parameter) => (
+                        {Object.keys(workloadType==="federation"?federationConfig : personalizationConfig).map((parameter) => (
                             <div key={parameter}>
                                 <Popover2
                                     content={
@@ -117,7 +167,7 @@ const FederationScheduler = () => {
                                 >
                                     <FormGroup label={configDisplay[parameter]['name']}>
                                         <NumericInput
-                                            value={config[parameter]}
+                                            value={workloadType==="federation"? federationConfig[parameter] : personalizationConfig[parameter] }
                                             min={configDisplay[parameter]['min']}
                                             max={configDisplay[parameter]['max'] !== null ? configDisplay[parameter]['max'] : undefined}
                                             step={Number.isInteger(configDisplay[parameter]['step']) ? 1 : 'any'}
@@ -132,13 +182,54 @@ const FederationScheduler = () => {
                     </div>
                 </FormGroup>
             </div>
-            <FormGroup label="Scheduled Time" style={{ textAlign: 'center' }}>
-                <select value={schedule_type} onChange={handleOptionChange}>
+            <FormGroup>
+                <div>
+                    <Popover2
+                        position={Position.TOP}
+                        interactionKind="hover-target"
+                        content={
+                            <div style={{ padding: '10px', borderRadius: '10px' }}>
+                                This selection determines the type of workload. Federation begins a federation round with all the clients. Personalization locally updates the client models to be more fitted to their individual data.
+                            </div>
+                        }>
+                    <span>
+                      Workload Type
+                    </span>
+                    </Popover2>
+                </div>
+                <select value={workloadType} onChange={handleWorkloadTypeChange}>
+                    {availableWorkloadTypes.map((type) => (
+                        <option key={type} value={type.toLowerCase()}>
+                            {type}
+                        </option>
+                    ))}
+                </select>
+            </FormGroup>
+            <FormGroup style={{ textAlign: 'center' }}>
+                <div>
+                    <Popover2
+                        position={Position.TOP}
+                        interactionKind="hover-target"
+                        content={
+                            <div style={{ padding: '10px', borderRadius: '10px' }}>
+                                This selection determines the type of schedule. 'Immediate' begins immediately,
+                                'One Time' only schedules a single event, and 'Recurrent' will repeat according
+                                to the selected Cron expression.
+                            </div>
+                        }
+                        style = {{margin:'10px'}}
+                    >
+                    <span>
+                      Schedule Type
+                    </span>
+                    </Popover2>
+                </div>
+                <select value={scheduleType} onChange={handleOptionChange}>
                     <option value="recurrent">Recurrent</option>
                     <option value="one-time">One Time</option>
                     <option value="immediate">Immediate</option>
                 </select>
-                {schedule_type === "recurrent" && (
+                {scheduleType === "recurrent" && (
                     <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                         <Cron ref={cronRef}
                             setValue={(value) => handleCronExpressionChange(value)}
@@ -146,7 +237,7 @@ const FederationScheduler = () => {
                         />
                     </div>
                 )}
-                {schedule_type === "one-time" && (
+                {scheduleType === "one-time" && (
                     <div style={{ marginTop: '10px' }}>
                         <DatePicker
                             placeholderText="Select date and time"
@@ -159,7 +250,7 @@ const FederationScheduler = () => {
                         />
                     </div>
                 )}
-                {schedule_type === "immediate"}
+                {scheduleType === "immediate"}
                 <div style={{ marginTop: '10px' }}>
                     <Button onClick={handleSubmit} style={{ justifySelf: 'center' }}>
                         Send Request

@@ -54,7 +54,9 @@ def test_get_client_info(client):
     client.post('api/heartbeat', json=payload)
 
     # Set up the headers with the authorization token
-    headers = {'Authorization': 'super_secure_token_here_123'}
+    file = open("./multi_modal_edge_ai/server/developer_dashboard/token.txt", 'r')
+    token = file.read().strip()
+    headers = {'Authorization': token}
 
     # Make a GET request to the API endpoint
     response = client.get('/dashboard/get_client_info', headers=headers)
@@ -84,6 +86,7 @@ def test_get_client_info(client):
         for key, value in expected_values.items():
             assert key in connected_values
             assert connected_values[key] == value
+
 
 @pytest.fixture(autouse=True, scope="module")
 def teardown_server_session(request):

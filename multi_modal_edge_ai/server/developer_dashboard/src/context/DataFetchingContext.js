@@ -3,7 +3,7 @@ import {
     getServerLog,
     getFederationLog,
     getFederationWorkloads,
-    isFederationWorkloadRunning,
+    getIsWorkloadRunning,
     getClients
 } from '../api';
 import SECRET_TOKEN from '../secrets'
@@ -13,7 +13,7 @@ const DataFetchingContext = createContext({
     serverLog:'',
     federationLog:'',
     federationWorkloads:[],
-    isFederationRunning:null,
+    isWorkloadRunning:null,
     testTime:'',
 });
 const DataFetchingProvider = ({ children }) => {
@@ -21,49 +21,54 @@ const DataFetchingProvider = ({ children }) => {
     const [serverLog, setServerLog] = useState('Nothing to display');
     const [federationLog, setFederationLog] = useState('Nothing to display');
     const [federationWorkloads, setFederationWorkloads] = useState([]);
-    const [isFederationRunning, setIsFederationRunning] = useState(null);
+    const [isWorkloadRunning, setIsWorkloadRunning] = useState(null);
 
     useEffect(() => {
         const fetchAllData = async () => {
+            // for each fetch, if it fails, the value is set back to default values
             try {
                 const responseClients = await getClients(SECRET_TOKEN);
                 if (responseClients !== undefined) {
                     setClients(responseClients);
                 }
             } catch (error) {
-                // console.error('Error fetching client info:', error);
+                setClients({"connected_clients":{}})
             }
             try {
                 const responseServerLog = await getServerLog(SECRET_TOKEN);
                 if (responseServerLog !== undefined) {
-                    setServerLog(responseServerLog);
+                    if(responseServerLog !== ""){
+                        setServerLog(responseServerLog);
+                    }
                 }
             } catch (error) {
-                // console.error('Error fetching server log:', error);
+                setServerLog("Cannot fetch server logs")
             }
             try {
                 const responseFederationLog = await getFederationLog(SECRET_TOKEN);
                 if (responseFederationLog !== undefined) {
-                    setFederationLog(responseFederationLog);
+                    if(responseFederationLog !== ""){
+                        setFederationLog(responseFederationLog);
+                    }
                 }
             } catch (error) {
-                // console.error('Error fetching federation log:', error);
+                setFederationLog("Cannot fetch federation logs")
             }
             try {
-                const responseFederationWorkloads = await getFederationWorkloads(SECRET_TOKEN);
-                if (responseFederationWorkloads !== undefined) {
-                    setFederationWorkloads(responseFederationWorkloads)
+                const responseWorkloads = await getFederationWorkloads(SECRET_TOKEN);
+                if (responseWorkloads !== undefined) {
+                    setFederationWorkloads(responseWorkloads)
                 }
             } catch (error) {
-                // console.error('Error fetching federation workloads:', error);
+                setFederationWorkloads([])
             }
             try {
-                const responseIsFederationRunning = await isFederationWorkloadRunning(SECRET_TOKEN);
-                if (responseIsFederationRunning !== undefined) {
-                    setIsFederationRunning(responseIsFederationRunning)
+                const responseIsWorkloadRunning = await getIsWorkloadRunning(SECRET_TOKEN);
+                if (responseIsWorkloadRunning !== undefined) {
+                    setIsWorkloadRunning(responseIsWorkloadRunning)
                 }
             } catch (error) {
-                // console.error('Error fetching isFederationRunning:', error);
+                setIsWorkloadRunning(null)
             }
 
         };
@@ -72,7 +77,7 @@ const DataFetchingProvider = ({ children }) => {
 
         const timer = setInterval(() => {
             fetchAllData(); // Fetch data every 5 seconds
-        }, 5000);
+        }, 1000);
 
         return () => {
             clearInterval(timer); // Clean up timer on component unmount
@@ -86,7 +91,7 @@ const DataFetchingProvider = ({ children }) => {
                 serverLog,
                 federationLog,
                 federationWorkloads,
-                isFederationRunning,
+                isWorkloadRunning,
             }}
         >
             {children}
