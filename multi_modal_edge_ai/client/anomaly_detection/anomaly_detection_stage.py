@@ -1,23 +1,40 @@
-import pandas as pd
-import numpy as np
 from typing import Union
-from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
-from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
-    window_categorical_to_numeric
+
+import numpy as np
+import pandas as pd
+import torch
 from pymongo.collection import Collection
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import MinMaxScaler
-import multi_modal_edge_ai.client.adl_database.adl_queries as module
-import multi_modal_edge_ai.client.anomaly_detection.anomaly_queries as anomaly_module
+
+import multi_modal_edge_ai.client.databases.adl_queries as module
+import multi_modal_edge_ai.client.databases.anomaly_queries as anomaly_module
+from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
+from multi_modal_edge_ai.models.anomaly_detection.preprocessing.adl_dataframe_preprocessing import \
+    window_categorical_to_numeric
 
 
-def check_window_for_anomaly(window_size: int, anomaly_model: ModelKeeper, anomaly_collection: Collection,
+def scale_transformed_window(scaler: MinMaxScaler, num_adl_features: int, data: pd.Series):
+    """
+    Scale the series received based on the scaler and the number of features
+    :param scaler: sklearn MinMaxScaler used for scaling
+    :param num_adl_features: int representing the number of features that the data will be reshaped into
+    :param data: pd series that is going to be scaled
+    :return: the rescaled data
+    """
+    reshaped_data = pd.DataFrame(data.values.reshape((-1, num_adl_features)))
+    scaled_data = scaler.transform(reshaped_data)
+    return scaled_data
+
+
+def check_window_for_anomaly(window_size: int, anomaly_model_keeper: ModelKeeper, anomaly_collection: Collection,
                              scaler: MinMaxScaler, adl_encoding: Union[LabelEncoder | OneHotEncoder], one_hot: bool,
-                             adl_collection: Collection) -> int:
+                             adl_collection: Collection, num_adl_features) -> int:
     """
     Checks if the last #window_size number of ADLs is anomalous. If it is, add it to the anomaly_collection.
+    :param num_adl_features: number of features used for scaling
     :param window_size: The size of the window to check for anomalies
-    :param anomaly_model: The chosen anomaly detection model
+    :param anomaly_model_keeper: ModelKeeper containing the model used for predicting
     :param anomaly_collection: The collection to add the anomalous window to
     :param scaler: The scaler used to scale the transformed window
     :param adl_encoding: The encoding function
@@ -38,10 +55,11 @@ def check_window_for_anomaly(window_size: int, anomaly_model: ModelKeeper, anoma
 
         # Convert the categorical data in the window to numeric data
         transformed_window = window_categorical_to_numeric(window, window_size, adl_encoding, one_hot)
-        transformed_window = scaler.transform(transformed_window)
-
+        transformed_window = scale_transformed_window(scaler, num_adl_features, transformed_window)
+        if not isinstance(transformed_window, list):
+            transformed_window = transformed_window.flatten()
         # Use the model to predict if the window is anomalous
-        prediction = anomaly_model.model.predict(transformed_window)
+        prediction = anomaly_model_keeper.model.predict(torch.Tensor(transformed_window))
 
         # If the window is anomalous, add it to the anomaly_collection
         if prediction == 0:

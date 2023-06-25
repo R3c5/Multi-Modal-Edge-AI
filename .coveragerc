@@ -1,0 +1,5 @@
+[run]
+omit =
+    */ml_models/*
+    */torch_models/*
+    */playground/*

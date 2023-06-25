@@ -1,4 +1,5 @@
 from typing import Any, Union, List
+import pickle
 
 import numpy as np
 import torch.nn
@@ -106,11 +107,21 @@ class LSTMAutoencoder(Model):
         This function will save the torch lstm autoencoder on the specified path
         :param file_path: the file path
         """
-        torch.save(self.model.state_dict(), file_path)
+        model_info = {
+            'model_state_dict': self.model.state_dict(),
+            'reconstruction_loss_threshold': self.reconstruction_loss_threshold,
+            'reconstruction_errors': self.reconstruction_errors
+        }
+        with open(file_path, "wb") as file:
+            pickle.dump(model_info, file)
 
     def load(self, file_path: str) -> None:
         """
         This function will load the torch lstm autoencoder from the specified path
         :param file_path: the file path
         """
-        self.model.load_state_dict(torch.load(file_path))
+        with open(file_path, 'rb') as f:
+            model_info = pickle.load(f)
+        self.model.load_state_dict(model_info['model_state_dict'])
+        self.reconstruction_loss_threshold = model_info['reconstruction_loss_threshold']
+        self.reconstruction_errors = model_info['reconstruction_errors']

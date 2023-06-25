@@ -1,26 +1,21 @@
 import flwr as fl
-import pandas as pd
-import torch.nn
-from sklearn.preprocessing import MinMaxScaler
 
-from multi_modal_edge_ai.client.adl_database.adl_database import get_database_client, get_database, get_collection
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.federated_learning.flower_clients import FlowerClient
 from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEval
-from multi_modal_edge_ai.models.anomaly_detection.data_access.parser import parse_file_with_idle
-from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
 
 
 class FederatedClient:
 
-    def __init__(self, model_keeper: ModelKeeper, train_eval: TrainEval) -> None:
+    def __init__(self, model_keeper: ModelKeeper, train_eval: TrainEval, federation_workload: bool) -> None:
         """
         Constructor for the basic Federated Client
         :param model_keeper: The model keeper which holds the machine learning model
         :param train_eval: The train eval object with the training, evaluation and other data
+        :param federation_workload: The boolean representing whether it is a federation or a personalization workload
         """
         self.model_keeper = model_keeper
-        self.flower_client = FlowerClient(model_keeper, train_eval)
+        self.flower_client = FlowerClient(model_keeper, train_eval, federation_workload)
 
     def start_numpy_client(self, server_address):
         """
@@ -32,7 +27,6 @@ class FederatedClient:
             server_address=server_address,
             client=self.flower_client
         )
-
 
 # This piece of code was used in order to test the interaction between federated client and server
 # if __name__ == "__main__":

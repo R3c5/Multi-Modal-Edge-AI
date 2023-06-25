@@ -6,6 +6,11 @@ stages:
   - checkstyle
   - typecheck
 
+variables:
+  SSH_SERVER: "***REMOVED***"
+  LOCAL_PORT: "27017"
+  REMOTE_PORT: "27018"
+
 build:
   stage: build
   script:
@@ -16,14 +21,18 @@ test:
   stage: test
   before_script:
     - pip install -r requirements-dev.txt
-  script:
-    - echo "Running tests"
     - pip install coverage pytest pytest-cov
+    - apt-get update && apt-get install -y sshpass
+  script:
+    - ls -la
+    - echo "Running tests"
+    - sshpass -p '***REMOVED***' ssh -o StrictHostKeyChecking=no -fN -L $LOCAL_PORT:localhost:$REMOTE_PORT $SSH_SERVER &
     - python -m pytest --cov=multi_modal_edge_ai --cov-report term --cov-report xml:coverage.xml
     - coverage report -m
     - coverage html
-    #    runs all tests in the tests directory that end with _test.py
     - echo "Tests completed"
+  after_script:
+    - pkill -f "$SSH_SERVER"
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     reports:
@@ -49,4 +58,3 @@ typecheck:
     - echo "Running type checker"
     - mypy --ignore-missing-imports ./multi_modal_edge_ai/
     - echo "Type checkin completed"
-
