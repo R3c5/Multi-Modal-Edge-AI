@@ -108,7 +108,7 @@ export const removeFederationWorkload = async (token, job_id) => {
             Authorization: token
         };
 
-        const response = await axios.delete(`${BASE_URL}/dashboard/remove_federation_workload`, { data, headers });
+        const response = await axios.delete(`${BASE_URL}/dashboard/remove_workload`, { data, headers });
         return response.data;
     } catch (error) {
         console.error('Error deleting scheduled federation workload:', error);
