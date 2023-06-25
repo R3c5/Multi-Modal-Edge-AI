@@ -151,18 +151,27 @@ class TestSensorQueries(unittest.TestCase):
         last_seen3 = datetime.datetime.fromtimestamp(last_seen3 / 1000)
         last_seen4 = datetime.datetime.fromtimestamp(last_seen4 / 1000)
         result = get_past_x_seconds_of_all_sensor_entries(mock_collection, 5 * 60, current_time)
-        expected_result = [{'date': last_seen4.strftime("%Y-%m-%d"),
-                            'device': {'friendlyName': 'motion_bedroom1'},
-                            'end_time': last_seen4.strftime("%H:%M:%S"),
-                            'occupancy': True,
-                            'start_time': last_seen4.strftime("%H:%M:%S"),
-                            'type': 'PIR'},
-                           {'contact': False,
+        expected_result = [{'contact': False,
                             'date': last_seen3.strftime("%Y-%m-%d"),
                             'device': {'friendlyName': 'contact_bathroom1'},
                             'end_time': last_seen3.strftime("%H:%M:%S"),
+                            'linkquality': 150,
                             'start_time': last_seen3.strftime("%H:%M:%S"),
-                            'type': 'Contact'}]
+                            'type': 'Contact'},
+                            {'battery': 100,
+                            'date': last_seen4.strftime("%Y-%m-%d"),
+                            'detection_interval': 30,
+                            'device': {'friendlyName': 'motion_bedroom1'},
+                            'end_time': last_seen4.strftime("%H:%M:%S"),
+                            'illuminance': 155,
+                            'linkquality': 126,
+                            'motion_sensitivity': 'medium',
+                            'occupancy': True,
+                            'start_time': last_seen4.strftime("%H:%M:%S"),
+                            'trigger_indicator': False,
+                            'type': 'PIR',
+                            'voltage': 3000}]
+
         self.assertEqual(result, expected_result)
 
     def test_get_power_sensors(self):
