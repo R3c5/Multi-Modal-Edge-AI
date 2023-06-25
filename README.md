@@ -20,21 +20,22 @@
 
 ---
 <div align="center">
-    <img src="https://img.shields.io/badge/Python-3-blue.svg" alt="Python">
-    <img src="https://img.shields.io/badge/AI-Enabled-red.svg" alt="AI">
-    <img src="https://img.shields.io/badge/Pytest-Enabled-darkgreen.svg">
-    <img src="https://img.shields.io/badge/scikit--learn-Enabled-orange.svg">
-    <img src="https://img.shields.io/badge/Anomaly-Detection-blue.svg">
+    <img src="https://img.shields.io/badge/Python-3.10-blue.svg" alt="Python">
+    <img src="https://img.shields.io/badge/State-Alpha-white.svg" alt="State">
+    <img src="https://img.shields.io/badge/Version-1.0.0-red.svg" alt="AI">
+    <img src="https://img.shields.io/badge/Documentation-Up to date-darkgreen.svg">
+    <img src="https://img.shields.io/badge/Code Coverage-79%25-darkred.svg">
+    <img src="https://img.shields.io/badge/License-MIT-darkblue.svg">
 </div>
 
 ---
 
 ## **Introduction**
 
-The system was created as part of an IoT homekit that will be used in assisting the caretakers supervise more elderly people that still want to be independent but may require additional support. To that extent, it uses machine learning models to predict anomalies in the daily routines, based on information from sensor data and save the anomalies in a database, from where the caretaker will be notified. It has a few key principles that had to be followed throughout it's whole development proces:
+`Multi-Modal Edge-AI` was created as part of an IoT homekit that will be used in assisting the caretakers supervise elderly people that still want to be independent but may require additional support. To that extent, it uses machine learning models to predict anomalies in the daily routine using information from house-mounted sensors. The predicted anomalies are then stored in a database. It has a few key principles that had to be followed throughout it's whole development proces:
 
-- **Protect data privacy**: The sensor data is stored locally in a database, and never sent to the server
-- **Model Improvements**: Federated Learning is used to be able to further train the modelsy, but without violating the previous point.
+- **Protect data privacy**: The sensor data is stored locally in a client database, and shall never leave the premises of the client's system.
+- **Model Learning**: Federated Learning is used in order to learn general daily routine patterns without sharing personal data.
 - **Scalable**: The system was designed to be scalable in the number of clients
 - **Maintainability and Reusability**: The codebase makes use of existent frameworks like [PyTorch](https://pytorch.org/docs/stable/index.html) and [Flower](https://flower.dev/docs/) in order for the code to be readable maintainable and of the highest quality.
 
@@ -42,13 +43,13 @@ The system was created as part of an IoT homekit that will be used in assisting 
 
 Here are the most notable features available in our system:
 
-* **Sandboxes**: There are 2 sandboxes one for ADL (activity of daily living) inference and one for anomaly detection. Each one includes multiple models to choose, both deep learning models and non deep learning models. You can create a model, configure it and validate it on a public dataset chosen by us to reflect the requirements of our system.
+* **Sandboxes**: There are 2 machine learning sandboxes. One for ADL (Activities of Daily Living) inference and one for Anomaly Detection. Each one includes multiple models to choose from, both deep learning and non deep learning models. You can create a model, configure its hyperparameters and validate it on a public dataset of your choice. A publicly dataset for each of the tasks is included.
 
-* **Federated Learning**: A federated round can be scheduled on the server. Then the server will choose multiple clients and initiate their training stage. After they the round is finished, it aggregates all the models and saves it as the new global modal to be redistributed to all the clients.
+* **Federated Learning**: There is support, either from the developer dashboard or directly from the server API, to schedule federation workloads, i.e., a job with specified Federated Learning and Machine Learning parameters. The server will execute the protocol according to the original Federated Learning [paper](https://arxiv.org/pdf/1602.05629.pdf) with the use of [Flower](https://flower.dev/docs/).
 
-* **Personalisation**: This allows the client to train on its own data so that it's own model becomes more accostumed to the behaviour of the user. So even if the global model would predict 10 hours of sleep as anomalous, the local one might see that as normal.
+* **Personalisation**: There is support, either from the developer dashboard or directly from the server API, to perform client model personalization. Model personalization allows the client to train the local machine learning model on the local data, without it being overriden by the aggregated model of the server. This allows for a shift in the modeled distributtion of the client model towards his own daily routine habits.
 
-* **Dashboard**: Dashboard is the interface that a user can see the status of the system. It displays info about connected clients, it allows the scheduling of federation rounds, while also displaying any errors that appear on the server side.
+* **Dashboard**: The system provides a dashboard. It is the interface that developers can use to see the status of the system. It displays information about connected clients, their engagement with the system, i.e., last federated learning workload participation, it allows the scheduling of both federated learning and personalization workloads, as well as log files from all the processes on the server.
 
 ## **Installation**
 
@@ -74,7 +75,7 @@ Thank you for wanting to contribute to our project! If you have ideas or improve
   - Submit a pull request with a concise description of your changes. Please use the available template.
 
 
-### *Naming Conventions*
+### **Naming Conventions**
 Please follow the following guidelines for naming conventions.
 * Commit Naming Conventions
     Commit messages should follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format:
@@ -104,7 +105,7 @@ Please follow the following guidelines for naming conventions.
 
 ## **Contributors**
 
-This project was created by five *Computer Science* students during the *Software Project* at *Delft University of Technology*. It was developed alongside [Maketek](https://www.maketek.nl/).
+This project was created by five *Computer Science & Engineering* students during the *Software Project* course at *Delft University of Technology*. It was developed with the very much appreciated support of [Maketek](https://www.maketek.nl/).
 
 The students that worked on this project are:
 
