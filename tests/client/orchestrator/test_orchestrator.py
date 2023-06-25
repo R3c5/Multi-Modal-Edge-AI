@@ -10,7 +10,8 @@ import multi_modal_edge_ai.client.databases.adl_queries as db_queries
 from multi_modal_edge_ai.client.common.adl_model_keeper import ADLModelKeeper
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.orchestrator import create_heartbeat_and_send, activity_is_finished, \
-    initiate_internal_pipeline, start_federated_client, run_federation_stage
+    initiate_internal_pipeline, start_federated_client, run_federation_stage, workload_lock, \
+    start_personalization_client, run_personalization_stage
 from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
@@ -298,7 +299,8 @@ def test_initiate_pipeline_activity_finished_anomalous():
 def test_start_federated_client():
     with patch('multi_modal_edge_ai.client.orchestrator.get_database_client') as mock_get_db_client, \
             patch('multi_modal_edge_ai.client.orchestrator.TrainEval') as mock_train_eval, \
-            patch('multi_modal_edge_ai.client.orchestrator.FederatedClient') as mock_fc:
+            patch('multi_modal_edge_ai.client.orchestrator.FederatedClient') as mock_fc, \
+            patch('multi_modal_edge_ai.client.orchestrator.workload_lock') as mock_workload_lock:
         distinct_adl_list = ['Toilet', 'Relax', 'Kitchen_Usage', 'Sleeping', 'Idle', 'Meal_Preparation', 'Outside',
                              'Movement']
 
@@ -328,6 +330,7 @@ def test_start_federated_client():
 
         start_federated_client(client_config)
 
+        mock_workload_lock.release.assert_called_once()
         mock_get_db_client.assert_called_once()
         mock_train_eval.assert_called_once()
         mock_fc.assert_called_once()
@@ -336,9 +339,11 @@ def test_start_federated_client():
 
 def test_run_federation_stage():
     with patch('multi_modal_edge_ai.client.orchestrator.start_federated_client') as mock_start_federated_client, \
-            patch('multi_modal_edge_ai.client.orchestrator.threading.Thread') as mock_thread:
+            patch('multi_modal_edge_ai.client.orchestrator.threading.Thread') as mock_thread, \
+            patch('multi_modal_edge_ai.client.orchestrator.workload_lock') as mock_workload_lock:
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
+        mock_workload_lock.acquire.return_value = True
 
         distinct_adl_list = ['Toilet', 'Relax', 'Kitchen_Usage', 'Sleeping', 'Idle', 'Meal_Preparation', 'Outside',
                              'Movement']
@@ -359,5 +364,76 @@ def test_run_federation_stage():
 
         run_federation_stage(client_config)
 
-        mock_thread.assert_called_once_with(target=mock_start_federated_client, args=client_config)
+        mock_thread.assert_called_once_with(target=mock_start_federated_client, args=[client_config])
+        mock_thread_instance.start.assert_called_once()
+
+
+def test_start_personalization_client():
+    with patch('multi_modal_edge_ai.client.orchestrator.get_database_client') as mock_get_db_client, \
+            patch('multi_modal_edge_ai.client.orchestrator.TrainEval') as mock_train_eval, \
+            patch('multi_modal_edge_ai.client.orchestrator.FederatedClient') as mock_fc, \
+            patch('multi_modal_edge_ai.client.orchestrator.workload_lock') as mock_workload_lock:
+        distinct_adl_list = ['Toilet', 'Relax', 'Kitchen_Usage', 'Sleeping', 'Idle', 'Meal_Preparation', 'Outside',
+                             'Movement']
+
+        mock_db_client = mongomock.MongoClient()
+        mock_get_db_client.return_value = mock_db_client
+
+        mock_train_eval_instance = MagicMock()
+        mock_train_eval.return_value = mock_train_eval_instance
+
+        mock_fc_instance = MagicMock()
+        mock_fc.return_value = mock_fc_instance
+
+        client_config = {
+            'adl_model_keeper': None,
+            'sensor_db': 'sensor_db_name',
+            'adl_window_size': 60,
+            'adl_list': distinct_adl_list,
+            'client_db': 'client_db_name',
+            'adl_collection': 'adl_collection_name',
+            'anomaly_collection': 'anomaly_collection_name',
+            'anomaly_detection_window_size': 5,
+            'anomaly_detection_model_keeper': None,
+            'andet_scaler': None,
+            'onehot_encoder': None,
+            'num_adl_features': 3
+        }
+
+        start_personalization_client(client_config)
+
+        mock_workload_lock.release.assert_called_once()
+        mock_get_db_client.assert_called_once()
+        mock_train_eval.assert_called_once()
+        mock_fc.assert_called_once()
+        mock_fc_instance.start_numpy_client.assert_called_once_with("127.0.0.1:8080")
+
+def test_run_personalization_stage():
+    with patch('multi_modal_edge_ai.client.orchestrator.start_personalization_client') \
+            as mock_start_personalized_client, patch('multi_modal_edge_ai.client.orchestrator.threading.Thread') \
+            as mock_thread, patch('multi_modal_edge_ai.client.orchestrator.workload_lock') as mock_workload_lock:
+        mock_thread_instance = MagicMock()
+        mock_thread.return_value = mock_thread_instance
+        mock_workload_lock.acquire.return_value = True
+
+        distinct_adl_list = ['Toilet', 'Relax', 'Kitchen_Usage', 'Sleeping', 'Idle', 'Meal_Preparation', 'Outside',
+                             'Movement']
+        client_config = {
+            'adl_model_keeper': None,
+            'sensor_db': 'sensor_db_name',
+            'adl_window_size': 60,
+            'adl_list': distinct_adl_list,
+            'client_db': 'client_db_name',
+            'adl_collection': 'adl_collection_name',
+            'anomaly_collection': 'anomaly_collection_name',
+            'anomaly_detection_window_size': 5,
+            'anomaly_detection_model_keeper': None,
+            'andet_scaler': None,
+            'onehot_encoder': None,
+            'num_adl_features': 3
+        }
+
+        run_personalization_stage(client_config)
+
+        mock_thread.assert_called_once_with(target=mock_start_personalized_client, args=[client_config])
         mock_thread_instance.start.assert_called_once()

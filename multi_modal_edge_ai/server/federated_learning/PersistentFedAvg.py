@@ -1,3 +1,4 @@
+import pickle
 from collections import OrderedDict
 from datetime import datetime
 from logging import INFO
@@ -9,13 +10,15 @@ from flwr.common import (
     Parameters,
     Scalar,
     NDArrays,
-    MetricsAggregationFn
+    MetricsAggregationFn,
+    parameters_to_ndarrays
 )
 from flwr.common.logger import log
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from multi_modal_edge_ai.server.object_keepers.clients_keeper import ClientsKeeper
+from flwr.server.strategy.aggregate import aggregate
 
 
 class PersistentFedAvg(FedAvg):
@@ -40,6 +43,7 @@ class PersistentFedAvg(FedAvg):
             initial_parameters: Optional[Parameters] = None,
             fit_metrics_aggregation_fn: Optional[MetricsAggregationFn] = None,
             evaluate_metrics_aggregation_fn: Optional[MetricsAggregationFn] = None,
+            running_federation_workload: bool,
             clients_keeper: ClientsKeeper,
             models_keeper
     ):
@@ -55,9 +59,9 @@ class PersistentFedAvg(FedAvg):
                          initial_parameters=initial_parameters,
                          fit_metrics_aggregation_fn=fit_metrics_aggregation_fn,
                          evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation_fn)
+        self.running_federation_workload = running_federation_workload
         self.clients_keeper = clients_keeper
         self.models_keeper = models_keeper
-        self.initial_parameters = self.get_parameters()
 
     def aggregate_fit(
             self,
@@ -74,23 +78,41 @@ class PersistentFedAvg(FedAvg):
         :return: The parameters and trainings statistics
         """
 
-        aggregate_weights = super().aggregate_fit(server_round, results, failures)
+        weights_results = [
+            (parameters_to_ndarrays(fit_res.parameters), fit_res.num_examples)
+            for _, fit_res in results
+        ]
+
+        aggregated_weights_results = aggregate(weights_results)
+
+        aggregated_parameters = super().aggregate_fit(server_round, results, failures)
 
         clients_ips = [client_proxy.cid for client_proxy, _ in results]
         aggregation_date = datetime.now()
         for ip in clients_ips:
-            self.clients_keeper.update_last_model_aggregation(ip, aggregation_date)
+            clean_ip = ip.split(':')[1]
+            if self.running_federation_workload:
+                self.clients_keeper.update_last_model_aggregation(clean_ip, aggregation_date)
+            else:
+                self.clients_keeper.update_last_model_personalization(clean_ip, aggregation_date)
 
-        if aggregate_weights is not None:
-            self.set_parameters(aggregate_weights[0])
-            log(
-                INFO,
-                "aggregated %s clients successfully out of %s total selected clients",
-                len(results),
-                len(results) + len(failures)
-            )
+        if aggregated_parameters is not None:
+            if self.running_federation_workload:
+                self.set_parameters(aggregated_weights_results)
+                log(
+                    INFO,
+                    "aggregated %s clients successfully out of %s total selected clients",
+                    len(results),
+                    len(results) + len(failures)
+                )
+            else:
+                log(
+                    INFO,
+                    "%s clients successfully personalized their local model",
+                    len(results)
+                )
 
-        return aggregate_weights
+        return aggregated_parameters
 
     def set_parameters(self, parameters) -> None:
         """
@@ -112,8 +134,9 @@ class PersistentFedAvg(FedAvg):
         This function will get the parameters of the current model
         :return: The parameters
         """
-        if isinstance(self.models_keeper.model.model, torch.nn.Module):
-            return [val.cpu().numpy() for _, val in self.models_keeper.model.model.state_dict().items()]
+        if isinstance(self.models_keeper.anomaly_detection_model.model, torch.nn.Module):
+            return [val.cpu().numpy() for _, val in
+                    self.models_keeper.anomaly_detection_model.model.state_dict().items()]
         else:
-            params = self.models_keeper.model.model.get_params()
+            params = self.models_keeper.anomaly_detection_model.model.get_params()
             return params

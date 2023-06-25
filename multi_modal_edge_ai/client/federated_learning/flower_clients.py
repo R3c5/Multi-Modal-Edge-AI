@@ -10,14 +10,16 @@ from multi_modal_edge_ai.client.federated_learning.train_and_eval import TrainEv
 
 class FlowerClient(fl.client.NumPyClient):
 
-    def __init__(self, model_keeper, train_eval: TrainEval):
+    def __init__(self, model_keeper, train_eval: TrainEval, federation_workload: bool) -> None:
         """
         Constructor for the flower client
         :param model_keeper: The model keeper which holds the machine learning model
         :param train_eval: The train eval object with the training, evaluation and other data
+        :param federation_workload: The boolean representing whether it is a federation or a personalization workload
         """
         self.model_keeper = model_keeper
         self.train_eval = train_eval
+        self.federation_workload = federation_workload
 
     def get_parameters(self, config: dict[str, Scalar]) -> Any:
         """
@@ -53,7 +55,8 @@ class FlowerClient(fl.client.NumPyClient):
         :param config: The config of the training procedure
         :return: The model parameters and the training stats
         """
-        self.set_parameters(parameters)
+        if self.federation_workload:
+            self.set_parameters(parameters)
         training_stats = self.train_eval.train(self.model_keeper.model, config)
         return self.get_parameters(config={}), training_stats[0], training_stats[1]
 
@@ -64,6 +67,7 @@ class FlowerClient(fl.client.NumPyClient):
         :param config: The config of the evaluation procedure
         :return: The loss, size of evaluation dataset and other stats
         """
-        self.set_parameters(parameters)
+        if self.federation_workload:
+            self.set_parameters(parameters)
         loss, df_size, evaluation_stats = self.train_eval.evaluate(self.model_keeper.model, config)
         return loss, df_size, evaluation_stats
