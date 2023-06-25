@@ -56,6 +56,7 @@ class SVMModel(Model):
         if not isinstance(instance, pd.DataFrame):
             raise TypeError("Instance is not of type pd.Dataframe")
         features = extract_features(instance).reshape(1, -1)
+        print("features", features)
         return self.model.predict(features)
 
     def save(self, file_path: str) -> None:

@@ -260,9 +260,9 @@ def fetch_all_workloads() -> tuple[Response, int]:
     return jsonify(workloads_info), 200
 
 
-@dashboard_connection_blueprint.route('/dashboard/remove_federation_workload', methods=['DELETE'])
+@dashboard_connection_blueprint.route('/dashboard/remove_workload', methods=['DELETE'])
 @authenticate
-def remove_federation_workload() -> tuple[Response, int]:
+def remove_workload() -> tuple[Response, int]:
     """
     This function will remove a specific federated learning workload, given its id.
     :return: If 200, the job_id of the removed federated learning workload. If 410, the id of the job that didn't exist,
