@@ -221,7 +221,7 @@ def is_workload_running() -> tuple[Response, int]:
         return jsonify({"message": "There are no workloads currently being ran"}), 200
 
 
-@dashboard_connection_blueprint.route('/dashboard/fetch_all_federation_workloads', methods=['GET'])
+@dashboard_connection_blueprint.route('/dashboard/fetch_all_workloads', methods=['GET'])
 @authenticate
 def fetch_all_workloads() -> tuple[Response, int]:
     """
