@@ -10,8 +10,8 @@ import multi_modal_edge_ai.client.databases.adl_queries as db_queries
 from multi_modal_edge_ai.client.common.adl_model_keeper import ADLModelKeeper
 from multi_modal_edge_ai.client.common.model_keeper import ModelKeeper
 from multi_modal_edge_ai.client.orchestrator import create_heartbeat_and_send, activity_is_finished, \
-    initiate_internal_pipeline, start_federated_client, run_federation_stage, workload_lock, \
-    start_personalization_client, run_personalization_stage
+    initiate_internal_pipeline, start_federated_client, run_federation_stage, start_personalization_client, \
+    run_personalization_stage, run_schedule
 from multi_modal_edge_ai.commons.string_label_encoder import StringLabelEncoder
 from multi_modal_edge_ai.models.adl_inference.ml_models.svm_model import SVMModel
 from multi_modal_edge_ai.models.anomaly_detection.ml_models import Autoencoder
@@ -408,6 +408,7 @@ def test_start_personalization_client():
         mock_fc.assert_called_once()
         mock_fc_instance.start_numpy_client.assert_called_once_with("127.0.0.1:8080")
 
+
 def test_run_personalization_stage():
     with patch('multi_modal_edge_ai.client.orchestrator.start_personalization_client') \
             as mock_start_personalized_client, patch('multi_modal_edge_ai.client.orchestrator.threading.Thread') \
@@ -437,3 +438,37 @@ def test_run_personalization_stage():
 
         mock_thread.assert_called_once_with(target=mock_start_personalized_client, args=[client_config])
         mock_thread_instance.start.assert_called_once()
+
+
+def raise_keyboard_interrupt(*args, **kwargs):
+    raise KeyboardInterrupt
+
+
+@patch('multi_modal_edge_ai.client.orchestrator.BackgroundScheduler')
+@patch('multi_modal_edge_ai.client.orchestrator.send_set_up_connection_request')
+@patch('multi_modal_edge_ai.client.orchestrator.initiate_internal_pipeline')
+@patch('multi_modal_edge_ai.client.orchestrator.create_heartbeat_and_send')
+@patch('multi_modal_edge_ai.client.orchestrator.time.sleep', side_effect=raise_keyboard_interrupt)
+def test_run_schedule(mock_sleep, mock_create_heartbeat_and_send, mock_initiate_internal_pipeline,
+                      mock_send_set_up_connection_request, mock_scheduler):
+    # create a mock client config
+    client_config = {'sensor_db': 'mock_db', 'client_db': 'mock_db', 'adl_collection': 'mock_collection',
+                     'anomaly_collection': 'mock_collection', 'adl_window_size': 10,
+                     'anomaly_detection_window_size': 10, 'adl_list': ['mock_adl'], 'num_adl_features': 1,
+                     'adl_encoder': MagicMock(), 'onehot_encoder': MagicMock(), 'andet_scaler': MagicMock(),
+                     'adl_model_keeper': MagicMock(), 'anomaly_detection_model_keeper': MagicMock()}
+
+    mock_scheduler_instance = mock_scheduler.return_value
+
+    run_schedule(client_config)
+
+    # Verify that the methods were called
+    mock_send_set_up_connection_request.assert_called_once_with(client_config['adl_model_keeper'],
+                                                                client_config['anomaly_detection_model_keeper'])
+
+    mock_scheduler_instance.add_job.assert_any_call(mock_create_heartbeat_and_send, 'interval', seconds=10,
+                                                    args=(client_config,))
+    mock_scheduler_instance.add_job.assert_any_call(mock_initiate_internal_pipeline, 'interval',
+                                                    seconds=client_config["adl_window_size"], args=(client_config,))
+
+    mock_scheduler_instance.start.assert_called_once()
