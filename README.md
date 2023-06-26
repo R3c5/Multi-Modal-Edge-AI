@@ -24,7 +24,7 @@
     <img src="https://img.shields.io/badge/State-Alpha-white.svg" alt="State">
     <img src="https://img.shields.io/badge/Version-1.0.0-red.svg" alt="AI">
     <img src="https://img.shields.io/badge/Documentation-Up to date-darkgreen.svg">
-    <img src="https://img.shields.io/badge/Code Coverage-77%25-darkred.svg">
+    <img src="https://img.shields.io/badge/Code Coverage-77%25-green.svg">
     <img src="https://img.shields.io/badge/License-MIT-darkblue.svg">
 </div>
 
