@@ -60,6 +60,8 @@ def modify_sensor_name(sensor_name):
     """
     mappings = {
         'motion_livingroom': 'motion_living',
+        'door_fridge': 'contact_fridge',
+        'door_entry': 'contact_entrance',
         'contact_door_bathroom': 'contact_bathroom',
         'contact_door_entry': 'contact_entrance',
         'contact_door_exit': 'contact_entrance'
