@@ -122,8 +122,8 @@ def group_sensors_on_friendly_names_and_aggregate_entries(data: list[dict[Any, A
 #
 #     # Before running this script, make sure that the SSH tunnel is running:
 #     # 1. Open WSL
-#     # 2. Run the following command: ```ssh ***REMOVED*** -N -L 27017:localhost:27018```
-#     # 3. Input this password: ***REMOVED***
+#     # 2. Run the following command: ```ssh user@IP -N -L 27017:localhost:27018```
+#     # 3. Input password
 #     def __init__(self, database_name: str, collection_name: str = 'raw_sensor') -> None:
 #         """
 #         This method connects to the remote MongoDB instance and establishes a tunnel to it.
@@ -131,7 +131,7 @@ def group_sensors_on_friendly_names_and_aggregate_entries(data: list[dict[Any, A
 #         :param collection_name: the name of the collection, default is 'raw_sensor'
 #         """
 #         # Establish an SSH tunnel to the remote MongoDB instance
-#         client = pymongo.MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
+#         client = pymongo.MongoClient('localhost', 27017, username='coho-edge-ai', password='password')
 #         db = client[database_name]
 #         self.collection = db[collection_name]
 #

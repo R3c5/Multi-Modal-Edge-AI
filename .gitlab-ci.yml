@@ -7,7 +7,7 @@ stages:
   - typecheck
 
 variables:
-  SSH_SERVER: "***REMOVED***"
+  SSH_SERVER: "user@IP"
   LOCAL_PORT: "27017"
   REMOTE_PORT: "27018"
 
@@ -26,7 +26,7 @@ test:
   script:
     - ls -la
     - echo "Running tests"
-    - sshpass -p '***REMOVED***' ssh -o StrictHostKeyChecking=no -fN -L $LOCAL_PORT:localhost:$REMOTE_PORT $SSH_SERVER &
+    - sshpass -p 'password' ssh -o StrictHostKeyChecking=no -fN -L $LOCAL_PORT:localhost:$REMOTE_PORT $SSH_SERVER &
     - python -m pytest --cov=multi_modal_edge_ai --cov-report term --cov-report xml:coverage.xml
     - coverage report -m
     - coverage html

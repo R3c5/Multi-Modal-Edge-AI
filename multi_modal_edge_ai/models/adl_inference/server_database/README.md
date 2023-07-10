@@ -2,11 +2,7 @@
 
  ## Setup Instructions:
 
- Before running the script, make sure that the SSH tunnel is running:\
-    # 1. Open WSL\
-    # 2. Run the following command: ```ssh ***REMOVED*** -N -L 27017:localhost:27018```\
-    # 3. Input this password: ***REMOVED***\
-    # 4. Leave the WSL window open and running in the background
+ Before running the script, make sure you have an SSH tunnel running.
  
  ## DatabaseTunnel:
  

@@ -4,7 +4,7 @@ from pymongo.database import Database
 
 
 # Before running this script, make sure that the SSH tunnel is running.
-def get_database_client(username: str = 'coho-edge-ai', password: str = '***REMOVED***') -> MongoClient:
+def get_database_client(username: str = 'coho-edge-ai', password: str = 'password') -> MongoClient:
     """
     Get a MongoDB client
     :param username: username of the MongoDB user

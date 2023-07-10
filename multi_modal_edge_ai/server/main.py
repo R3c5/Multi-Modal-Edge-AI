@@ -113,7 +113,7 @@ def configure_job_stores():
     """
     job_stores = {}
     try:
-        client = MongoClient('localhost', 27017, username='coho-edge-ai', password='***REMOVED***')
+        client = MongoClient('localhost', 27017, username='coho-edge-ai', password='password')
         job_stores['default'] = MongoDBJobStore(client=client, database='coho-edge-ai',
                                                 collection='federated_workloads_job_store_test')
     except PyMongoError:
